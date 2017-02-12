@@ -1,5 +1,7 @@
 # DiscordConsole
-The console that allows you to control both your user and bot account in interesting ways.
+The console that allows you to control both your user and bot account in interesting ways.  
+[Download](https://krake.one/software#discordconsole)  
+... or compile it for yourself
 ![Imgur](http://i.imgur.com/EODO9XQ.png)
 
 ## Special features
