@@ -12,9 +12,10 @@ import (
 	"os/exec"
 	"strconv"
 	"flag"
+	"runtime"
 )
 
-const VERSION = "1.5";
+const VERSION = "1.6";
 var ID string;
 
 var rSpace = regexp.MustCompile("\\s+");
@@ -154,11 +155,11 @@ func command(session *discordgo.Session, cmd string, args... string){
 	cmd = strings.ToLower(cmd);
 	nargs := len(args);
 
-	if(cmd == "exit"){
-		exit(session);
-	} else if(cmd == "help"){
+	if(cmd == "help"){
 
 		fmt.Println("help\tShow help menu");
+		fmt.Println("exit\tExit DiscordConsole");
+		fmt.Println("exec\tExecute a shell command");
 		fmt.Println("guilds\tList guilds/servers this bot is added to.");
 		fmt.Println("guild <id>\tSelect a guild to use for further commands.");
 		fmt.Println("channels\tList channels in your selected guild.");
@@ -181,6 +182,25 @@ func command(session *discordgo.Session, cmd string, args... string){
 		fmt.Println("roledel <user id> <role id>\tRemove role from user");
 		fmt.Println("nick [nickname]\tChange own nicknakme");
 
+	} else if(cmd == "exit"){
+		exit(session);
+	} else if(cmd == "exec" || cmd == "execute"){
+		if(nargs < 1){
+			stdutil.PrintErr("exec <command>", nil);
+			return;
+		}
+
+		cmd := strings.Join(args, " ");
+
+		var err error;
+		if(runtime.GOOS == "windows"){
+			err = execute("cmd", "/c", cmd);
+		} else {
+			err = execute("sh", "-c", cmd);
+		}
+		if(err != nil){
+			stdutil.PrintErr("Could not execute", err);
+		}
 	} else if(cmd == "guilds"){
 		guilds, err := session.UserGuilds();
 		if(err != nil){
