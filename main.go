@@ -16,6 +16,8 @@ import (
 )
 
 const VERSION = "1.6";
+const WINDOWS = runtime.GOOS == "windows";
+
 var ID string;
 
 var rSpace = regexp.MustCompile("\\s+");
@@ -67,9 +69,14 @@ func main(){
 		fmt.Print("Password: ");
 
 		if(pass == ""){
-			execute("stty", "-echo");
+			if(!WINDOWS){
+				execute("stty", "-echo");
+			}
 			pass, err = stdutil.ScanTrim();
-			execute("stty", "echo");
+			if(!WINDOWS){
+				execute("stty", "echo");
+				fmt.Println();
+			}
 
 			if(err != nil){
 				return;
@@ -124,6 +131,7 @@ func main(){
 		fmt.Print("> ");
 		cmdstr, err := stdutil.ScanTrim();
 		if(err != nil){
+			fmt.Println("exit");
 			exit(session);
 			return;
 		}
@@ -193,7 +201,7 @@ func command(session *discordgo.Session, cmd string, args... string){
 		cmd := strings.Join(args, " ");
 
 		var err error;
-		if(runtime.GOOS == "windows"){
+		if(WINDOWS){
 			err = execute("cmd", "/c", cmd);
 		} else {
 			err = execute("sh", "-c", cmd);
