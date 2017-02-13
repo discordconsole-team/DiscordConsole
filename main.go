@@ -63,15 +63,17 @@ func main(){
 		} else {
 			fmt.Println(email);
 		}
-
 		fmt.Print("Password: ");
-		execute("stty", "-echo");
 
 		if(pass == ""){
-			pass = stdutil.MustScanTrim();
-		}
+			execute("stty", "-echo");
+			pass, err = stdutil.ScanTrim();
+			execute("stty", "echo");
 
-		execute("stty", "echo");
+			if(err != nil){
+				return;
+			}
+		}
 
 		fmt.Println("Authenticating...");
 		session, err = discordgo.New(email, pass);
