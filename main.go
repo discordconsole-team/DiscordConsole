@@ -13,9 +13,10 @@ import (
 	"strconv"
 	"flag"
 	"runtime"
+	"sort"
 )
 
-const VERSION = "1.6";
+const VERSION = "1.7";
 const WINDOWS = runtime.GOOS == "windows";
 
 var ID string;
@@ -103,6 +104,7 @@ func main(){
 
 	ID = user.ID;
 
+	session.AddHandler(messageCreate);
 	err = session.Open();
 	if(err != nil){
 		stdutil.PrintErr("Could not open session", err);
@@ -159,6 +161,8 @@ var channelID string;
 var cacheGuilds = make(map[string]string, 0);
 var cacheChannels = make(map[string]string, 0);
 
+var messages bool;
+
 func command(session *discordgo.Session, cmd string, args... string){
 	cmd = strings.ToLower(cmd);
 	nargs := len(args);
@@ -168,27 +172,36 @@ func command(session *discordgo.Session, cmd string, args... string){
 		fmt.Println("help\tShow help menu");
 		fmt.Println("exit\tExit DiscordConsole");
 		fmt.Println("exec\tExecute a shell command");
+		fmt.Println();
 		fmt.Println("guilds\tList guilds/servers this bot is added to.");
 		fmt.Println("guild <id>\tSelect a guild to use for further commands.");
 		fmt.Println("channels\tList channels in your selected guild.");
 		fmt.Println("channel <id>\tSelect a channel to use for further commands.");
+		fmt.Println("pchannels\tList private channels a.k.a. 'DMs'.");
+		fmt.Println("dm <user id>\tCreate a DM with specific user.");
+		fmt.Println();
 		fmt.Println("say <stuff>\tSend a message in your selected channel.");
+		fmt.Println("file <file>\tUpload file to selected channel.");
 		fmt.Println("edit <message id> <stuff>\tEdit a message in your selected channel.");
 		fmt.Println("del <message id>\tDelete a message in the selected channel.");
+		fmt.Println("delall <since message id>\tBulk delete messages since a specific message");
 		fmt.Println("log [output file]\tLog the last few messages in console or to a file.");
+		fmt.Println();
 		fmt.Println("playing [game]\tSet your playing status.");
 		fmt.Println("streaming [url] [game]\tSet your streaming status");
 		fmt.Println("typing\tSimulate typing in selected channel...");
-		fmt.Println("pchannels\tList private channels a.k.a. 'DMs'.");
-		fmt.Println("dm <user id>\tCreate a DM with specific user.");
-		fmt.Println("delall <since message id>\tBulk delete messages since a specific message");
+		fmt.Println();
 		fmt.Println("members\tList (max 100) members in selected guild");
 		fmt.Println("invite\tCreate (permanent) instant invite.");
-		fmt.Println("file <file>\tUpload file to selected channel.");
+		fmt.Println();
 		fmt.Println("roles\tList all roles in selected guild.");
 		fmt.Println("roleadd <user id> <role id>\tAdd role to user");
 		fmt.Println("roledel <user id> <role id>\tRemove role from user");
+		fmt.Println();
 		fmt.Println("nick [nickname]\tChange own nicknakme");
+		fmt.Println();
+		fmt.Println("enablemessages\tEnable intercepting messages");
+		fmt.Println("disablemessages\tReverts the above.");
 
 	} else if(cmd == "exit"){
 		exit(session);
@@ -501,11 +514,15 @@ func command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 
-		roles, err := session.GuildRoles(guildID);
+		roles2, err := session.GuildRoles(guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get roles", err);
 			return;
 		}
+
+		roles := RolesArr(roles2);
+
+		sort.Sort(roles);
 
 		table := gtable.NewStringTable();
 		table.AddStrings("Name", "ID", "Permissions");
@@ -545,6 +562,12 @@ func command(session *discordgo.Session, cmd string, args... string){
 		if(err != nil){
 			stdutil.PrintErr("Could not set nickname", err);
 		}
+	} else if(cmd == "enablemessages"){
+		messages = true;
+		fmt.Println("Messages will now be intercepted.");
+	} else if(cmd == "disablemessages"){
+		messages = false;
+		fmt.Println("Messages will no longer be intercepted.");
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
@@ -563,4 +586,52 @@ func execute(command string, args... string) error{
 	cmd.Stdout = os.Stdout;
 	cmd.Stderr = os.Stderr;
 	return cmd.Run();
+}
+
+type RolesArr []*discordgo.Role;
+
+func (arr RolesArr) Len() int{
+	return len(arr);
+}
+
+func (arr RolesArr) Swap(i, j int){
+	arr[i], arr[j] = arr[j], arr[i];
+}
+
+func (arr RolesArr) Less(i, j int) bool{
+	return arr[i].Position > arr[j].Position;
+}
+
+func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
+	if(e.Author == nil){}
+
+	if(!messages){
+		return;
+	}
+
+	s := "\r(";
+
+	channel, err := session.Channel(e.ChannelID);
+	if(err != nil){
+		fmt.Println("Could not get channel", err);
+		return;
+	}
+	if(channel.IsPrivate){
+		s += "Private";
+	} else {
+		guild, err := session.Guild(channel.GuildID);
+		if(err != nil){
+			fmt.Println("Could not get guild", err);
+			return;
+		}
+		s += guild.Name + " " + "#" + channel.Name;
+
+		guildID = guild.ID;
+	}
+	channelID = channel.ID;
+
+	s += ") " + e.Author.Username + ": " + e.Content;
+	s += strings.Repeat(" ", 5);
+	fmt.Println(s);
+	fmt.Print("> ");
 }
