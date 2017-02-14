@@ -16,7 +16,7 @@ import (
 	"errors"
 )
 
-const VERSION = "1.7";
+const VERSION = "1.8";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 
@@ -224,6 +224,11 @@ func command(session *discordgo.Session, cmd string, args... string){
 		fmt.Println("disablemessages\tReverts the above.");
 		fmt.Println("reply\tJump to the channel of the last received message.");
 		fmt.Println("back\tJump to previous guild and/or channel.");
+		fmt.Println();
+		fmt.Println("ban <user id>\tBan user");
+		fmt.Println("unban <user id>\tUnban user");
+		fmt.Println("kick <user id>\tKick user");
+		fmt.Println("leave\tLeave selected guild!");
 
 	} else if(cmd == "exit"){
 		exit(session);
@@ -699,6 +704,58 @@ func command(session *discordgo.Session, cmd string, args... string){
 		err := session.GuildRoleDelete(loc.guildID, args[0]);
 		if(err != nil){
 			fmt.Println("Could not delete role!", err);
+		}
+	} else if(cmd == "ban"){
+		if(nargs < 1){
+			stdutil.PrintErr("ban <user id>", nil);
+			return;
+		}
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		err := session.GuildBanCreate(loc.guildID, args[0], 0);
+		if(err != nil){
+			stdutil.PrintErr("Could not ban user", err);
+		}
+	} else if(cmd == "unban"){
+		if(nargs < 1){
+			stdutil.PrintErr("unban <user id>", nil);
+			return;
+		}
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		err := session.GuildBanDelete(loc.guildID, args[0]);
+		if(err != nil){
+			stdutil.PrintErr("Could not unban user", err);
+		}
+	} else if(cmd == "kick"){
+		if(nargs < 1){
+			stdutil.PrintErr("kick <user id>", nil);
+			return;
+		}
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		err := session.GuildMemberDelete(loc.guildID, args[0]);
+		if(err != nil){
+			stdutil.PrintErr("Could not kick user", err);
+		}
+	} else if(cmd == "leave"){
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		err := session.GuildLeave(loc.guildID);
+		if(err != nil){
+			stdutil.PrintErr("Could not leave", err);
 		}
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
