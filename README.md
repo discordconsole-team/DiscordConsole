@@ -18,7 +18,7 @@ Set playing status, simulate typing, bulk delete and more.
 DiscordConsole lets you BULK DELETE messages. This allows you to delete a bunch of messages at once, without needing to write any code!
 
 ### Log
-Log the last 100 messages to a file, or just view the last 10 in directly in the console!
+Log the last 100 messages to a file, or just view the last 10 directly in the console!
 
 ## Command line
 DiscordConsole has full command line support. You can supply a bot token or email/password on the command line, and even specify commands to run, so you can use DiscordConsole for scripting.
