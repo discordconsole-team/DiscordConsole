@@ -161,7 +161,7 @@ var channelID string;
 var cacheGuilds = make(map[string]string, 0);
 var cacheChannels = make(map[string]string, 0);
 
-var messages bool;
+var messages = true;
 
 func command(session *discordgo.Session, cmd string, args... string){
 	cmd = strings.ToLower(cmd);
