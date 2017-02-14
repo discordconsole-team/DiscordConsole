@@ -219,12 +219,14 @@ func command(session *discordgo.Session, cmd string, args... string){
 		fmt.Println("roledelete <role id>\tDelete a role.");
 		fmt.Println();
 		fmt.Println("nick [nickname]\tChange own nicknakme");
+		fmt.Println("nickall [nickname]\tChange ALL nicknames!");
 		fmt.Println();
 		fmt.Println("enablemessages\tEnable intercepting messages");
 		fmt.Println("disablemessages\tReverts the above.");
 		fmt.Println("reply\tJump to the channel of the last received message.");
 		fmt.Println("back\tJump to previous guild and/or channel.");
 		fmt.Println();
+		fmt.Println("bans\tList all bans");
 		fmt.Println("ban <user id>\tBan user");
 		fmt.Println("unban <user id>\tUnban user");
 		fmt.Println("kick <user id>\tKick user");
@@ -756,6 +758,47 @@ func command(session *discordgo.Session, cmd string, args... string){
 		err := session.GuildLeave(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not leave", err);
+		}
+	} else if(cmd == "bans"){
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		bans, err := session.GuildBans(loc.guildID);
+		if(err != nil){
+			stdutil.PrintErr("Could not list bans", err);
+			return;
+		}
+
+		table := gtable.NewStringTable();
+		table.AddStrings("User", "Reason");
+
+		for _, ban := range bans{
+			table.AddRow();
+			table.AddStrings(ban.User.Username, ban.Reason);
+		}
+
+		printTable(&table);
+	} else if(cmd == "nickall"){
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		members, err := session.GuildMembers(loc.guildID, "", 100);
+		if(err != nil){
+			stdutil.PrintErr("Could not get members", err);
+			return;
+		}
+
+		nick := strings.Join(args, " ");
+
+		for _, member := range members{
+			err := session.GuildMemberNickname(loc.guildID, member.User.ID, nick);
+			if(err != nil){
+				stdutil.PrintErr("Could not nickname", err);
+			}
 		}
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
