@@ -1,31 +1,32 @@
 # DiscordConsole
-The console that allows you to control both your user and bot account in interesting ways.  
-[Download](https://krake.one/software#discordconsole)  
-... or compile it for yourself  
+The console that allows you to control both your user and bot account in interesting ways.
+
+[Download Win/Mac/Linux 64-bit binaries](https://krake.one/software#discordconsole)
+
+Or compile it yourself:
+
+    go get github.com/LEGOlord208/DiscordConsole
+    
 ![Imgur](http://i.imgur.com/EODO9XQ.png)
+
+Type "help" at the prompt for a full list of commands.
 
 ## Special features
 Set playing status, simulate typing, bulk delete and more.
 
 ### Bulk delete
-Yes, you can indeed BULK DELETE messages.  
-This allows you to delete a bunch of messages at once,  
-without even needing to code anything to do it!
+DiscordConsole lets you BULK DELETE messages. This allows you to delete a bunch of messages at once, without needing to write any code!
 
 ### Log
-Log the last 100 messages to a file, or just view the last 10 in console directly!
+Log the last 100 messages to a file, or just view the last 10 in directly in the console!
 
 ## Command line
-We have full command line support.  
-Not only pre-supplying a bot token or email and password,  
-but you can also send commands and embed it in complex scripts.  
+DiscordConsole has full command line support. You can supply a bot token or email/password on the command line, and even specify commands to run, so you can use DiscordConsole for scripting.
 
-Have it auto start with specific server selected?  
-Make a cron job script to automatically tweet how many days it is until Trump leaves? Easy!  
+Having it start with a specific server automatically selected? Making a cron job to automatically message how many days until Trump leaves? Easy!
 
 ## Cross platform
-This project is and will always support Mac, Linux and Windows 64-bits.
-
+This program works and will always work on Mac, Linux and Windows.
 
 # Have fun!
 That is the most important of all.
