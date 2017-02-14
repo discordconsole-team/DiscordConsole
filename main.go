@@ -19,14 +19,14 @@ const VERSION = "1.7";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 
-type StringArr []string;
+type stringArr []string;
 
-func (arr *StringArr) Set(val string) error{
+func (arr *stringArr) Set(val string) error{
 	*arr = append(*arr, val);
 	return nil;
 }
 
-func (arr *StringArr) String() string{
+func (arr *stringArr) String() string{
 	return "[" + strings.Join(*arr, " ") + "]";
 }
 
@@ -34,7 +34,7 @@ func main(){
 	var token string;
 	var email string;
 	var pass string;
-	var commands StringArr;
+	var commands stringArr;
 
 	flag.StringVar(&token, "t", "", "Set token. Ignored if -e and/or -p are set.");
 	flag.StringVar(&email, "e", "", "Set email.");
@@ -151,8 +151,28 @@ func exit(session *discordgo.Session){
 	os.Exit(0);
 }
 
-var guildID string;
-var channelID string;
+type rolesArr []*discordgo.Role;
+
+func (arr rolesArr) Len() int{
+	return len(arr);
+}
+
+func (arr rolesArr) Swap(i, j int){
+	arr[i], arr[j] = arr[j], arr[i];
+}
+
+func (arr rolesArr) Less(i, j int) bool{
+	return arr[i].Position > arr[j].Position;
+}
+
+type location struct{
+	guildID string
+	channelID string
+}
+
+var loc location;
+var lastMsg location;
+var lastLoc location;
 
 var cacheGuilds = make(map[string]string, 0);
 var cacheChannels = make(map[string]string, 0);
@@ -198,6 +218,8 @@ func command(session *discordgo.Session, cmd string, args... string){
 		fmt.Println();
 		fmt.Println("enablemessages\tEnable intercepting messages");
 		fmt.Println("disablemessages\tReverts the above.");
+		fmt.Println("reply\tJump to the channel of the last received message.");
+		fmt.Println("back\tJump to previous guild and/or channel.");
 
 	} else if(cmd == "exit"){
 		exit(session);
@@ -243,18 +265,20 @@ func command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 
+		lastLoc = loc;
+
 		var ok bool;
-		guildID, ok = cacheGuilds[strings.ToLower(strings.Join(args, " "))];
+		loc.guildID, ok = cacheGuilds[strings.ToLower(strings.Join(args, " "))];
 
 		if(!ok){
-			guildID = args[0];
+			loc.guildID = args[0];
 		}
 	} else if(cmd == "channels"){
-		if(guildID == ""){
+		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected!", nil);
 			return;
 		}
-		channels, err := session.GuildChannels(guildID);
+		channels, err := session.GuildChannels(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get channels", nil);
 			return;
@@ -281,22 +305,24 @@ func command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 
+		lastLoc = loc;
+
 		var ok bool;
-		channelID, ok = cacheChannels[strings.ToLower(strings.Join(args, " "))];
+		loc.channelID, ok = cacheChannels[strings.ToLower(strings.Join(args, " "))];
 		if(!ok){
-			channelID = args[0];
+			loc.channelID = args[0];
 		}
 	} else if(cmd == "say"){
 		if(nargs < 1){
 			stdutil.PrintErr("say <stuff>", nil);
 			return;
 		}
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected!", nil);
 			return;
 		}
 
-		msg, err := session.ChannelMessageSend(channelID, strings.Join(args, " "));
+		msg, err := session.ChannelMessageSend(loc.channelID, strings.Join(args, " "));
 		if(err != nil){
 			stdutil.PrintErr("Could not send", err);
 			return;
@@ -307,12 +333,12 @@ func command(session *discordgo.Session, cmd string, args... string){
 			stdutil.PrintErr("edit <message id> <stuff>", nil);
 			return;
 		}
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected!", nil);
 			return;
 		}
 
-		msg, err := session.ChannelMessageEdit(channelID, args[0], strings.Join(args[1:], " "));
+		msg, err := session.ChannelMessageEdit(loc.channelID, args[0], strings.Join(args[1:], " "));
 		if(err != nil){
 			stdutil.PrintErr("Could not edit", err);
 			return;
@@ -323,18 +349,18 @@ func command(session *discordgo.Session, cmd string, args... string){
 			stdutil.PrintErr("del <message id>", nil);
 			return;
 		}
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected!", nil);
 			return;
 		}
 
-		err := session.ChannelMessageDelete(channelID, args[0]);
+		err := session.ChannelMessageDelete(loc.channelID, args[0]);
 		if(err != nil){
 			stdutil.PrintErr("Couldn't delete", err);
 			return;
 		}
 	} else if(cmd == "log"){
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected!", nil);
 			return;
 		}
@@ -344,7 +370,7 @@ func command(session *discordgo.Session, cmd string, args... string){
 			limit = 10;
 		}
 
-		msgs, err := session.ChannelMessages(channelID, limit, "", "");
+		msgs, err := session.ChannelMessages(loc.channelID, limit, "", "");
 		if(err != nil){
 			stdutil.PrintErr("Could not get messages", err);
 			return;
@@ -389,11 +415,11 @@ func command(session *discordgo.Session, cmd string, args... string){
 			stdutil.PrintErr("Couldn't update status", err);
 		}
 	} else if(cmd == "typing"){
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected.", nil);
 			return;
 		}
-		err := session.ChannelTyping(channelID);
+		err := session.ChannelTyping(loc.channelID);
 		if(err != nil){
 			stdutil.PrintErr("Couldn't start typing", err);
 		}
@@ -422,18 +448,18 @@ func command(session *discordgo.Session, cmd string, args... string){
 			stdutil.PrintErr("Could not create DM.", err);
 			return;
 		}
-		channelID = channel.ID;
+		loc.channelID = channel.ID;
 		fmt.Println("Selected DM with channel ID " + channel.ID + ".");
 	} else if(cmd == "delall"){
 		if(nargs < 1){
 			stdutil.PrintErr("delall <since message id>", nil);
 			return;
 		}
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected.", nil);
 			return;
 		}
-		messages, err := session.ChannelMessages(channelID, 100, "", args[0]);
+		messages, err := session.ChannelMessages(loc.channelID, 100, "", args[0]);
 		if(err != nil){
 			stdutil.PrintErr("Could not get messages", err);
 			return;
@@ -444,19 +470,19 @@ func command(session *discordgo.Session, cmd string, args... string){
 			ids[i] = msg.ID;
 		}
 
-		err = session.ChannelMessagesBulkDelete(channelID, ids);
+		err = session.ChannelMessagesBulkDelete(loc.channelID, ids);
 		if(err != nil){
 			stdutil.PrintErr("Could not delete messages", err);
 			return;
 		}
 		fmt.Println("Deleted " + strconv.Itoa(len(ids)) + " messages!");
 	} else if(cmd == "members"){
-		if(guildID == ""){
+		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected", nil);
 			return;
 		}
 
-		members, err := session.GuildMembers(guildID, "", 100);
+		members, err := session.GuildMembers(loc.guildID, "", 100);
 		if(err != nil){
 			stdutil.PrintErr("Could not list members", err);
 			return;
@@ -471,11 +497,11 @@ func command(session *discordgo.Session, cmd string, args... string){
 		}
 		printTable(&table);
 	} else if(cmd == "invite"){
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected", nil);
 			return;
 		}
-		invite, err := session.ChannelInviteCreate(channelID, discordgo.Invite{});
+		invite, err := session.ChannelInviteCreate(loc.channelID, discordgo.Invite{});
 		if(err != nil){
 			stdutil.PrintErr("Invite could not be created", err);
 			return;
@@ -486,7 +512,7 @@ func command(session *discordgo.Session, cmd string, args... string){
 			stdutil.PrintErr("file <file>", nil);
 			return;
 		}
-		if(channelID == ""){
+		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected", nil);
 			return;
 		}
@@ -498,25 +524,25 @@ func command(session *discordgo.Session, cmd string, args... string){
 		}
 		defer file.Close();
 
-		msg, err := session.ChannelFileSend(channelID, name, file);
+		msg, err := session.ChannelFileSend(loc.channelID, name, file);
 		if(err != nil){
 			stdutil.PrintErr("Could not send file", err);
 			return;
 		}
 		fmt.Println("Sent '" + name + "' with message ID " + msg.ID + ".");
 	} else if(cmd == "roles"){
-		if(guildID == ""){
+		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected", nil);
 			return;
 		}
 
-		roles2, err := session.GuildRoles(guildID);
+		roles2, err := session.GuildRoles(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get roles", err);
 			return;
 		}
 
-		roles := RolesArr(roles2);
+		roles := rolesArr(roles2);
 
 		sort.Sort(roles);
 
@@ -534,27 +560,27 @@ func command(session *discordgo.Session, cmd string, args... string){
 			stdutil.PrintErr("roleadd/del <user id> <role id>", nil);
 			return;
 		}
-		if(guildID == ""){
+		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected", nil);
 			return;
 		}
 
 		var err error;
 		if(cmd == "roleadd"){
-			err = session.GuildMemberRoleAdd(guildID, args[0], args[1]);
+			err = session.GuildMemberRoleAdd(loc.guildID, args[0], args[1]);
 		} else {
-			err = session.GuildMemberRoleRemove(guildID, args[0], args[1]);
+			err = session.GuildMemberRoleRemove(loc.guildID, args[0], args[1]);
 		}
 
 		if(err != nil){
 			stdutil.PrintErr("Could not add/remove role", err);
 		}
 	} else if(cmd == "nick"){
-		if(guildID == ""){
+		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected.", nil);
 			return;
 		}
-		err := session.GuildMemberNickname(guildID, "@me/nick", strings.Join(args, " "));
+		err := session.GuildMemberNickname(loc.guildID, "@me/nick", strings.Join(args, " "));
 		if(err != nil){
 			stdutil.PrintErr("Could not set nickname", err);
 		}
@@ -564,6 +590,17 @@ func command(session *discordgo.Session, cmd string, args... string){
 	} else if(cmd == "disablemessages"){
 		messages = false;
 		fmt.Println("Messages will no longer be intercepted.");
+	} else if(cmd == "reply"){
+		lastLoc = loc;
+		if(lastMsg.guildID != ""){
+			loc.guildID = lastMsg.guildID;
+		}
+		if(lastMsg.channelID != ""){
+			loc.channelID = lastMsg.channelID;
+		}
+	} else if(cmd == "back"){
+		loc.guildID = lastLoc.guildID;
+		loc.channelID = lastLoc.channelID;
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
@@ -582,20 +619,6 @@ func execute(command string, args... string) error{
 	cmd.Stdout = os.Stdout;
 	cmd.Stderr = os.Stderr;
 	return cmd.Run();
-}
-
-type RolesArr []*discordgo.Role;
-
-func (arr RolesArr) Len() int{
-	return len(arr);
-}
-
-func (arr RolesArr) Swap(i, j int){
-	arr[i], arr[j] = arr[j], arr[i];
-}
-
-func (arr RolesArr) Less(i, j int) bool{
-	return arr[i].Position > arr[j].Position;
 }
 
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
@@ -622,9 +645,9 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 		}
 		s += guild.Name + " " + "#" + channel.Name;
 
-		guildID = guild.ID;
+		lastMsg.guildID = guild.ID;
 	}
-	channelID = channel.ID;
+	lastMsg.channelID = channel.ID;
 
 	s += ") " + e.Author.Username + ": " + e.Content;
 	s += strings.Repeat(" ", 5);
