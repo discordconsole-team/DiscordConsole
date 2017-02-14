@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/legolord208/stdutil"
 	"github.com/bwmarrin/discordgo"
-	"regexp"
 	"strings"
 	"github.com/legolord208/gtable"
 	"io/ioutil"
@@ -18,10 +17,7 @@ import (
 
 const VERSION = "1.7";
 const WINDOWS = runtime.GOOS == "windows";
-
 var ID string;
-
-var rSpace = regexp.MustCompile("\\s+");
 
 type StringArr []string;
 
@@ -124,7 +120,7 @@ func main(){
 		}
 		fmt.Println("> " + cmdstr);
 
-		parts := rSpace.Split(cmdstr, -1);
+		parts := strings.Fields(cmdstr);
 		cmd := parts[0];
 		args := parts[1:];
 		command(session, cmd, args...);
@@ -142,7 +138,7 @@ func main(){
 			continue;
 		}
 
-		parts := rSpace.Split(cmdstr, -1);
+		parts := strings.Fields(cmdstr);
 
 		cmd := parts[0];
 		args := parts[1:];
