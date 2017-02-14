@@ -592,12 +592,9 @@ func command(session *discordgo.Session, cmd string, args... string){
 		fmt.Println("Messages will no longer be intercepted.");
 	} else if(cmd == "reply"){
 		lastLoc = loc;
-		if(lastMsg.guildID != ""){
-			loc.guildID = lastMsg.guildID;
-		}
-		if(lastMsg.channelID != ""){
-			loc.channelID = lastMsg.channelID;
-		}
+
+		loc.guildID = lastMsg.guildID;
+		loc.channelID = lastMsg.channelID;
 	} else if(cmd == "back"){
 		loc.guildID = lastLoc.guildID;
 		loc.channelID = lastLoc.channelID;
