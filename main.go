@@ -13,6 +13,7 @@ import (
 	"flag"
 	"runtime"
 	"sort"
+	"errors"
 )
 
 const VERSION = "1.7";
@@ -213,6 +214,9 @@ func command(session *discordgo.Session, cmd string, args... string){
 		fmt.Println("roles\tList all roles in selected guild.");
 		fmt.Println("roleadd <user id> <role id>\tAdd role to user");
 		fmt.Println("roledel <user id> <role id>\tRemove role from user");
+		fmt.Println("rolecreate\tCreate new role");
+		fmt.Println("roleedit <role id> <flag> <value>\tEdit a role. Flags are: name, color, separate, perms, mention");
+		fmt.Println("roledelete <role id>\tDelete a role.");
 		fmt.Println();
 		fmt.Println("nick [nickname]\tChange own nicknakme");
 		fmt.Println();
@@ -598,9 +602,116 @@ func command(session *discordgo.Session, cmd string, args... string){
 	} else if(cmd == "back"){
 		loc.guildID = lastLoc.guildID;
 		loc.channelID = lastLoc.channelID;
+	} else if(cmd == "rolecreate"){
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+		
+		role, err := session.GuildRoleCreate(loc.guildID);
+		if(err != nil){
+			stdutil.PrintErr("Could not create role", err);
+			return;
+		}
+		fmt.Println("Created role with ID " + role.ID + ".");
+	} else if(cmd == "roleedit"){
+		if(nargs < 3){
+			stdutil.PrintErr("roleedit <roleid> <flag> <value>", nil);
+			return;
+		}
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		value := strings.Join(args[2:], " ");
+
+		roles, err := session.GuildRoles(loc.guildID);
+		if(err != nil){
+			stdutil.PrintErr("Could not get roles", err);
+			return;
+		}
+
+		var role *discordgo.Role;
+		for _, r := range roles{
+			if(r.ID == args[0]){
+				role = r;
+				break;
+			}
+		}
+		if(role == nil){
+			stdutil.PrintErr("Role does not exist with that ID", nil);
+			return;
+		}
+
+		name := role.Name;
+		color := int64(role.Color);
+		hoist := role.Hoist;
+		perms := role.Permissions;
+		mention := role.Mentionable;
+
+		switch(strings.ToLower(args[1])){
+			case "name":
+				name = value;
+			case "color":
+				value = strings.TrimPrefix(value, "#");
+				color, err = strconv.ParseInt(value, 16, 0);
+				if(err != nil){
+					stdutil.PrintErr("Not a number", nil);
+					return;
+				}
+			case "separate":
+				hoist, err = parseBool(value);
+				if(err != nil){
+					stdutil.PrintErr(err.Error(), nil);
+					return;
+				}
+			case "perms":
+				perms, err = strconv.Atoi(value);
+				if(err != nil){
+					stdutil.PrintErr("Not a number", nil);
+					return;
+				}
+			case "mention":
+				mention, err = parseBool(value);
+				if(err != nil){
+					stdutil.PrintErr(err.Error(), nil);
+					return;
+				}
+		}
+
+		role, err = session.GuildRoleEdit(loc.guildID, args[0], name, int(color), hoist, perms, mention);
+		if(err != nil){
+			stdutil.PrintErr("Could not edit role", err);
+			return;
+		}
+		fmt.Println("Edited role " + role.ID + ".");
+	} else if(cmd == "roledelete"){
+		if(nargs < 1){
+			stdutil.PrintErr("roledelete <roleid>", nil);
+			return;
+		}
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+
+		err := session.GuildRoleDelete(loc.guildID, args[0]);
+		if(err != nil){
+			fmt.Println("Could not delete role!", err);
+		}
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
+}
+
+func parseBool(str string) (bool, error){
+	if(str == "yes" || str == "true"){
+		return true, nil;
+	} else if(str == "no" || str == "false"){
+		return false, nil;
+	}
+	return false, errors.New("Please use yes or no");
 }
 
 func printTable(table *gtable.StringTable){
