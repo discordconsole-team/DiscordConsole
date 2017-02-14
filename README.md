@@ -10,7 +10,7 @@ Set playing status, simulate typing, bulk delete and more.
 ### Bulk delete
 Yes, you can indeed BULK DELETE messages.  
 This allows you to delete a bunch of messages at once,  
-without even needing a bot to do it!
+without even needing to code anything to do it!
 
 ### Log
 Log the last 100 messages to a file, or just view the last 10 in console directly!
