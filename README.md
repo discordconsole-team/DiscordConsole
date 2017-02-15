@@ -4,7 +4,9 @@ The console that allows you to control both your user and bot account in interes
 [Download Win/Mac/Linux 64-bit binaries](https://krake.one/software#discordconsole)
 
 Or compile it yourself:
-```go get -u github.com/LEGOlord208/DiscordConsole```
+```
+go get -u github.com/LEGOlord208/DiscordConsole
+```
     
 ![Imgur](http://i.imgur.com/EODO9XQ.png)
 
