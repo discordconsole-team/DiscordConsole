@@ -11,7 +11,7 @@ import (
 	"runtime"
 )
 
-const VERSION = "1.9";
+const VERSION = "1.10";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 
@@ -121,10 +121,7 @@ func main(){
 		}
 		fmt.Println("> " + cmdstr);
 
-		parts := strings.Fields(cmdstr);
-		cmd := parts[0];
-		args := parts[1:];
-		Command(session, cmd, args...);
+		Command(session, cmdstr);
 	}
 	for{
 		fmt.Print("> ");
@@ -139,11 +136,7 @@ func main(){
 			continue;
 		}
 
-		parts := strings.Fields(cmdstr);
-
-		cmd := parts[0];
-		args := parts[1:];
-		Command(session, cmd, args...);
+		Command(session, cmdstr);
 	}
 }
 

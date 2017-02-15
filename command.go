@@ -42,8 +42,14 @@ var cacheChannels = make(map[string]string, 0);
 
 var Messages = true;
 
-func Command(session *discordgo.Session, cmd string, args... string){
-	cmd = strings.ToLower(cmd);
+func Command(session *discordgo.Session, cmd string) (returnVal string){
+	if(cmd == ""){
+		return;
+	}
+	parts := strings.Fields(cmd);
+
+	cmd = strings.ToLower(parts[0]);
+	args := parts[1:];
 	nargs := len(args);
 
 	if(cmd == "help"){
@@ -66,6 +72,17 @@ func Command(session *discordgo.Session, cmd string, args... string){
 		}
 		if(err != nil){
 			stdutil.PrintErr("Could not execute", err);
+		}
+	} else if(cmd == "run"){
+		if(nargs < 1){
+			stdutil.PrintErr("run <lua script>", nil);
+			return;
+		}
+
+		script := strings.Join(args, " ");
+		err := RunLua(session, script);
+		if(err != nil){
+			stdutil.PrintErr("Could not run lua", err);
 		}
 	} else if(cmd == "guilds"){
 		guilds, err := session.UserGuilds();
@@ -162,6 +179,7 @@ func Command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 		fmt.Println("Created message with ID " + msg.ID);
+		returnVal = msg.ID;
 	} else if(cmd == "edit"){
 		if(nargs < 2){
 			stdutil.PrintErr("edit <message id> <stuff>", nil);
@@ -226,6 +244,7 @@ func Command(session *discordgo.Session, cmd string, args... string){
 
 		if(directly){
 			fmt.Print(s);
+			returnVal = s;
 			return;
 		}
 
@@ -235,7 +254,7 @@ func Command(session *discordgo.Session, cmd string, args... string){
 			stdutil.PrintErr("Could not write log file", err);
 			return;
 		}
-		fmt.Println("Wrote chat log to '" + name + "'.")
+		fmt.Println("Wrote chat log to '" + name + "'.");
 	} else if(cmd == "playing"){
 		err := session.UpdateStatus(0, strings.Join(args, " "));
 		if(err != nil){
@@ -346,6 +365,7 @@ func Command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 		fmt.Println("Created invite with code " + invite.Code);
+		returnVal = invite.Code;
 	} else if(cmd == "file"){
 		if(nargs < 1){
 			stdutil.PrintErr("file <file>", nil);
@@ -369,6 +389,7 @@ func Command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 		fmt.Println("Sent '" + name + "' with message ID " + msg.ID + ".");
+		return msg.ID;
 	} else if(cmd == "roles"){
 		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected", nil);
@@ -449,6 +470,7 @@ func Command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 		fmt.Println("Created role with ID " + role.ID + ".");
+		returnVal = role.ID;
 	} else if(cmd == "roleedit"){
 		if(nargs < 3){
 			stdutil.PrintErr("roleedit <roleid> <flag> <value>", nil);
@@ -669,9 +691,11 @@ func Command(session *discordgo.Session, cmd string, args... string){
 			return;
 		}
 		PrintMessage(session, msg, false);
+		returnVal = msg.ID;
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
+	return;
 }
 
 func parseBool(str string) (bool, error){
