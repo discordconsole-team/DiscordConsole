@@ -23,7 +23,9 @@ Log the last 100 messages to a file, or just view the last 10 directly in the co
 ## Command line
 DiscordConsole has full command line support. You can supply a bot token or email/password on the command line, and even specify commands to run, so you can use DiscordConsole for scripting.
 
-Having it start with a specific server automatically selected? Making a cron job to automatically message how many days until Trump leaves? Easy!
+Having it start with a specific server automatically selected? Making a cron job to automatically message how many days until Trump leaves? Easy!  
+![Imgur](http://i.imgur.com/2mst4pH.png)  
+*This could also be done with webhooks, but hush now :P*
 
 ## Cross platform
 This program works and will always work on Mac, Linux and Windows.
