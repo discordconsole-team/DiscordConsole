@@ -38,7 +38,7 @@ func main(){
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.");
 	flag.Parse();
 
-	fmt.Println("Discord bot console " + VERSION);
+	fmt.Println("DiscordConsole " + VERSION);
 	fmt.Println("Please paste your 'token' here, or leave blank for a user account.");
 	fmt.Print("> ");
 	if(token == "" && email == "" && pass == ""){
@@ -80,7 +80,12 @@ func main(){
 		session, err = discordgo.New(email, pass);
 	} else {
 		fmt.Println("Authenticating...");
-		session, err = discordgo.New("Bot " + token);
+		if(strings.HasPrefix(strings.ToLower(token), "user ")){
+			token = token[len("user "):];
+		} else {
+			token = "Bot " + token;
+		}
+		session, err = discordgo.New(token);
 	}
 
 	if(err != nil){
