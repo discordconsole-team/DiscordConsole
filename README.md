@@ -5,7 +5,7 @@ The console that allows you to control both your user and bot account in interes
 
 Or compile it yourself:
 ```
-go get -u github.com/LEGOlord208/DiscordConsole
+go get github.com/LEGOlord208/DiscordConsole
 ```
     
 ![Imgur](http://i.imgur.com/EODO9XQ.png)
