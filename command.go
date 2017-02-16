@@ -480,10 +480,7 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 		loc.guildID = lastMsg.guildID;
 		loc.channelID = lastMsg.channelID;
 	} else if(cmd == "back"){
-		lastLoc = loc;
-
-		loc.guildID = lastLoc.guildID;
-		loc.channelID = lastLoc.channelID;
+		loc, lastLoc = lastLoc, loc;
 	} else if(cmd == "rolecreate"){
 		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected!", nil);
