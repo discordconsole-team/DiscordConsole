@@ -31,7 +31,7 @@ func PrintHelp(){
 	fmt.Println("typing\tSimulate typing in selected channel...");
 	fmt.Println();
 	fmt.Println("members\tList (max 100) members in selected guild");
-	fmt.Println("invite\tCreate (permanent) instant invite.");
+	fmt.Println("invite [code]\tCreate (permanent) instant invite, or accept an incoming one.");
 	fmt.Println();
 	fmt.Println("roles\tList all roles in selected guild.");
 	fmt.Println("roleadd <user id> <role id>\tAdd role to user");

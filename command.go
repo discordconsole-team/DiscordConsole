@@ -367,13 +367,29 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("No channel selected", nil);
 			return;
 		}
-		invite, err := session.ChannelInviteCreate(loc.channelID, discordgo.Invite{});
-		if(err != nil){
-			stdutil.PrintErr("Invite could not be created", err);
+		if(!USER){
+			stdutil.PrintErr("This only works for users.", nil);
 			return;
 		}
-		fmt.Println("Created invite with code " + invite.Code);
-		returnVal = invite.Code;
+
+		hasCode := nargs >= 1;
+
+		if(hasCode){
+			_, err := session.InviteAccept(args[0]);
+			if(err != nil){
+				stdutil.PrintErr("Could not accept invite", err);
+				return;
+			}
+			fmt.Println("Accepted invite.");
+		} else {
+			invite, err := session.ChannelInviteCreate(loc.channelID, discordgo.Invite{});
+			if(err != nil){
+				stdutil.PrintErr("Invite could not be created", err);
+				return;
+			}
+			fmt.Println("Created invite with code " + invite.Code);
+			returnVal = invite.Code;
+		}
 	} else if(cmd == "file"){
 		if(nargs < 1){
 			stdutil.PrintErr("file <file>", nil);
