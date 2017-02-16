@@ -480,6 +480,8 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 		loc.guildID = lastMsg.guildID;
 		loc.channelID = lastMsg.channelID;
 	} else if(cmd == "back"){
+		lastLoc = loc;
+
 		loc.guildID = lastLoc.guildID;
 		loc.channelID = lastLoc.channelID;
 	} else if(cmd == "rolecreate"){
