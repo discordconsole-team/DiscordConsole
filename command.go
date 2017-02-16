@@ -256,11 +256,19 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 		}
 		fmt.Println("Wrote chat log to '" + name + "'.");
 	} else if(cmd == "playing"){
+		if(USER){
+			stdutil.PrintErr("This only works for bots.", nil);
+			return;
+		}
 		err := session.UpdateStatus(0, strings.Join(args, " "));
 		if(err != nil){
 			stdutil.PrintErr("Couldn't update status", err);
 		}
 	} else if(cmd == "streaming"){
+		if(USER){
+			stdutil.PrintErr("This only works for bots.", nil);
+			return;
+		}
 		var err error;
 		if(nargs <= 0){
 			err = session.UpdateStreamingStatus(0, "", "");
@@ -463,7 +471,7 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("No guild selected!", nil);
 			return;
 		}
-		
+
 		role, err := session.GuildRoleCreate(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not create role", err);
@@ -535,6 +543,9 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 					stdutil.PrintErr(err.Error(), nil);
 					return;
 				}
+			default:
+				stdutil.PrintErr("No such property", nil);
+				return;
 		}
 
 		role, err = session.GuildRoleEdit(loc.guildID, args[0], name, int(color), hoist, perms, mention);
@@ -677,7 +688,7 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 		fmt.Println("Created message with ID " + msg.ID + ".");
 	} else if(cmd == "read"){
 		if(nargs < 1){
-			stdutil.PrintErr("read <message id>", nil);
+			stdutil.PrintErr("read <message id> [property]", nil);
 			return;
 		}
 		if(loc.channelID == ""){
@@ -685,13 +696,42 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 
+		/*var msg *discordgo.Message;
+		var err error;*/
+		if(USER){
+			stdutil.PrintErr("This only works for bots!", nil);
+			return;
+			/*var msgs []*discordgo.Message;
+			msgs, err = session.ChannelMessages(loc.channelID, )*/
+		}// else {
+
 		msg, err := session.ChannelMessage(loc.channelID, args[0]);
+
+		//}
 		if(err != nil){
 			stdutil.PrintErr("Could not get message", err);
 			return;
 		}
-		PrintMessage(session, msg, false);
-		returnVal = msg.ID;
+
+		property := "";
+		if(len(args) >= 2){
+			property = args[1];
+		}
+		switch(property){
+			case "":
+				PrintMessage(session, msg, false);
+			case "text":
+				fmt.Println(msg.Content);
+				returnVal = msg.Content;
+			case "author":
+				fmt.Println(msg.Author.Username);
+				returnVal = msg.Author.ID;
+			case "channel":
+				fmt.Println(msg.ChannelID);
+				returnVal = msg.ChannelID;
+			default:
+				stdutil.PrintErr("Invalid property", nil);
+		}
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}

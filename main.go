@@ -14,6 +14,7 @@ import (
 const VERSION = "1.10";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
+var USER bool;
 
 type stringArr []string;
 
@@ -53,6 +54,8 @@ func main(){
 	var session *discordgo.Session;
 	var err error;
 	if(token == ""){
+		USER = true;
+
 		fmt.Print("Email: ");
 		if(email == ""){
 			email = stdutil.MustScanTrim();
@@ -82,8 +85,10 @@ func main(){
 		fmt.Println("Authenticating...");
 		if(strings.HasPrefix(strings.ToLower(token), "user ")){
 			token = token[len("user "):];
+			USER = true;
 		} else {
 			token = "Bot " + token;
+			USER = false;
 		}
 		session, err = discordgo.New(token);
 	}
