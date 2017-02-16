@@ -730,7 +730,7 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 
 		property := "";
 		if(len(args) >= 2){
-			property = args[1];
+			property = strings.ToLower(args[1]);
 		}
 		switch(property){
 			case "":
@@ -746,6 +746,38 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 				returnVal = msg.ChannelID;
 			default:
 				stdutil.PrintErr("Invalid property", nil);
+		}
+	} else if(cmd == "cinfo"){
+		if(nargs < 1){
+			stdutil.PrintErr("cinfo <property>", nil);
+			return;
+		}
+		if(loc.channelID == ""){
+			stdutil.PrintErr("No channel selected!", nil);
+			return;
+		}
+
+		channel, err := session.Channel(loc.channelID);
+		if(err != nil){
+			stdutil.PrintErr("Could notget channel", err);
+			return;
+		}
+
+		switch(strings.ToLower(args[0])){
+			case "guild":
+				fmt.Println(channel.GuildID);
+				returnVal = channel.GuildID;
+			case "name":
+				fmt.Println(channel.Name);
+				returnVal = channel.Name;
+			case "topic":
+				fmt.Println(channel.Topic);
+				returnVal = channel.Topic;
+			case "type":
+				fmt.Println(channel.Type);
+				returnVal = channel.Type;
+			default:
+				stdutil.PrintErr("No such property!", nil);
 		}
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);

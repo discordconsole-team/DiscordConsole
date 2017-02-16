@@ -15,6 +15,7 @@ func PrintHelp(){
 	fmt.Println("channel <id>\tSelect a channel to use for further commands.");
 	fmt.Println("general\tSelect the 'general' channel for further commands.");
 	fmt.Println("pchannels\tList private channels a.k.a. 'DMs'.");
+	fmt.Println("cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
 	fmt.Println("dm <user id>\tCreate a DM with specific user.");
 	fmt.Println();
 	fmt.Println("say <stuff>\tSend a message in your selected channel.");
@@ -23,7 +24,7 @@ func PrintHelp(){
 	fmt.Println("edit <message id> <stuff>\tEdit a message in your selected channel.");
 	fmt.Println("del <message id>\tDelete a message in the selected channel.");
 	fmt.Println("delall <since message id>\tBulk delete messages since a specific message");
-	fmt.Println("read <message id> [property]\tRead or get info from a message. Properties: (empty), author, text, channel");
+	fmt.Println("read <message id> [property]\tRead or get info from a message. Properties: (empty), text, author, channel");
 	fmt.Println("log [output file]\tLog the last few messages in console or to a file.");
 	fmt.Println();
 	fmt.Println("playing [game]\tSet your playing status.");
