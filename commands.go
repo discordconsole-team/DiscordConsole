@@ -353,14 +353,15 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("No channel selected", nil);
 			return;
 		}
-		if(!USER){
-			stdutil.PrintErr("This only works for users.", nil);
-			return;
-		}
 
 		hasCode := nargs >= 1;
 
 		if(hasCode){
+			if(!USER){
+				stdutil.PrintErr("This only works for users.", nil);
+				return;
+			}
+
 			_, err := session.InviteAccept(args[0]);
 			if(err != nil){
 				stdutil.PrintErr("Could not accept invite", err);
