@@ -115,7 +115,7 @@ func main(){
 	fmt.Println("Logged in with user ID " + ID);
 	fmt.Println("Write 'help' for help");
 	fmt.Println("Press Ctrl+D or type 'exit' to exit.");
-	
+
 	for i := 0; i < 3; i++{
 		fmt.Println();
 	}

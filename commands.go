@@ -303,15 +303,15 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 		loc.channelID = channel.ID;
 		fmt.Println("Selected DM with channel ID " + channel.ID + ".");
 	} else if(cmd == "delall"){
-		if(nargs < 1){
-			stdutil.PrintErr("delall <since message id>", nil);
-			return;
-		}
 		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected.", nil);
 			return;
 		}
-		messages, err := session.ChannelMessages(loc.channelID, 100, "", args[0]);
+		since := "";
+		if(nargs >= 1){
+			since = args[0];
+		}
+		messages, err := session.ChannelMessages(loc.channelID, 100, "", since);
 		if(err != nil){
 			stdutil.PrintErr("Could not get messages", err);
 			return;

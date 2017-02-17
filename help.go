@@ -23,7 +23,7 @@ func PrintHelp(){
 	fmt.Println("file <file>\tUpload file to selected channel.");
 	fmt.Println("edit <message id> <stuff>\tEdit a message in your selected channel.");
 	fmt.Println("del <message id>\tDelete a message in the selected channel.");
-	fmt.Println("delall <since message id>\tBulk delete messages since a specific message");
+	fmt.Println("delall [since message id]\tBulk delete messages since a specific message");
 	fmt.Println("read <message id> [property]\tRead or get info from a message. Properties: (empty), text, author, channel");
 	fmt.Println("log [output file]\tLog the last few messages in console or to a file.");
 	fmt.Println();
