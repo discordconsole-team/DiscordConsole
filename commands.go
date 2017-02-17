@@ -14,20 +14,6 @@ import (
 	"encoding/json"
 )
 
-type rolesArr []*discordgo.Role;
-
-func (arr rolesArr) Len() int{
-	return len(arr);
-}
-
-func (arr rolesArr) Swap(i, j int){
-	arr[i], arr[j] = arr[j], arr[i];
-}
-
-func (arr rolesArr) Less(i, j int) bool{
-	return arr[i].Position > arr[j].Position;
-}
-
 type location struct{
 	guildID string
 	channelID string
@@ -420,15 +406,14 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 
-		roles2, err := session.GuildRoles(loc.guildID);
+		roles, err := session.GuildRoles(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get roles", err);
 			return;
 		}
-
-		roles := rolesArr(roles2);
-
-		sort.Sort(roles);
+		sort.Slice(roles, func(i, j int) bool{
+			return roles[i].Position > roles[j].Position;
+		});
 
 		table := gtable.NewStringTable();
 		table.AddStrings("ID", "Name", "Permissions");
