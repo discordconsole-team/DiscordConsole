@@ -205,6 +205,10 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 }
 
 func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
+	if(e.Author.ID != ID){
+		return false;
+	}
+
 	contents := strings.TrimSpace(e.Content);
 	if(!strings.HasPrefix(contents, "console.")){
 		return false;
