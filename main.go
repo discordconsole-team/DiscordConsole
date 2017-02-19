@@ -124,12 +124,13 @@ func main(){
 		if(cmdstr == ""){
 			continue;
 		}
-		fmt.Println("> " + cmdstr);
+		printPointer(session);
+		fmt.Println(cmdstr);
 
-		Command(session, cmdstr);
+		command(session, cmdstr);
 	}
 	for{
-		fmt.Print("> ");
+		printPointer(session);
 		cmdstr, err := stdutil.ScanTrim();
 		if(err != nil){
 			fmt.Println("exit");
@@ -141,7 +142,7 @@ func main(){
 			continue;
 		}
 
-		Command(session, cmdstr);
+		command(session, cmdstr);
 	}
 }
 
@@ -196,12 +197,12 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 		return;
 	}
 
-	if(!Messages){
+	if(!messages){
 		return;
 	}
 
 	PrintMessage(session, e.Message, true);
-	fmt.Print("> ");
+	printPointer(session);
 }
 
 func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
@@ -232,7 +233,44 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
 	cmd := contents[len("console."):];
 
 	fmt.Println(cmd);
-	Command(session, cmd);
-	fmt.Print("> ");
+	command(session, cmd);
+	printPointer(session);
 	return true;
+}
+
+var pointerCache string;
+
+func printPointer(session *discordgo.Session){
+	if(pointerCache != ""){
+		fmt.Print(pointerCache);
+		return;
+	}
+
+	if(loc.channelID == ""){
+		fmt.Print("> ");
+		return;
+	}
+
+	s := "";
+
+	channel, err := session.Channel(loc.channelID);
+	if(err != nil){
+		stdutil.PrintErr("Could not get channel", err);
+		return;
+	}
+
+	if(channel.IsPrivate){
+		s += "Private";
+	} else {
+		guild, err := session.Guild(loc.guildID);
+		if(err != nil){
+			stdutil.PrintErr("Could not get guild", err);
+			return;
+		}
+		s += guild.Name + " (#" + channel.Name + ")";
+	}
+
+	s += "> ";
+	fmt.Print(s);
+	pointerCache = s;
 }

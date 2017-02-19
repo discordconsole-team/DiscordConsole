@@ -33,7 +33,7 @@ func RunLua(session *discordgo.Session, file string, args ...string) error{
 }
 
 func send(l *lua.State) int{
-	returnVal := Command(theSession, lua.CheckString(l, 1));
+	returnVal := command(theSession, lua.CheckString(l, 1));
 	l.PushString(returnVal);
 	return 1;
 }

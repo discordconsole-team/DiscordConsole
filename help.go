@@ -13,7 +13,6 @@ func PrintHelp(){
 	fmt.Println("guild <id>\tSelect a guild to use for further commands.");
 	fmt.Println("channels\tList channels in your selected guild.");
 	fmt.Println("channel <id>\tSelect a channel to use for further commands.");
-	fmt.Println("general\tSelect the 'general' channel for further commands.");
 	fmt.Println("pchannels\tList private channels a.k.a. 'DMs'.");
 	fmt.Println("cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
 	fmt.Println("dm <user id>\tCreate a DM with specific user.");

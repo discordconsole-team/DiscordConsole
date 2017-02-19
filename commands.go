@@ -26,9 +26,9 @@ var lastLoc location;
 var cacheGuilds = make(map[string]string, 0);
 var cacheChannels = make(map[string]string, 0);
 
-var Messages = true;
+var messages = true;
 
-func Command(session *discordgo.Session, cmd string) (returnVal string){
+func command(session *discordgo.Session, cmd string) (returnVal string){
 	if(cmd == ""){
 		return;
 	}
@@ -120,6 +120,9 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 		if(!ok){
 			loc.guildID = args[0];
 		}
+
+		loc.channelID = loc.guildID;
+		pointerCache = "";
 	} else if(cmd == "channels"){
 		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected!", nil);
@@ -159,13 +162,14 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 		if(!ok){
 			loc.channelID = args[0];
 		}
-	} else if(cmd == "general"){
-		if(loc.guildID == ""){
-			stdutil.PrintErr("No guild selected!", nil);
+
+		channel, err := session.Channel(loc.channelID);
+		if(err != nil){
+			stdutil.PrintErr("Could not get channel ", err);
 			return;
 		}
-
-		loc.channelID = loc.guildID;
+		loc.guildID = channel.GuildID;
+		pointerCache = "";
 	} else if(cmd == "say"){
 		if(nargs < 1){
 			stdutil.PrintErr("say <stuff>", nil);
@@ -472,10 +476,10 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("Could not set nickname", err);
 		}
 	} else if(cmd == "enablemessages"){
-		Messages = true;
+		messages = true;
 		fmt.Println("Messages will now be intercepted.");
 	} else if(cmd == "disablemessages"){
-		Messages = false;
+		messages = false;
 		fmt.Println("Messages will no longer be intercepted.");
 	} else if(cmd == "reply"){
 		lastLoc = loc;
