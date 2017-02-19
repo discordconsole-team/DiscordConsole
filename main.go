@@ -241,6 +241,9 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
 
 var pointerCache string;
 
+func clearPointerCache(){
+	pointerCache = "";
+}
 func printPointer(session *discordgo.Session){
 	if(pointerCache != ""){
 		fmt.Print(pointerCache);

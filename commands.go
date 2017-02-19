@@ -122,7 +122,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		}
 
 		loc.channelID = loc.guildID;
-		pointerCache = "";
+		clearPointerCache();
 	} else if(cmd == "channels"){
 		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected!", nil);
@@ -169,7 +169,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		loc.guildID = channel.GuildID;
-		pointerCache = "";
+		clearPointerCache();
 	} else if(cmd == "say"){
 		if(nargs < 1){
 			stdutil.PrintErr("say <stuff>", nil);
@@ -322,6 +322,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		loc.channelID = channel.ID;
+		loc.guildID = "";
+		clearPointerCache();
 		fmt.Println("Selected DM with channel ID " + channel.ID + ".");
 	} else if(cmd == "delall"){
 		if(loc.channelID == ""){
