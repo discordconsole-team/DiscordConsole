@@ -229,6 +229,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
 	lastLoc = loc;
 	loc.channelID = e.ChannelID;
 	loc.guildID = channel.GuildID;
+	pointerCache = "";
 
 	cmd := contents[len("console."):];
 
