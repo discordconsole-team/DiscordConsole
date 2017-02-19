@@ -83,9 +83,6 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 		}
 
-		fmt.Println(script);
-		fmt.Println(scriptArgs);
-
 		err := RunLua(session, script, scriptArgs...);
 		if(err != nil){
 			stdutil.PrintErr("Could not run lua", err);
