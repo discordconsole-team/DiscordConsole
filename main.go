@@ -192,7 +192,9 @@ func PrintMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 	if(e.Author == nil){}
 
-	messageCommand(session, e.Message);
+	if(messageCommand(session, e.Message)){
+		return;
+	}
 
 	if(!Messages){
 		return;
@@ -202,20 +204,31 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 	fmt.Print("> ");
 }
 
-func messageCommand(session *discordgo.Session, e *discordgo.Message){
+func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
 	contents := strings.TrimSpace(e.Content);
 	if(!strings.HasPrefix(contents, "console.")){
-		return;
+		return false;
 	}
+
 	err := session.ChannelMessageDelete(e.ChannelID, e.ID);
 	if(err != nil){
 		stdutil.PrintErr("Could not delete message", err);
-		return;
 	}
+
+	channel, err := session.Channel(e.ChannelID);
+	if(err != nil){
+		stdutil.PrintErr("Could not get channel", err);
+		return true;
+	}
+
+	lastLoc = loc;
+	loc.channelID = e.ChannelID;
+	loc.guildID = channel.GuildID;
 
 	cmd := contents[len("console."):];
 
 	fmt.Println(cmd);
 	Command(session, cmd);
 	fmt.Print("> ");
+	return true;
 }
