@@ -64,9 +64,29 @@ func Command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("run <lua script>", nil);
 			return;
 		}
+		var script string;
+		var scriptArgs []string;
 
-		script := strings.Join(args, " ");
-		err := RunLua(session, script);
+		scriptName := true;
+		for i, arg := range args{
+			if(scriptName){
+				if(i != 0){
+					script += " ";
+				}
+				if(strings.HasSuffix(arg, ":")){
+					scriptName = false;
+					arg = arg[:len(arg) - 1];
+				}
+				script += arg;
+			} else {
+				scriptArgs = append(scriptArgs, arg);
+			}
+		}
+
+		fmt.Println(script);
+		fmt.Println(scriptArgs);
+
+		err := RunLua(session, script, scriptArgs...);
 		if(err != nil){
 			stdutil.PrintErr("Could not run lua", err);
 		}

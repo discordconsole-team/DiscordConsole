@@ -9,12 +9,20 @@ import (
 
 var theSession *discordgo.Session;
 
-func RunLua(session *discordgo.Session, file string) error{
+func RunLua(session *discordgo.Session, file string, args ...string) error{
 	l := lua.NewState();
 
 	l.PushGoFunction(send); l.SetGlobal("exec");
 	l.PushGoFunction(read); l.SetGlobal("read");
 	l.PushGoFunction(replace); l.SetGlobal("replace");
+
+	l.NewTable();
+	for i, val := range args{
+		l.PushInteger(i+1);
+		l.PushString(val);
+		l.SetTable(-3);
+	}
+	l.SetGlobal("arg");
 
 	lua.OpenLibraries(l);
 

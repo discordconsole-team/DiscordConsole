@@ -11,7 +11,7 @@ import (
 	"runtime"
 )
 
-const VERSION = "1.11";
+const VERSION = "1.12";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
@@ -192,10 +192,30 @@ func PrintMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 	if(e.Author == nil){}
 
+	messageCommand(session, e.Message);
+
 	if(!Messages){
 		return;
 	}
 
 	PrintMessage(session, e.Message, true);
+	fmt.Print("> ");
+}
+
+func messageCommand(session *discordgo.Session, e *discordgo.Message){
+	contents := strings.TrimSpace(e.Content);
+	if(!strings.HasPrefix(contents, "console.")){
+		return;
+	}
+	err := session.ChannelMessageDelete(e.ChannelID, e.ID);
+	if(err != nil){
+		stdutil.PrintErr("Could not delete message", err);
+		return;
+	}
+
+	cmd := contents[len("console."):];
+
+	fmt.Println(cmd);
+	Command(session, cmd);
 	fmt.Print("> ");
 }
