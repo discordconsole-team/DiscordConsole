@@ -488,6 +488,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 
 		loc.guildID = lastMsg.guildID;
 		loc.channelID = lastMsg.channelID;
+		clearPointerCache();
 	} else if(cmd == "back"){
 		loc, lastLoc = lastLoc, loc;
 		clearPointerCache();
