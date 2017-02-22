@@ -42,7 +42,7 @@ func PrintHelp(search string){
 	help = append(help, "roleedit <role id> <flag> <value>\tEdit a role. Flags are: name, color, separate, perms, mention");
 	help = append(help, "roledelete <role id>\tDelete a role.");
 	help = append(help, "");
-	help = append(help, "nick [nickname]\tChange own nicknakme");
+	help = append(help, "nick [nickname]\tChange own nickname");
 	help = append(help, "nickall [nickname]\tChange ALL nicknames!");
 	help = append(help, "");
 	help = append(help, "enablemessages\tEnable intercepting messages");
