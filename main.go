@@ -40,7 +40,7 @@ func main(){
 	flag.Parse();
 
 	fmt.Println("DiscordConsole " + VERSION);
-	fmt.Println("Please paste your 'token' here, or leave blank for a user account.");
+	fmt.Println("Please paste your 'token' here, or leave blank for a username/password prompt.");
 	fmt.Print("> ");
 	if(token == "" && email == "" && pass == ""){
 		token = stdutil.MustScanTrim();
@@ -48,7 +48,7 @@ func main(){
 		if(email != "" || pass != ""){
 			token = "";
 		}
-		fmt.Println(token);
+		fmt.Println("[CENSORED]");
 	}
 
 	var session *discordgo.Session;
