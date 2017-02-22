@@ -157,19 +157,21 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 
-		lastLoc = loc;
-
+		var channelID string;
 		var ok bool;
-		loc.channelID, ok = cacheChannels[strings.ToLower(strings.Join(args, " "))];
+		channelID, ok = cacheChannels[strings.ToLower(strings.Join(args, " "))];
 		if(!ok){
-			loc.channelID = args[0];
+			channelID = args[0];
 		}
 
-		channel, err := session.Channel(loc.channelID);
+		channel, err := session.Channel(channelID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get channel ", err);
 			return;
 		}
+		lastLoc = loc;
+
+		loc.channelID = channelID;
 		loc.guildID = channel.GuildID;
 		clearPointerCache();
 	} else if(cmd == "say"){
