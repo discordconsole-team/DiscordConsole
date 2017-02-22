@@ -2,55 +2,69 @@ package main;
 
 import (
 	"fmt"
+	"strings"
 )
 
-func PrintHelp(){
-	fmt.Println("help\tShow help menu");
-	fmt.Println("exit\tExit DiscordConsole");
-	fmt.Println("exec\tExecute a shell command");
-	fmt.Println();
-	fmt.Println("guilds\tList guilds/servers this bot is added to.");
-	fmt.Println("guild <id>\tSelect a guild to use for further commands.");
-	fmt.Println("channels\tList channels in your selected guild.");
-	fmt.Println("channel <id>\tSelect a channel to use for further commands.");
-	fmt.Println("pchannels\tList private channels a.k.a. 'DMs'.");
-	fmt.Println("cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
-	fmt.Println("dm <user id>\tCreate a DM with specific user.");
-	fmt.Println();
-	fmt.Println("say <stuff>\tSend a message in your selected channel.");
-	fmt.Println("embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object");
-	fmt.Println("file <file>\tUpload file to selected channel.");
-	fmt.Println("edit <message id> <stuff>\tEdit a message in your selected channel.");
-	fmt.Println("del <message id>\tDelete a message in the selected channel.");
-	fmt.Println("delall [since message id]\tBulk delete messages since a specific message");
-	fmt.Println("read <message id> [property]\tRead or get info from a message. Properties: (empty), text, author, channel");
-	fmt.Println("log [output file]\tLog the last few messages in console or to a file.");
-	fmt.Println();
-	fmt.Println("playing [game]\tSet your playing status.");
-	fmt.Println("streaming [url] [game]\tSet your streaming status");
-	fmt.Println("typing\tSimulate typing in selected channel...");
-	fmt.Println();
-	fmt.Println("members\tList (max 100) members in selected guild");
-	fmt.Println("invite [code]\tCreate (permanent) instant invite, or accept an incoming one.");
-	fmt.Println();
-	fmt.Println("roles\tList all roles in selected guild.");
-	fmt.Println("roleadd <user id> <role id>\tAdd role to user");
-	fmt.Println("roledel <user id> <role id>\tRemove role from user");
-	fmt.Println("rolecreate\tCreate new role");
-	fmt.Println("roleedit <role id> <flag> <value>\tEdit a role. Flags are: name, color, separate, perms, mention");
-	fmt.Println("roledelete <role id>\tDelete a role.");
-	fmt.Println();
-	fmt.Println("nick [nickname]\tChange own nicknakme");
-	fmt.Println("nickall [nickname]\tChange ALL nicknames!");
-	fmt.Println();
-	fmt.Println("enablemessages\tEnable intercepting messages");
-	fmt.Println("disablemessages\tReverts the above.");
-	fmt.Println("reply\tJump to the channel of the last received message.");
-	fmt.Println("back\tJump to previous guild and/or channel.");
-	fmt.Println();
-	fmt.Println("bans\tList all bans");
-	fmt.Println("ban <user id>\tBan user");
-	fmt.Println("unban <user id>\tUnban user");
-	fmt.Println("kick <user id>\tKick user");
-	fmt.Println("leave\tLeave selected guild!");
+func PrintHelp(search string){
+	help := make([]string, 0);
+	help = append(help, "help [search]\tShow help menu. Optionally search.");
+	help = append(help, "exit\tExit DiscordConsole");
+	help = append(help, "exec\tExecute a shell command");
+	help = append(help, "");
+	help = append(help, "guilds\tList guilds/servers this bot is added to.");
+	help = append(help, "guild <id>\tSelect a guild to use for further commands.");
+	help = append(help, "channels\tList channels in your selected guild.");
+	help = append(help, "channel <id>\tSelect a channel to use for further commands.");
+	help = append(help, "pchannels\tList private channels a.k.a. 'DMs'.");
+	help = append(help, "cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
+	help = append(help, "dm <user id>\tCreate a DM with specific user.");
+	help = append(help, "");
+	help = append(help, "say <stuff>\tSend a message in your selected channel.");
+	help = append(help, "embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object");
+	help = append(help, "file <file>\tUpload file to selected channel.");
+	help = append(help, "edit <message id> <stuff>\tEdit a message in your selected channel.");
+	help = append(help, "del <message id>\tDelete a message in the selected channel.");
+	help = append(help, "delall [since message id]\tBulk delete messages since a specific message");
+	help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, author, channel");
+	help = append(help, "log [output file]\tLog the last few messages in console or to a file.");
+	help = append(help, "");
+	help = append(help, "playing [game]\tSet your playing status.");
+	help = append(help, "streaming [url] [game]\tSet your streaming status");
+	help = append(help, "typing\tSimulate typing in selected channel...");
+	help = append(help, "");
+	help = append(help, "members\tList (max 100) members in selected guild");
+	help = append(help, "invite [code]\tCreate (permanent) instant invite, or accept an incoming one.");
+	help = append(help, "");
+	help = append(help, "roles\tList all roles in selected guild.");
+	help = append(help, "roleadd <user id> <role id>\tAdd role to user");
+	help = append(help, "roledel <user id> <role id>\tRemove role from user");
+	help = append(help, "rolecreate\tCreate new role");
+	help = append(help, "roleedit <role id> <flag> <value>\tEdit a role. Flags are: name, color, separate, perms, mention");
+	help = append(help, "roledelete <role id>\tDelete a role.");
+	help = append(help, "");
+	help = append(help, "nick [nickname]\tChange own nicknakme");
+	help = append(help, "nickall [nickname]\tChange ALL nicknames!");
+	help = append(help, "");
+	help = append(help, "enablemessages\tEnable intercepting messages");
+	help = append(help, "disablemessages\tReverts the above.");
+	help = append(help, "reply\tJump to the channel of the last received message.");
+	help = append(help, "back\tJump to previous guild and/or channel.");
+	help = append(help, "");
+	help = append(help, "bans\tList all bans");
+	help = append(help, "ban <user id>\tBan user");
+	help = append(help, "unban <user id>\tUnban user");
+	help = append(help, "kick <user id>\tKick user");
+	help = append(help, "leave\tLeave selected guild!");
+
+	if(search != ""){
+		help2 := make([]string, 0);
+		for _, line := range help{
+			if(strings.Contains(line, search)){
+				help2 = append(help2, line);
+			}
+		}
+		help = help2;
+	}
+
+	fmt.Println(strings.Join(help, "\n"));
 }

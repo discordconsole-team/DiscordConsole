@@ -11,7 +11,7 @@ import (
 	"runtime"
 )
 
-const VERSION = "1.12";
+const VERSION = "1.13";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;

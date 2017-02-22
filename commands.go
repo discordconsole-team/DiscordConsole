@@ -40,7 +40,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 	nargs := len(args);
 
 	if(cmd == "help"){
-		PrintHelp();
+		search := "";
+		if(nargs >= 1){
+			search = args[0];
+		}
+		PrintHelp(search);
 	} else if(cmd == "exit"){
 		exit(session);
 	} else if(cmd == "exec" || cmd == "execute"){
