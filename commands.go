@@ -12,6 +12,7 @@ import (
 	"sort"
 	"errors"
 	"encoding/json"
+	"net/url"
 )
 
 type location struct{
@@ -721,19 +722,39 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("No channel selected!", nil);
 			return;
 		}
+		msgID := args[0];
 
-		/*var msg *discordgo.Message;
-		var err error;*/
+		var msg *discordgo.Message;
+		var err error;
 		if(USER){
-			stdutil.PrintErr("This only works for bots!", nil);
-			return;
-			/*var msgs []*discordgo.Message;
-			msgs, err = session.ChannelMessages(loc.channelID, )*/
-		}// else {
+			// Discord API does not allow getting specific message for users.
+			// DiscordGo **stable** does not support the "around" setting.
+			// Workaround? Manually
 
-		msg, err := session.ChannelMessage(loc.channelID, args[0]);
+			//msgs, err = session.ChannelMessages(loc.channelID, 3, "", "", msgID);
+			v := url.Values{};
+			v.Set("limit", "3");
+			v.Set("around", msgID);
 
-		//}
+			endpoint := discordgo.EndpointChannelMessages(loc.channelID);
+			var body []byte;
+			body, err = session.RequestWithBucketID("GET", endpoint + "?" + v.Encode(), nil, endpoint);
+
+			if(err == nil){
+				var msgs []*discordgo.Message;
+				err = json.Unmarshal(body, &msgs);
+				if(err == nil){
+					for _, m := range msgs{
+						if(m.ID == msgID){
+							msg = m;
+							break;
+						}
+					}
+				}
+			}
+		} else {
+			msg, err = session.ChannelMessage(loc.channelID, msgID)
+		}
 		if(err != nil){
 			stdutil.PrintErr("Could not get message", err);
 			return;
