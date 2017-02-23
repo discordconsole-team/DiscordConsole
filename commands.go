@@ -27,6 +27,7 @@ var lastLoc location;
 
 var cacheGuilds = make(map[string]string, 0);
 var cacheChannels = make(map[string]string, 0);
+var cacheRead *discordgo.Message;
 
 var messages = true;
 
@@ -730,7 +731,14 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 
 		var msg *discordgo.Message;
 		var err error;
-		if(USER){
+		if(strings.EqualFold(msgID, "cache")){
+			if(cacheRead == nil){
+				stdutil.PrintErr("No cache!", nil);
+				return;
+			}
+
+			msg = cacheRead;
+		} else if(USER){
 			// Discord API does not allow getting specific message for users.
 			// DiscordGo **stable** does not support the "around" setting.
 			// Workaround? Manually
@@ -754,10 +762,14 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 							break;
 						}
 					}
+					if(msg == nil){
+						stdutil.PrintErr("Message not found!", nil);
+						return;
+					}
 				}
 			}
 		} else {
-			msg, err = session.ChannelMessage(loc.channelID, msgID)
+			msg, err = session.ChannelMessage(loc.channelID, msgID);
 		}
 		if(err != nil){
 			stdutil.PrintErr("Could not get message", err);
@@ -770,6 +782,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		}
 		switch(property){
 			case "":                PrintMessage(session, msg, false);
+			case "cache":           cacheRead = msg; fmt.Println("Message cached!");
 			case "text":            returnVal = msg.Content;
 			case "channel":         returnVal = msg.ChannelID;
 			case "timestamp":

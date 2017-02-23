@@ -12,7 +12,7 @@ import (
 	"os/signal"
 )
 
-const VERSION = "1.14";
+const VERSION = "1.14.1";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
