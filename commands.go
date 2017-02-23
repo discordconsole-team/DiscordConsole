@@ -13,6 +13,7 @@ import (
 	"errors"
 	"encoding/json"
 	"net/url"
+	"time"
 )
 
 type location struct{
@@ -768,19 +769,28 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			property = strings.ToLower(args[1]);
 		}
 		switch(property){
-			case "":
-				PrintMessage(session, msg, false);
-			case "text":
-				fmt.Println(msg.Content);
-				returnVal = msg.Content;
-			case "author":
-				fmt.Println(msg.Author.Username);
-				returnVal = msg.Author.ID;
-			case "channel":
-				fmt.Println(msg.ChannelID);
-				returnVal = msg.ChannelID;
-			default:
-				stdutil.PrintErr("Invalid property", nil);
+			case "":                PrintMessage(session, msg, false);
+			case "text":            returnVal = msg.Content;
+			case "channel":         returnVal = msg.ChannelID;
+			case "timestamp":
+				sent, err := msg.Timestamp.Parse();
+				if(err != nil){
+					stdutil.PrintErr("Could not parse timestamp!", err);
+					return;
+				}
+				returnVal = sent.Format(time.ANSIC);
+				if(msg.EditedTimestamp != ""){
+					returnVal += "*";
+				}
+			case "author":          returnVal = msg.Author.ID;
+			case "author_name":     returnVal = msg.Author.Username;
+			case "author_avatar":   returnVal = msg.Author.Avatar;
+			case "author_bot":      returnVal = strconv.FormatBool(msg.Author.Bot);
+			default:                stdutil.PrintErr("Invalid property", nil);
+		}
+
+		if(returnVal != ""){
+			fmt.Println(returnVal);
 		}
 	} else if(cmd == "cinfo"){
 		if(nargs < 1){

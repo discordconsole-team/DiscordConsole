@@ -25,7 +25,8 @@ func PrintHelp(search string){
 	help = append(help, "edit <message id> <stuff>\tEdit a message in your selected channel.");
 	help = append(help, "del <message id>\tDelete a message in the selected channel.");
 	help = append(help, "delall [since message id]\tBulk delete messages since a specific message");
-	help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, author, channel");
+	help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, channel, timestamp, author, author_name, " +
+						"author_avatar, author_bot");
 	help = append(help, "log [output file]\tLog the last few messages in console or to a file.");
 	help = append(help, "");
 	help = append(help, "playing [game]\tSet your playing status.");
