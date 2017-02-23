@@ -9,9 +9,10 @@ import (
 	"os/exec"
 	"flag"
 	"runtime"
+	"os/signal"
 )
 
-const VERSION = "1.13";
+const VERSION = "1.14";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
@@ -119,6 +120,17 @@ func main(){
 	for i := 0; i < 3; i++{
 		fmt.Println();
 	}
+
+	go func(){
+		interrupt := make(chan os.Signal, 1);
+		signal.Notify(interrupt, os.Interrupt);
+
+		for _ = range interrupt{
+			fmt.Println();
+			fmt.Println("Press Ctrl+D or type 'exit' to exit.");
+			printPointer(session);
+		}
+	}();
 
 	for _, cmdstr := range commands{
 		if(cmdstr == ""){
