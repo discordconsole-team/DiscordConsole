@@ -29,7 +29,8 @@ var cacheGuilds = make(map[string]string, 0);
 var cacheChannels = make(map[string]string, 0);
 var cacheRead *discordgo.Message;
 
-var messages = true;
+var messages bool;
+var intercept = true;
 
 func command(session *discordgo.Session, cmd string) (returnVal string){
 	if(cmd == ""){
@@ -483,12 +484,10 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		if(err != nil){
 			stdutil.PrintErr("Could not set nickname", err);
 		}
-	} else if(cmd == "enablemessages"){
-		messages = true;
-		fmt.Println("Messages will now be intercepted.");
-	} else if(cmd == "disablemessages"){
-		messages = false;
-		fmt.Println("Messages will no longer be intercepted.");
+	} else if(cmd == "enablemessages"){ messages = true; fmt.Println("Messages will now be intercepted.");
+	} else if(cmd == "disablemessages"){ messages = false; fmt.Println("Messages will no longer be intercepted.");
+	} else if(cmd == "enableintercept"){ intercept = true; fmt.Println("'console.' commands will now be intercepted.");
+	} else if(cmd == "disableintercept"){ intercept = false; fmt.Println("'console.' commands will no longer be intercepted.");
 	} else if(cmd == "reply"){
 		lastLoc = loc;
 
@@ -781,7 +780,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			property = strings.ToLower(args[1]);
 		}
 		switch(property){
-			case "":                PrintMessage(session, msg, false);
+			case "":                PrintMessage(session, msg, false, nil);
 			case "cache":           cacheRead = msg; fmt.Println("Message cached!");
 			case "text":            returnVal = msg.Content;
 			case "channel":         returnVal = msg.ChannelID;

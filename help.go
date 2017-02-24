@@ -48,6 +48,8 @@ func PrintHelp(search string){
 	help = append(help, "");
 	help = append(help, "enablemessages\tEnable intercepting messages");
 	help = append(help, "disablemessages\tReverts the above.");
+	help = append(help, "enableintercept\tEnable intercepting 'console.' commands in Discord.");
+	help = append(help, "disableintercept\tReverts the above.");
 	help = append(help, "reply\tJump to the channel of the last received message.");
 	help = append(help, "back\tJump to previous guild and/or channel.");
 	help = append(help, "");

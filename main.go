@@ -13,7 +13,7 @@ import (
 	"syscall"
 )
 
-const VERSION = "1.14.2";
+const VERSION = "1.14.3";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
@@ -183,17 +183,20 @@ func execute(command string, args... string) error{
 	return cmd.Run();
 }
 
-func PrintMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool){
+func PrintMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool, channel *discordgo.Channel){
 	var s string;
 	if(prefixR){
 		s += "\r";
 	}
 	s += "(";
 
-	channel, err := session.Channel(msg.ChannelID);
-	if(err != nil){
-		stdutil.PrintErr("Could not get channel", err);
-		return;
+	var err error;
+	if(channel == nil){
+		channel, err = session.Channel(msg.ChannelID);
+		if(err != nil){
+			stdutil.PrintErr("Could not get channel", err);
+			return;
+		}
 	}
 	if(channel.IsPrivate){
 		s += "Private";
@@ -203,11 +206,9 @@ func PrintMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 			stdutil.PrintErr("Could not get guild", err);
 			return;
 		}
-		s += guild.Name + " " + "#" + channel.Name;
 
-		lastMsg.guildID = guild.ID;
+		s += guild.Name + " " + "#" + channel.Name;
 	}
-	lastMsg.channelID = channel.ID;
 
 	s += ") " + msg.Author.Username + ": " + msg.Content;
 	s += strings.Repeat(" ", 5);
@@ -217,20 +218,29 @@ func PrintMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 	if(e.Author == nil){}
 
-	if(messageCommand(session, e.Message)){
+	channel, err := session.Channel(e.ChannelID);
+	if(err != nil){
+		stdutil.PrintErr("Could not get channel", err);
 		return;
 	}
 
-	if(!messages){
+	if(messageCommand(session, e.Message, channel)){
 		return;
 	}
 
-	PrintMessage(session, e.Message, true);
-	printPointer(session);
+	lastMsg.channelID = e.ChannelID;
+	lastMsg.guildID = channel.GuildID;
+
+	if(messages){
+		PrintMessage(session, e.Message, true, channel);
+		printPointer(session);
+	}
 }
 
-func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
+func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *discordgo.Channel) bool{
 	if(e.Author.ID != ID){
+		return false;
+	} else if(!intercept){
 		return false;
 	}
 
@@ -242,12 +252,6 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
 	err := session.ChannelMessageDelete(e.ChannelID, e.ID);
 	if(err != nil){
 		stdutil.PrintErr("Could not delete message", err);
-	}
-
-	channel, err := session.Channel(e.ChannelID);
-	if(err != nil){
-		stdutil.PrintErr("Could not get channel", err);
-		return true;
 	}
 
 	lastLoc = loc;
@@ -263,10 +267,15 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message) bool{
 	return true;
 }
 
+const ERROR_POINTER = "Error> ";
 var pointerCache string;
 
 func clearPointerCache(){
 	pointerCache = "";
+}
+func errorPointer(session *discordgo.Session){
+	pointerCache = ERROR_POINTER;
+	fmt.Print(ERROR_POINTER);
 }
 func printPointer(session *discordgo.Session){
 	if(pointerCache != ""){
@@ -284,6 +293,7 @@ func printPointer(session *discordgo.Session){
 	channel, err := session.Channel(loc.channelID);
 	if(err != nil){
 		stdutil.PrintErr("Could not get channel", err);
+		errorPointer(session);
 		return;
 	}
 
@@ -293,6 +303,7 @@ func printPointer(session *discordgo.Session){
 		guild, err := session.Guild(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get guild", err);
+			errorPointer(session);
 			return;
 		}
 		s += guild.Name + " (#" + channel.Name + ")";
