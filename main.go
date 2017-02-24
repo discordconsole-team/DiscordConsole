@@ -10,9 +10,10 @@ import (
 	"flag"
 	"runtime"
 	"os/signal"
+	"syscall"
 )
 
-const VERSION = "1.14.1";
+const VERSION = "1.14.2";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
@@ -125,11 +126,22 @@ func main(){
 		interrupt := make(chan os.Signal, 1);
 		signal.Notify(interrupt, os.Interrupt);
 
-		for _ = range interrupt{
-			fmt.Println();
-			fmt.Println("Press Ctrl+D or type 'exit' to exit.");
-			printPointer(session);
+		term := make(chan os.Signal, 1);
+		signal.Notify(term, syscall.SIGTERM);
+
+		for{
+			select{
+				case <-interrupt:
+					fmt.Println();
+					fmt.Println("Press Ctrl+D or type 'exit' to exit.");
+					printPointer(session);
+				case <-term:
+					exit(session);
+					return;
+			}
 		}
+	}();
+	go func(){
 	}();
 
 	for _, cmdstr := range commands{
