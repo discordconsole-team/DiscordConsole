@@ -13,7 +13,7 @@ import (
 	"syscall"
 )
 
-const VERSION = "1.14.3";
+const VERSION = "1.15";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
@@ -42,6 +42,26 @@ func main(){
 	flag.Parse();
 
 	fmt.Println("DiscordConsole " + VERSION);
+
+	if(token == "" && email == "" && pass == ""){
+		foundtoken, err := findToken();
+		if(err == nil){
+			for{
+				fmt.Print("You are logged into Discord. Use that login? (y/n): ");
+				response := stdutil.MustScanTrim();
+				if(strings.EqualFold(response, "y")){
+					foundtoken = strings.TrimPrefix(foundtoken, "\"");
+					foundtoken = strings.TrimSuffix(foundtoken, "\"");
+					token = "user " + foundtoken;
+				} else if(!strings.EqualFold(response, "n")){
+					fmt.Println("Please type either 'y' or 'n'.");
+					continue;
+				}
+				break;
+			}
+		}
+	}
+
 	fmt.Println("Please paste your 'token' here, or leave blank for a username/password prompt.");
 	fmt.Print("> ");
 	if(token == "" && email == "" && pass == ""){
