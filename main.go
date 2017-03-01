@@ -2,6 +2,7 @@ package main;
 
 import (
 	"fmt"
+	"github.com/chzyer/readline"
 	"github.com/legolord208/stdutil"
 	"github.com/bwmarrin/discordgo"
 	"strings"
@@ -11,12 +12,17 @@ import (
 	"runtime"
 	"os/signal"
 	"syscall"
+	"io"
 )
 
-const VERSION = "1.16.1";
-const WINDOWS = runtime.GOOS == "windows";
+const VERSION = "1.16.2";
 var ID string;
 var USER bool;
+
+const WINDOWS = runtime.GOOS == "windows";
+const MAC = runtime.GOOS == "darwin";
+
+var READLINE *readline.Instance;
 
 type stringArr []string;
 
@@ -40,6 +46,13 @@ func main(){
 	flag.StringVar(&pass, "p", "", "Set password.");
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.");
 	flag.Parse();
+
+	var err error;
+	READLINE, err = readline.New(EMPTY_POINTER);
+	if(err != nil){
+		stdutil.PrintErr("Could not start readline library", err);
+		return;
+	}
 
 	fmt.Println("DiscordConsole " + VERSION);
 
@@ -65,7 +78,13 @@ func main(){
 	fmt.Println("Please paste your 'token' here, or leave blank for a username/password prompt.");
 	fmt.Print("> ");
 	if(token == "" && email == "" && pass == ""){
-		token = stdutil.MustScanTrim();
+		token, err = READLINE.Readline();
+		if(err != nil){
+			if(err != io.EOF){
+				stdutil.PrintErr("Could not read line", err);
+			}
+			return;
+		}
 	} else{
 		if(email != "" || pass != ""){
 			token = "";
@@ -74,31 +93,27 @@ func main(){
 	}
 
 	var session *discordgo.Session;
-	var err error;
 	if(token == ""){
 		USER = true;
 
-		fmt.Print("Email: ");
+		READLINE.SetPrompt("Email: ");
 		if(email == ""){
-			email = stdutil.MustScanTrim();
+			email, err = READLINE.Readline();
 		} else {
 			fmt.Println(email);
 		}
-		fmt.Print("Password: ");
 
 		if(pass == ""){
-			if(!WINDOWS){
-				execute("stty", "-echo");
-			}
-			pass, err = stdutil.ScanTrim();
-			if(!WINDOWS){
-				execute("stty", "echo");
-				fmt.Println();
-			}
+			pass2, err := READLINE.ReadPassword("Password: ");
+			fmt.Println();
 
 			if(err != nil){
+				if(err != io.EOF){
+					stdutil.PrintErr("Could not read password", err);
+				}
 				return;
 			}
+			pass = string(pass2);
 		}
 
 		fmt.Println("Authenticating...");
@@ -143,25 +158,16 @@ func main(){
 	}
 
 	go func(){
-		interrupt := make(chan os.Signal, 1);
-		signal.Notify(interrupt, os.Interrupt);
-
 		term := make(chan os.Signal, 1);
 		signal.Notify(term, syscall.SIGTERM);
 
 		for{
 			select{
-				case <-interrupt:
-					fmt.Println();
-					fmt.Println("Press Ctrl+D or type 'exit' to exit.");
-					printPointer(session);
 				case <-term:
 					exit(session);
 					return;
 			}
 		}
-	}();
-	go func(){
 	}();
 
 	for _, cmdstr := range commands{
@@ -174,10 +180,14 @@ func main(){
 		command(session, cmdstr);
 	}
 	for{
-		printPointer(session);
-		cmdstr, err := stdutil.ScanTrim();
+		READLINE.SetPrompt(pointer(session));
+		cmdstr, err := READLINE.Readline();
 		if(err != nil){
-			fmt.Println("exit");
+			if(err != io.EOF){
+				stdutil.PrintErr("Could not read line", err);
+			} else {
+				fmt.Println("exit");
+			}
 			exit(session);
 			return;
 		}
@@ -204,7 +214,7 @@ func execute(command string, args... string) error{
 	return cmd.Run();
 }
 
-func PrintMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool, channel *discordgo.Channel){
+func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool, channel *discordgo.Channel){
 	var s string;
 	if(prefixR){
 		s += "\r";
@@ -253,7 +263,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 	lastMsg.guildID = channel.GuildID;
 
 	if(messages){
-		PrintMessage(session, e.Message, true, channel);
+		printMessage(session, e.Message, true, channel);
 		printPointer(session);
 	}
 }
@@ -288,25 +298,23 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *d
 	return true;
 }
 
+const EMPTY_POINTER = "> ";
 const ERROR_POINTER = "Error> ";
 var pointerCache string;
 
 func clearPointerCache(){
 	pointerCache = "";
 }
-func errorPointer(session *discordgo.Session){
-	pointerCache = ERROR_POINTER;
-	fmt.Print(ERROR_POINTER);
-}
 func printPointer(session *discordgo.Session){
+	fmt.Print(pointer(session));
+}
+func pointer(session *discordgo.Session) string{
 	if(pointerCache != ""){
-		fmt.Print(pointerCache);
-		return;
+		return pointerCache;
 	}
 
 	if(loc.channelID == ""){
-		fmt.Print("> ");
-		return;
+		return EMPTY_POINTER;
 	}
 
 	s := "";
@@ -314,8 +322,8 @@ func printPointer(session *discordgo.Session){
 	channel, err := session.Channel(loc.channelID);
 	if(err != nil){
 		stdutil.PrintErr("Could not get channel", err);
-		errorPointer(session);
-		return;
+		pointerCache = ERROR_POINTER;
+		return ERROR_POINTER;
 	}
 
 	if(channel.IsPrivate){
@@ -324,13 +332,13 @@ func printPointer(session *discordgo.Session){
 		guild, err := session.Guild(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get guild", err);
-			errorPointer(session);
-			return;
+			pointerCache = ERROR_POINTER;
+			return ERROR_POINTER;
 		}
 		s += guild.Name + " (#" + channel.Name + ")";
 	}
 
-	s += "> ";
-	fmt.Print(s);
+	s += EMPTY_POINTER;
 	pointerCache = s;
+	return s;
 }

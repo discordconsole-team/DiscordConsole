@@ -21,7 +21,11 @@ func findToken() (string, error){
 		if(err != nil){
 			return "", err;
 		}
-		path = filepath.Join(current.HomeDir, ".config/discord");
+		if(MAC){
+			path = filepath.Join(current.HomeDir, "Library", "Application Support", "discord");
+		} else {
+			path = filepath.Join(current.HomeDir, ".config", "discord");
+		}
 	}
 
 	path = filepath.Join(path, "Local Storage", STORAGEFILENAME);

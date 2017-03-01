@@ -3,7 +3,6 @@ package main;
 import (
 	"github.com/Shopify/go-lua"
 	"github.com/bwmarrin/discordgo"
-	"github.com/legolord208/stdutil"
 	"strings"
 )
 
@@ -13,7 +12,6 @@ func RunLua(session *discordgo.Session, file string, args ...string) error{
 	l := lua.NewState();
 
 	l.PushGoFunction(send); l.SetGlobal("exec");
-	l.PushGoFunction(read); l.SetGlobal("read");
 	l.PushGoFunction(replace); l.SetGlobal("replace");
 
 	l.NewTable();
@@ -35,12 +33,6 @@ func RunLua(session *discordgo.Session, file string, args ...string) error{
 func send(l *lua.State) int{
 	returnVal := command(theSession, lua.CheckString(l, 1));
 	l.PushString(returnVal);
-	return 1;
-}
-
-func read(l *lua.State) int{
-	in, _ := stdutil.ScanTrim();
-	l.PushString(in);
 	return 1;
 }
 

@@ -762,7 +762,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			property = strings.ToLower(args[1]);
 		}
 		switch(property){
-			case "":                PrintMessage(session, msg, false, nil);
+			case "":                printMessage(session, msg, false, nil);
 			case "cache":           cacheRead = msg; fmt.Println("Message cached!");
 			case "text":            returnVal = msg.Content;
 			case "channel":         returnVal = msg.ChannelID;
