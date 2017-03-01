@@ -16,6 +16,7 @@ func PrintHelp(search string){
 	help = append(help, "channels\tList channels in your selected guild.");
 	help = append(help, "channel <id>\tSelect a channel to use for further commands.");
 	help = append(help, "pchannels\tList private channels a.k.a. 'DMs'.");
+	help = append(help, "vchannels\tList voice channels in your selected guild.");
 	help = append(help, "cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
 	help = append(help, "dm <user id>\tCreate a DM with specific user.");
 	help = append(help, "");
@@ -58,6 +59,9 @@ func PrintHelp(search string){
 	help = append(help, "unban <user id>\tUnban user");
 	help = append(help, "kick <user id>\tKick user");
 	help = append(help, "leave\tLeave selected guild!");
+	help = append(help, "");
+	help = append(help, "play <dca audio file>\tPlays a song in the selected voice channel");
+	help = append(help, "stop\tStops playing any song.");
 
 	if(search != ""){
 		help2 := make([]string, 0);

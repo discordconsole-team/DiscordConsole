@@ -13,7 +13,7 @@ import (
 	"syscall"
 )
 
-const VERSION = "1.15";
+const VERSION = "1.16";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
@@ -191,6 +191,7 @@ func main(){
 }
 
 func exit(session *discordgo.Session){
+	playing = "";
 	session.Close();
 	os.Exit(0);
 }

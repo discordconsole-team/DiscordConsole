@@ -129,31 +129,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		loc.channelID = loc.guildID;
 		clearPointerCache();
 	} else if(cmd == "channels"){
-		if(loc.guildID == ""){
-			stdutil.PrintErr("No guild selected!", nil);
-			return;
-		}
-		channels, err := session.GuildChannels(loc.guildID);
-		if(err != nil){
-			stdutil.PrintErr("Could not get channels", nil);
-			return;
-		}
-
-		cacheChannels = make(map[string]string);
-
-		table := gtable.NewStringTable();
-		table.AddStrings("ID", "Name");
-
-		for _, channel := range channels{
-			if(channel.Type != "text"){
-				continue;
-			}
-			table.AddRow();
-			table.AddStrings(channel.ID, channel.Name);
-			cacheChannels[strings.ToLower(channel.Name)] = channel.ID;
-		}
-
-		printTable(&table);
+		channels(session, "text");
 	} else if(cmd == "channel"){
 		if(nargs < 1){
 			stdutil.PrintErr("channel <id>", nil);
@@ -357,7 +333,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("Could not delete messages", err);
 			return;
 		}
-		fmt.Println("Deleted " + strconv.Itoa(len(ids)) + " messages!");
+		returnVal := strconv.Itoa(len(ids));
+		fmt.Println("Deleted " + returnVal + " messages!");
 	} else if(cmd == "members"){
 		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected", nil);
@@ -816,7 +793,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 
 		channel, err := session.Channel(loc.channelID);
 		if(err != nil){
-			stdutil.PrintErr("Could notget channel", err);
+			stdutil.PrintErr("Could not get channel", err);
 			return;
 		}
 
@@ -836,10 +813,88 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			default:
 				stdutil.PrintErr("No such property!", nil);
 		}
+	} else if(cmd == "vchannels"){
+		channels(session, "voice");
+	} else if(cmd == "play"){
+		if(USER){
+			stdutil.PrintErr("This command only works for bot users.", nil);
+			return;
+		}
+		if(nargs < 1){
+			stdutil.PrintErr("play <dca audio file>", nil);
+			return;
+		}
+		if(loc.guildID == ""){
+			stdutil.PrintErr("No guild selected!", nil);
+			return;
+		}
+		if(loc.channelID == ""){
+			stdutil.PrintErr("No channel selected!", nil);
+			return;
+		}
+		if(playing != ""){
+			stdutil.PrintErr("Already playing something", nil);
+			return;
+		}
+
+		file := strings.Join(args, " ");
+		playing = file;
+
+		fmt.Println("Loading...");
+
+		var buffer [][]byte;
+		err := load(file, &buffer);
+		if(err != nil){
+			stdutil.PrintErr("Could not load file.", err);
+			playing = "";
+			return;
+		}
+
+		fmt.Println("Loaded!");
+		fmt.Println("Playing!");
+
+		go func(buffer [][]byte, session *discordgo.Session, guild, channel string){
+			play(buffer, session, guild, channel);
+			playing = "";
+		}(buffer, session, loc.guildID, loc.channelID);
+	} else if(cmd == "stop"){
+		if(USER){
+			stdutil.PrintErr("This command only works for bot users.", nil);
+			return;
+		}
+		playing = "";
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
 	return;
+}
+
+func channels(session *discordgo.Session, kind string){
+	if(loc.guildID == ""){
+		stdutil.PrintErr("No guild selected!", nil);
+		return;
+	}
+	channels, err := session.GuildChannels(loc.guildID);
+	if(err != nil){
+		stdutil.PrintErr("Could not get channels", nil);
+		return;
+	}
+
+	cacheChannels = make(map[string]string);
+
+	table := gtable.NewStringTable();
+	table.AddStrings("ID", "Name");
+
+	for _, channel := range channels{
+		if(channel.Type != kind){
+			continue;
+		}
+		table.AddRow();
+		table.AddStrings(channel.ID, channel.Name);
+		cacheChannels[strings.ToLower(channel.Name)] = channel.ID;
+	}
+
+	printTable(&table);
 }
 
 func parseBool(str string) (bool, error){
