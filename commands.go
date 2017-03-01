@@ -369,12 +369,17 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			_, err := session.InviteAccept(args[0]);
+			invite, err := session.InviteAccept(args[0]);
 			if(err != nil){
 				stdutil.PrintErr("Could not accept invite", err);
 				return;
 			}
 			fmt.Println("Accepted invite.");
+
+			lastLoc, loc = loc, lastLoc;
+			loc.guildID = invite.Guild.ID;
+			loc.channelID = invite.Channel.ID;
+			clearPointerCache();
 		} else {
 			invite, err := session.ChannelInviteCreate(loc.channelID, discordgo.Invite{});
 			if(err != nil){

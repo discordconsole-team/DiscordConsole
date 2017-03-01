@@ -13,7 +13,7 @@ import (
 	"syscall"
 )
 
-const VERSION = "1.16";
+const VERSION = "1.16.1";
 const WINDOWS = runtime.GOOS == "windows";
 var ID string;
 var USER bool;
