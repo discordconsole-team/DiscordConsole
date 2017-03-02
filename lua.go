@@ -5,6 +5,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"strings"
 	"time"
+	"github.com/fatih/color"
 )
 
 var theSession *discordgo.Session;
@@ -33,7 +34,10 @@ func RunLua(session *discordgo.Session, file string, args ...string) error{
 }
 
 func luaExec(l *lua.State) int{
+	COLOR_AUTOMATED.Set();
 	returnVal := command(theSession, lua.CheckString(l, 1));
+	color.Unset();
+
 	l.PushString(returnVal);
 	return 1;
 }

@@ -47,7 +47,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 
 	if(cmd == "help"){
 		search := strings.Join(args, " ");
-		PrintHelp(search);
+		printHelp(search);
 	} else if(cmd == "exit"){
 		exit(session);
 	} else if(cmd == "exec" || cmd == "execute"){

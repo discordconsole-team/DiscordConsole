@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func PrintHelp(search string){
+func printHelp(search string){
 	help := make([]string, 0);
 	help = append(help, "help [search]\tShow help menu. Optionally search.");
 	help = append(help, "exit\tExit DiscordConsole");

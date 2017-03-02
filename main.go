@@ -13,6 +13,7 @@ import (
 	"os/signal"
 	"syscall"
 	"io"
+	"github.com/fatih/color"
 )
 
 const VERSION = "1.16.2";
@@ -23,6 +24,7 @@ const WINDOWS = runtime.GOOS == "windows";
 const MAC = runtime.GOOS == "darwin";
 
 var READLINE *readline.Instance;
+var COLOR_AUTOMATED = color.New(color.Italic);
 
 type stringArr []string;
 
@@ -170,6 +172,8 @@ func main(){
 		}
 	}();
 
+	COLOR_AUTOMATED.Set();
+
 	for _, cmdstr := range commands{
 		if(cmdstr == ""){
 			continue;
@@ -180,11 +184,14 @@ func main(){
 		command(session, cmdstr);
 	}
 
+	color.Unset();
 	setCompleter(READLINE);
 
 	for{
 		READLINE.SetPrompt(pointer(session));
+		color.Set(color.Bold);
 		cmdstr, err := READLINE.Readline();
+		color.Unset();
 		if(err != nil){
 			if(err != io.EOF){
 				stdutil.PrintErr("Could not read line", err);
@@ -204,6 +211,7 @@ func main(){
 }
 
 func exit(session *discordgo.Session){
+	color.Unset();
 	playing = "";
 	session.Close();
 	os.Exit(0);
@@ -246,7 +254,7 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 
 	s += ") " + msg.Author.Username + ": " + msg.Content;
 	s += strings.Repeat(" ", 5);
-	fmt.Println(s);
+	color.Yellow(s);
 }
 
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
