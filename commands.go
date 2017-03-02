@@ -308,9 +308,12 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("Could not create DM.", err);
 			return;
 		}
+		lastLoc, loc = loc, lastLoc;
+
 		loc.channelID = channel.ID;
 		loc.guildID = "";
 		clearPointerCache();
+
 		fmt.Println("Selected DM with channel ID " + channel.ID + ".");
 	} else if(cmd == "delall"){
 		if(loc.channelID == ""){
