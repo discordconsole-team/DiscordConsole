@@ -641,7 +641,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		err := session.GuildLeave(loc.guildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not leave", err);
+			return;
 		}
+
+		loc = location{};
+		clearPointerCache();
 	} else if(cmd == "bans"){
 		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected!", nil);
