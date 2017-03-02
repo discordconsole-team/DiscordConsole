@@ -305,7 +305,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		}
 		channel, err := session.UserChannelCreate(args[0]);
 		if(err != nil){
-			stdutil.PrintErr("Could not create DM.", err);
+			stdutil.PrintErr("Could not create DM", err);
 			return;
 		}
 		lastLoc, loc = loc, lastLoc;

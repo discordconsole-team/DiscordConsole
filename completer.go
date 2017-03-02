@@ -2,7 +2,6 @@ package main;
 
 import (
 	"github.com/chzyer/readline"
-	"strings"
 )
 
 func setCompleter(rl *readline.Instance){
@@ -26,11 +25,6 @@ func setCompleter(rl *readline.Instance){
 			readline.PcItemDynamic(singleValue(&lastUsedRole)),
 		)),
 	);
-}
-
-func fixCompleterParam(item *string){
-	fields := strings.Fields(*item);
-	*item = strings.ToLower(fields[len(fields)-1]);
 }
 func searchMap(theMap *map[string]string) func(string) []string{
 	return func(line string) []string{
