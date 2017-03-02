@@ -179,6 +179,9 @@ func main(){
 
 		command(session, cmdstr);
 	}
+
+	setCompleter(READLINE);
+
 	for{
 		READLINE.SetPrompt(pointer(session));
 		cmdstr, err := READLINE.Readline();

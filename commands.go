@@ -25,6 +25,9 @@ var loc location;
 var lastMsg location;
 var lastLoc location;
 
+var lastUsedMsg string;
+var lastUsedRole string;
+
 var cacheGuilds = make(map[string]string, 0);
 var cacheChannels = make(map[string]string, 0);
 var cacheRead *discordgo.Message;
@@ -169,6 +172,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		fmt.Println("Created message with ID " + msg.ID);
+		lastUsedMsg = msg.ID;
 		returnVal = msg.ID;
 	} else if(cmd == "edit"){
 		if(nargs < 2){
@@ -186,6 +190,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		fmt.Println("Edited " + msg.ID + "!");
+		lastUsedMsg = msg.ID;
 	} else if(cmd == "del"){
 		if(nargs < 1){
 			stdutil.PrintErr("del <message id>", nil);
@@ -491,6 +496,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		fmt.Println("Created role with ID " + role.ID + ".");
+		lastUsedRole = role.ID;
 		returnVal = role.ID;
 	} else if(cmd == "roleedit"){
 		if(nargs < 3){
@@ -566,6 +572,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("Could not edit role", err);
 			return;
 		}
+		lastUsedRole = role.ID;
 		fmt.Println("Edited role " + role.ID + ".");
 	} else if(cmd == "roledelete"){
 		if(nargs < 1){
@@ -699,6 +706,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		fmt.Println("Created message with ID " + msg.ID + ".");
+		lastUsedMsg = msg.ID;
+		returnVal = msg.ID;
 	} else if(cmd == "read"){
 		if(nargs < 1){
 			stdutil.PrintErr("read <message id> [property]", nil);
