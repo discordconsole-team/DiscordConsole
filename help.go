@@ -29,7 +29,7 @@ func PrintHelp(search string){
 	help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, channel, timestamp, author, " +
 						"author_name, author_avatar, author_bot; 'cache' may be used as property to save, and used later as message ID.");
 	help = append(help, "log [output file]\tLog the last few messages in console or to a file.");
-	help = append(help, "reactadd/reactdel <message id> <emoji unicode/id>");
+	help = append(help, "reactadd/reactdel <message id> <emoji unicode/id>\tReact to a message");
 	help = append(help, "");
 	help = append(help, "playing [game]\tSet your playing status.");
 	help = append(help, "streaming [url] [game]\tSet your streaming status");
