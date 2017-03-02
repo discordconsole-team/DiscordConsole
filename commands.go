@@ -12,7 +12,6 @@ import (
 	"sort"
 	"errors"
 	"encoding/json"
-	"net/url"
 	"time"
 )
 
@@ -728,38 +727,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 
 			msg = cacheRead;
-		} else if(USER){
-			// Discord API does not allow getting specific message for users.
-			// DiscordGo **stable** does not support the "around" setting.
-			// Workaround? Manually
-
-			//msgs, err = session.ChannelMessages(loc.channelID, 3, "", "", msgID);
-			v := url.Values{};
-			v.Set("limit", "3");
-			v.Set("around", msgID);
-
-			endpoint := discordgo.EndpointChannelMessages(loc.channelID);
-			var body []byte;
-			body, err = session.RequestWithBucketID("GET", endpoint + "?" + v.Encode(), nil, endpoint);
-
-			if(err == nil){
-				var msgs []*discordgo.Message;
-				err = json.Unmarshal(body, &msgs);
-				if(err == nil){
-					for _, m := range msgs{
-						if(m.ID == msgID){
-							msg = m;
-							break;
-						}
-					}
-					if(msg == nil){
-						stdutil.PrintErr("Message not found!", nil);
-						return;
-					}
-				}
-			}
 		} else {
-			msg, err = session.ChannelMessage(loc.channelID, msgID);
+			msg, err = getMessage(session, loc.channelID, msgID);
 		}
 		if(err != nil){
 			stdutil.PrintErr("Could not get message", err);
@@ -792,6 +761,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			default:                stdutil.PrintErr("Invalid property", nil);
 		}
 
+		lastUsedMsg = msg.ID;
 		if(returnVal != ""){
 			fmt.Println(returnVal);
 		}
@@ -897,6 +867,49 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("Could not react", err);
 			return;
 		}
+	} else if(cmd == "quote"){
+		if(nargs < 1){
+			stdutil.PrintErr("quote <message id>", nil);
+			return;
+		}
+		if(loc.channelID == ""){
+			stdutil.PrintErr("You're not in a channel!", nil);
+			return;
+		}
+
+		msg, err := getMessage(session, loc.channelID, args[0]);
+		if(err != nil){
+			stdutil.PrintErr("Could not get message", err);
+			return;
+		}
+
+		timestamp, err := msg.Timestamp.Parse();
+		if(err != nil){
+			stdutil.PrintErr("Could not parse timestamp", err);
+			return;
+		}
+		t := timestamp.Format(time.ANSIC);
+		if(msg.EditedTimestamp != ""){
+			t += "*";
+		}
+
+		msg, err = session.ChannelMessageSendEmbed(loc.channelID, &discordgo.MessageEmbed{
+			Author: &discordgo.MessageEmbedAuthor{
+				Name: msg.Author.Username,
+				IconURL: "https://cdn.discordapp.com/avatars/" + msg.Author.ID + "/" + msg.Author.Avatar,
+			},
+			Description: msg.Content,
+			Footer: &discordgo.MessageEmbedFooter{
+				Text: "Sent " + t,
+			},
+		});
+		if(err != nil){
+			stdutil.PrintErr("Could not send quote", err);
+			return;
+		}
+		fmt.Println("Created message with ID " + msg.ID + ".");
+		lastUsedMsg = msg.ID;
+		returnVal = msg.ID;
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}

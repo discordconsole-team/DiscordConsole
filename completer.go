@@ -12,6 +12,7 @@ func setCompleter(rl *readline.Instance){
 
 		readline.PcItem("edit", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
 		readline.PcItem("del", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
+		readline.PcItem("quote", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
 		readline.PcItem("reactadd", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
 		readline.PcItem("reactdel", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
 
