@@ -49,6 +49,15 @@ func main(){
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.");
 	flag.Parse();
 
+	stdutil.ErrOutput = os.Stdout;
+	stdutil.EventPrePrintError = append(stdutil.EventPrePrintError, func(text string) bool{
+		color.Set(color.FgRed, color.Bold);
+		return false;
+	});
+	stdutil.EventPostPrintError = append(stdutil.EventPostPrintError, func(text string){
+		color.Unset();
+	});
+
 	var err error;
 	READLINE, err = readline.New(EMPTY_POINTER);
 	if(err != nil){
