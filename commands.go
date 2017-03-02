@@ -877,6 +877,26 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		playing = "";
+	} else if(cmd == "reactadd" || cmd == "reactdel"){
+		if(nargs < 2){
+			stdutil.PrintErr("reactadd/reactdel <message id> <emoji unicode/id>", nil);
+			return;
+		}
+		if(loc.channelID == ""){
+			stdutil.PrintErr("No channel selected!", nil);
+			return;
+		}
+
+		var err error;
+		if(cmd == "reactadd"){
+			err = session.MessageReactionAdd(loc.channelID, args[0], args[1]);
+		} else {
+			err = session.MessageReactionRemove(loc.channelID, args[0], args[1], "@me");
+		}
+		if(err != nil){
+			stdutil.PrintErr("Could not react", err);
+			return;
+		}
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
