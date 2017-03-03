@@ -370,14 +370,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		}
 		printTable(table);
 	} else if(cmd == "invite"){
-		if(loc.channelID == ""){
-			stdutil.PrintErr("No channel selected", nil);
-			return;
-		}
-
-		hasCode := nargs >= 1;
-
-		if(hasCode){
+		if(nargs >= 1){
 			if(!USER){
 				stdutil.PrintErr("This only works for users.", nil);
 				return;
@@ -395,6 +388,10 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			loc.channelID = invite.Channel.ID;
 			clearPointerCache();
 		} else {
+			if(loc.channelID == ""){
+				stdutil.PrintErr("No channel selected", nil);
+				return;
+			}
 			invite, err := session.ChannelInviteCreate(loc.channelID, discordgo.Invite{});
 			if(err != nil){
 				stdutil.PrintErr("Invite could not be created", err);
