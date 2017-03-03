@@ -58,27 +58,42 @@ func main(){
 		color.Unset();
 	});
 
-	var err error;
+	fmt.Println("DiscordConsole " + VERSION);
+
+	fmt.Println("Checking for updates...");
+	update, err := checkUpdate();
+	if(err != nil){
+		stdutil.PrintErr("Error checking for updates", err);
+		return;
+	}
+	if(update.UpdateAvailable){
+		color.Cyan("Update available: Version " + update.Version + ".");
+		color.Cyan("Download from " + update.Url + ".");
+	} else {
+		fmt.Println("Good news, no updates found.");
+	}
+
 	READLINE, err = readline.New(EMPTY_POINTER);
 	if(err != nil){
 		stdutil.PrintErr("Could not start readline library", err);
 		return;
 	}
 
-	fmt.Println("DiscordConsole " + VERSION);
-
 	if(token == "" && email == "" && pass == ""){
 		foundtoken, err := findToken();
 		if(err == nil){
 			for{
+				color.Set(color.FgYellow);
 				fmt.Print("You are logged into Discord. Use that login? (y/n): ");
 				response := stdutil.MustScanTrim();
+				color.Unset();
+
 				if(strings.EqualFold(response, "y")){
 					foundtoken = strings.TrimPrefix(foundtoken, "\"");
 					foundtoken = strings.TrimSuffix(foundtoken, "\"");
 					token = "user " + foundtoken;
 				} else if(!strings.EqualFold(response, "n")){
-					fmt.Println("Please type either 'y' or 'n'.");
+					stdutil.PrintErr("Please type either 'y' or 'n'.", nil);
 					continue;
 				}
 				break;

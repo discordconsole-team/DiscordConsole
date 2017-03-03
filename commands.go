@@ -15,6 +15,13 @@ import (
 	"time"
 )
 
+var RELATIONSHIP_TYPES = map[int]string{
+	1: "Friend",
+	2: "Blocked",
+	3: "Incoming request",
+	4: "Sent request",
+};
+
 type location struct{
 	guildID string
 	channelID string
@@ -112,7 +119,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			cacheGuilds[strings.ToLower(guild.Name)] = guild.ID;
 		}
 
-		printTable(&table);
+		printTable(table);
 	} else if(cmd == "guild"){
 		if(nargs < 1){
 			stdutil.PrintErr("guild <id>", nil);
@@ -291,13 +298,13 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		}
 
 		table := gtable.NewStringTable();
-		table.AddStrings("ID");
+		table.AddStrings("ID", "Recipient");
 
 		for _, channel := range channels{
 			table.AddRow();
-			table.AddStrings(channel.ID);
+			table.AddStrings(channel.ID, channel.Recipient.Username);
 		}
-		printTable(&table);
+		printTable(table);
 	} else if(cmd == "dm"){
 		if(nargs < 1){
 			stdutil.PrintErr("dm <user id>", nil);
@@ -361,7 +368,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			table.AddRow();
 			table.AddStrings(member.User.ID, member.User.Username, member.Nick);
 		}
-		printTable(&table);
+		printTable(table);
 	} else if(cmd == "invite"){
 		if(loc.channelID == ""){
 			stdutil.PrintErr("No channel selected", nil);
@@ -443,7 +450,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			table.AddStrings(role.ID, role.Name, strconv.Itoa(role.Permissions));
 		}
 
-		printTable(&table);
+		printTable(table);
 	} else if(cmd == "roleadd" || cmd == "roledel"){
 		if(nargs < 2){
 			stdutil.PrintErr("roleadd/del <user id> <role id>", nil);
@@ -666,7 +673,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			table.AddStrings(ban.User.Username, ban.Reason);
 		}
 
-		printTable(&table);
+		printTable(table);
 	} else if(cmd == "nickall"){
 		if(loc.guildID == ""){
 			stdutil.PrintErr("No guild selected!", nil);
@@ -917,6 +924,40 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		fmt.Println("Created message with ID " + msg.ID + ".");
 		lastUsedMsg = msg.ID;
 		returnVal = msg.ID;
+	} else if(cmd == "block"){
+		if(nargs < 1){
+			stdutil.PrintErr("block <user id>", nil);
+			return;
+		}
+		if(!USER){
+			stdutil.PrintErr("Only users can use this.", nil);
+			return;
+		}
+		err := session.RelationshipUserBlock(args[0]);
+		if(err != nil){
+			stdutil.PrintErr("Couldn't block user", err);
+			return;
+		}
+	} else if(cmd == "friends"){
+		if(!USER){
+			stdutil.PrintErr("Only users can use this.", nil);
+			return;
+		}
+		relations, err := session.RelationshipsGet();
+		if(err != nil){
+			stdutil.PrintErr("Couldn't block user", err);
+			return;
+		}
+
+		table := gtable.NewStringTable();
+		table.AddStrings("ID", "Type", "Name");
+
+		for _, relation := range relations{
+			table.AddRow();
+			table.AddStrings(relation.ID, RELATIONSHIP_TYPES[relation.Type], relation.User.Username);
+		}
+
+		printTable(table);
 	} else {
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
@@ -948,7 +989,7 @@ func channels(session *discordgo.Session, kind string){
 		cacheChannels[strings.ToLower(channel.Name)] = channel.ID;
 	}
 
-	printTable(&table);
+	printTable(table);
 }
 
 func parseBool(str string) (bool, error){
@@ -960,7 +1001,7 @@ func parseBool(str string) (bool, error){
 	return false, errors.New("Please use yes or no");
 }
 
-func printTable(table *gtable.StringTable){
+func printTable(table gtable.StringTable){
 	table.Each(func(ti *gtable.TableItem){
 		ti.Padding(1);
 	});
