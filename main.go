@@ -184,15 +184,12 @@ func main(){
 	}
 
 	go func(){
-		term := make(chan os.Signal, 1);
-		signal.Notify(term, syscall.SIGTERM);
+		c := make(chan os.Signal, 1);
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM);
 
-		for{
-			select{
-				case <-term:
-					exit(session);
-					return;
-			}
+		for _ = range c{
+			exit(session);
+			return;
 		}
 	}();
 

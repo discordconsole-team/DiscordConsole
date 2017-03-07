@@ -8,7 +8,7 @@ import (
 	"github.com/fatih/color"
 )
 
-var theSession *discordgo.Session;
+var luaSessionCopy *discordgo.Session;
 
 func RunLua(session *discordgo.Session, file string, args ...string) error{
 	l := lua.NewState();
@@ -27,7 +27,7 @@ func RunLua(session *discordgo.Session, file string, args ...string) error{
 
 	lua.OpenLibraries(l);
 
-	theSession = session;
+	luaSessionCopy = session;
 
 	err := lua.DoFile(l, file);
 	return err;
@@ -35,7 +35,7 @@ func RunLua(session *discordgo.Session, file string, args ...string) error{
 
 func luaExec(l *lua.State) int{
 	COLOR_AUTOMATED.Set();
-	returnVal := command(theSession, lua.CheckString(l, 1));
+	returnVal := command(luaSessionCopy, lua.CheckString(l, 1));
 	color.Unset();
 
 	l.PushString(returnVal);
