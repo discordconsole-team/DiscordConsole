@@ -316,7 +316,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				stdutil.PrintErr("Could not create DM", err);
 				return;
 			}
-			lastLoc, loc = loc, lastLoc;
+			lastLoc = loc;
 
 			loc.ChannelID = channel.ID;
 			loc.GuildID = "";
@@ -384,7 +384,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				}
 				fmt.Println("Accepted invite.");
 
-				lastLoc, loc = loc, lastLoc;
+				lastLoc = loc;
 				loc.GuildID = invite.Guild.ID;
 				loc.ChannelID = invite.Channel.ID;
 				clearPointerCache();
@@ -484,7 +484,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		case "enableintercept": intercept = true; fmt.Println("'console.' commands will now be intercepted.");
 		case "disableintercept": intercept = false; fmt.Println("'console.' commands will no longer be intercepted.");
 		case "reply":
-			lastLoc, loc = loc, lastMsg;
+			lastLoc = loc;
+			loc = lastMsg;
 			clearPointerCache();
 		case "back":
 			loc, lastLoc = lastLoc, loc;
@@ -955,6 +956,34 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 
 			printTable(table);
+		case "bookmarks":
+			for key, _ := range bookmarks{
+				fmt.Println(key);
+			}
+		case "bookmark":
+			if(nargs < 1){
+				stdutil.PrintErr("bookmark <name>", nil);
+				return;
+			}
+			bookmarks[args[0]] = loc;
+			err := saveBookmarks();
+			if(err != nil){
+				stdutil.PrintErr("Could not save bookmarks", err);
+			}
+		case "go":
+			if(nargs < 1){
+				stdutil.PrintErr("go <bookmark>", nil);
+				return;
+			}
+			bookmark, ok := bookmarks[args[0]];
+			if(!ok){
+				stdutil.PrintErr("Bookmark doesn't exist", nil);
+				return;
+			}
+
+			lastLoc = loc;
+			loc = bookmark;
+			clearPointerCache();
 		default:
 			stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}

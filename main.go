@@ -73,6 +73,12 @@ func main(){
 		fmt.Println("Good news, no updates found.");
 	}
 
+	fmt.Println("Reading bookmarks...");
+	err = loadBookmarks();
+	if(err != nil){
+		stdutil.PrintErr("Could not read bookmarks", err);
+	}
+
 	READLINE, err = readline.New(EMPTY_POINTER);
 	if(err != nil){
 		stdutil.PrintErr("Could not start readline library", err);
@@ -319,7 +325,11 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *d
 		stdutil.PrintErr("Could not delete message", err);
 	}
 
-	lastLoc, loc = loc, lastLoc;
+	lastLoc = loc;
+	loc = location{
+		GuildID: channel.GuildID,
+		ChannelID: e.ChannelID,
+	};
 	pointerCache = "";
 
 	cmd := contents[len("console."):];
