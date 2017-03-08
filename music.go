@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"github.com/bwmarrin/discordgo"
 	"github.com/legolord208/stdutil"
+	"errors"
 )
 
 var playing string;
@@ -31,6 +32,10 @@ func load(file string, buffer* [][]byte) error{
 			break;
 		} else if(err != nil){
 			return err;
+		}
+
+		if(length <= 0){
+			return errors.New("Negative number in DCA file");
 		}
 
 		buf := make([]byte, length);
