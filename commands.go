@@ -410,7 +410,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			return;
 		}
 		name := strings.Join(args, " ");
-		file, err := os.OpenFile(name, os.O_RDONLY, 0666);
+		file, err := os.Open(name);
 		if(err != nil){
 			stdutil.PrintErr("Couldn't open file", nil);
 			return;
