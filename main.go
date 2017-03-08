@@ -291,8 +291,10 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 		return;
 	}
 
-	lastMsg.channelID = e.ChannelID;
-	lastMsg.guildID = channel.GuildID;
+	lastMsg = location{
+		GuildID: channel.GuildID,
+		ChannelID: e.ChannelID,
+	};
 
 	if(messages){
 		printMessage(session, e.Message, true, channel);
@@ -317,9 +319,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *d
 		stdutil.PrintErr("Could not delete message", err);
 	}
 
-	lastLoc = loc;
-	loc.channelID = e.ChannelID;
-	loc.guildID = channel.GuildID;
+	lastLoc, loc = loc, lastLoc;
 	pointerCache = "";
 
 	cmd := contents[len("console."):];
@@ -345,13 +345,13 @@ func pointer(session *discordgo.Session) string{
 		return pointerCache;
 	}
 
-	if(loc.channelID == ""){
+	if(loc.ChannelID == ""){
 		return EMPTY_POINTER;
 	}
 
 	s := "";
 
-	channel, err := session.Channel(loc.channelID);
+	channel, err := session.Channel(loc.ChannelID);
 	if(err != nil){
 		stdutil.PrintErr("Could not get channel", err);
 		pointerCache = ERROR_POINTER;
@@ -361,7 +361,7 @@ func pointer(session *discordgo.Session) string{
 	if(channel.IsPrivate){
 		s += "Private";
 	} else {
-		guild, err := session.Guild(loc.guildID);
+		guild, err := session.Guild(loc.GuildID);
 		if(err != nil){
 			stdutil.PrintErr("Could not get guild", err);
 			pointerCache = ERROR_POINTER;
