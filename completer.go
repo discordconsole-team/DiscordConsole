@@ -24,16 +24,32 @@ func setCompleter(rl *readline.Instance){
 		readline.PcItem("roledel", readline.PcItem(ID,
 			readline.PcItemDynamic(singleValue(&lastUsedRole)),
 		)),
+
+		readline.PcItem("bookmark", readline.PcItemDynamic(bookmarkTab)),
+		readline.PcItem("go", readline.PcItemDynamic(bookmarkTab)),
 	);
 }
 func searchMap(theMap *map[string]string) func(string) []string{
 	return func(line string) []string{
-		items := make([]string, 0);
+		items := make([]string, len(*theMap));
+
+		i := 0;
 		for key := range *theMap{
-			items = append(items, key);
+			items[i] = key;
+			i++;
 		}
 		return items;
 	};
+}
+func bookmarkTab(line string) []string{
+	items := make([]string, len(bookmarks));
+
+	i := 0;
+	for key := range bookmarks{
+		items[i] = key;
+		i++;
+	}
+	return items;
 }
 func singleValue(val *string) func(string) []string{
 	return func(line string) []string{
