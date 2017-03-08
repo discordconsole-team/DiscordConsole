@@ -60,17 +60,18 @@ func main(){
 
 	fmt.Println("DiscordConsole " + VERSION);
 
-	fmt.Println("Checking for updates...");
+	fmt.Print("Checking for updates... ");
 	update, err := checkUpdate();
 	if(err != nil){
 		stdutil.PrintErr("Error checking for updates", err);
 		return;
 	}
 	if(update.UpdateAvailable){
+		fmt.Println();
 		color.Cyan("Update available: Version " + update.Version + ".");
 		color.Cyan("Download from " + update.Url + ".");
 	} else {
-		fmt.Println("Good news, no updates found.");
+		fmt.Println("No updates found.");
 	}
 
 	fmt.Println("Reading bookmarks...");

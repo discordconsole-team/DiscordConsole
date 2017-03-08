@@ -965,7 +965,13 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				stdutil.PrintErr("bookmark <name>", nil);
 				return;
 			}
-			bookmarks[args[0]] = loc;
+			key := strings.Join(args, " ");
+			if(strings.HasPrefix(key, "-")){
+				key = key[1:];
+				delete(bookmarks, key);
+			} else {
+				bookmarks[key] = loc;
+			}
 			err := saveBookmarks();
 			if(err != nil){
 				stdutil.PrintErr("Could not save bookmarks", err);

@@ -66,6 +66,10 @@ func printHelp(search string){
 	help = append(help, "");
 	help = append(help, "friends\tList all relationships the account has.");
 	help = append(help, "block <user id>\tBlock a user.");
+	help = append(help, "");
+	help = append(help, "bookmarks\tList all bookmarks in the console.");
+	help = append(help, "bookmark <name>\tCreate new bookmark out of current location. If the name starts with -, it removes the bookmark.");
+	help = append(help, "go <bookmark>\tJump to the specified bookmark.");
 
 	if(search != ""){
 		help2 := make([]string, 0);
