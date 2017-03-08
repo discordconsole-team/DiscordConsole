@@ -16,7 +16,7 @@ import (
 	"github.com/fatih/color"
 )
 
-const VERSION = "1.18.1";
+const VERSION = "1.19";
 var ID string;
 var USER bool;
 
