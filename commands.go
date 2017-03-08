@@ -13,6 +13,7 @@ import (
 	"errors"
 	"encoding/json"
 	"time"
+	"path/filepath"
 )
 
 var RELATIONSHIP_TYPES = map[int]string{
@@ -251,6 +252,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 
 			name := strings.Join(args, " ");
+			err = fixPath(&name);
+			if(err != nil){
+				stdutil.PrintErr("Could not 'fix' file path", err);
+			}
+
 			err = ioutil.WriteFile(name, []byte(s), 0666);
 			if(err != nil){
 				stdutil.PrintErr("Could not write log file", err);
@@ -411,6 +417,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 			name := strings.Join(args, " ");
+			err := fixPath(&name);
+			if(err != nil){
+				stdutil.PrintErr("Could not 'fix' file path", err);
+			}
+
 			file, err := os.Open(name);
 			if(err != nil){
 				stdutil.PrintErr("Couldn't open file", nil);
@@ -418,7 +429,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 			defer file.Close();
 
-			msg, err := session.ChannelFileSend(loc.ChannelID, name, file);
+			msg, err := session.ChannelFileSend(loc.ChannelID, filepath.Base(name), file);
 			if(err != nil){
 				stdutil.PrintErr("Could not send file", err);
 				return;
@@ -833,12 +844,17 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 
 			file := strings.Join(args, " ");
+			err := fixPath(&file);
+			if(err != nil){
+				stdutil.PrintErr("Could not 'fix' file path", err);
+			}
+
 			playing = file;
 
 			fmt.Println("Loading...");
 
 			var buffer [][]byte;
-			err := load(file, &buffer);
+			err = load(file, &buffer);
 			if(err != nil){
 				stdutil.PrintErr("Could not load file.", err);
 				playing = "";
