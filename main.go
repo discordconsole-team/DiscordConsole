@@ -43,10 +43,14 @@ func main(){
 	var pass string;
 	var commands stringArr;
 
+	var noupdate bool;
+
 	flag.StringVar(&token, "t", "", "Set token. Ignored if -e and/or -p are set.");
 	flag.StringVar(&email, "e", "", "Set email.");
 	flag.StringVar(&pass, "p", "", "Set password.");
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.");
+
+	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking");
 	flag.Parse();
 
 	stdutil.ErrOutput = os.Stdout;
@@ -60,22 +64,24 @@ func main(){
 
 	fmt.Println("DiscordConsole " + VERSION);
 
-	fmt.Print("Checking for updates... ");
-	update, err := checkUpdate();
-	if(err != nil){
-		stdutil.PrintErr("Error checking for updates", err);
-		return;
-	}
-	if(update.UpdateAvailable){
-		fmt.Println();
-		color.Cyan("Update available: Version " + update.Version + ".");
-		color.Cyan("Download from " + update.Url + ".");
-	} else {
-		fmt.Println("No updates found.");
+	if(!noupdate){
+		fmt.Print("Checking for updates... ");
+		update, err := checkUpdate();
+		if(err != nil){
+			stdutil.PrintErr("Error checking for updates", err);
+			return;
+		}
+		if(update.UpdateAvailable){
+			fmt.Println();
+			color.Cyan("Update available: Version " + update.Version + ".");
+			color.Cyan("Download from " + update.Url + ".");
+		} else {
+			fmt.Println("No updates found.");
+		}
 	}
 
 	fmt.Println("Reading bookmarks...");
-	err = loadBookmarks();
+	err := loadBookmarks();
 	if(err != nil){
 		stdutil.PrintErr("Could not read bookmarks", err);
 	}
