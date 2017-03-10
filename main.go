@@ -26,6 +26,7 @@ const WINDOWS = runtime.GOOS == "windows";
 const MAC = runtime.GOOS == "darwin";
 
 var READLINE *readline.Instance;
+var COLOR_DEFAULT = color.New(color.Bold);
 var COLOR_AUTOMATED = color.New(color.Italic);
 
 type stringArr []string;
@@ -246,12 +247,15 @@ func main(){
 	setCompleter(READLINE);
 
 	for{
+		COLOR_DEFAULT.Set();
+
 		READLINE.SetPrompt(pointer(session));
-		color.Set(color.Bold);
 		cmd, err := READLINE.Readline();
+
 		color.Unset();
+
 		if(err != nil){
-			if(err != io.EOF){
+			if(err != io.EOF && err != readline.ErrInterrupt){
 				stdutil.PrintErr("Could not read line", err);
 			} else {
 				fmt.Println("exit");
@@ -313,7 +317,10 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 
 	s += ") " + msg.Author.Username + ": " + msg.Content;
 	s += strings.Repeat(" ", 5);
+
+	color.Unset();
 	color.Yellow(s);
+	COLOR_DEFAULT.Set();
 }
 
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
@@ -334,8 +341,26 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 		ChannelID: e.ChannelID,
 	};
 
+	hasOutput := false;
+
 	if(messages){
 		printMessage(session, e.Message, true, channel);
+		hasOutput = true;
+	}
+
+	if(len(luaMessageEvents) > 0){
+		hasOutput = true;
+
+		color.Unset();
+		COLOR_AUTOMATED.Set();
+
+		fmt.Print("\r" + strings.Repeat(" ", 20) + "\r");
+		luaMessageEvent(session, e.Message);
+
+		color.Unset();
+		COLOR_DEFAULT.Set();
+	}
+	if(hasOutput){
 		printPointer(session);
 	}
 }

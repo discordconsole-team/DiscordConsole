@@ -5,8 +5,23 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"net/url"
 	"encoding/json"
+	"time"
 )
 
+func timestamp(e *discordgo.Message) (string, error){
+	t, err := e.Timestamp.Parse();
+	if(err != nil){
+		return "", err;
+	}
+
+	s := t.Format(time.ANSIC);
+
+	if(e.EditedTimestamp != ""){
+		s += "*";
+	}
+
+	return s, nil;
+}
 func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.Message, error){
 	if(USER){
 		// Discord API does not allow getting specific message for users.

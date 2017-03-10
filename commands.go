@@ -12,7 +12,6 @@ import (
 	"sort"
 	"errors"
 	"encoding/json"
-	"time"
 	"path/filepath"
 )
 
@@ -767,15 +766,12 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				case "text":            returnVal = msg.Content;
 				case "channel":         returnVal = msg.ChannelID;
 				case "timestamp":
-					sent, err := msg.Timestamp.Parse();
+					t, err := timestamp(msg);
 					if(err != nil){
-						stdutil.PrintErr("Could not parse timestamp!", err);
+						stdutil.PrintErr("Could not parse timestamp", err);
 						return;
 					}
-					returnVal = sent.Format(time.ANSIC);
-					if(msg.EditedTimestamp != ""){
-						returnVal += "*";
-					}
+					returnVal = t;
 				case "author":          returnVal = msg.Author.ID;
 				case "author_name":     returnVal = msg.Author.Username;
 				case "author_avatar":   returnVal = msg.Author.Avatar;
@@ -911,14 +907,10 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			timestamp, err := msg.Timestamp.Parse();
+			t, err := timestamp(msg);
 			if(err != nil){
 				stdutil.PrintErr("Could not parse timestamp", err);
 				return;
-			}
-			t := timestamp.Format(time.ANSIC);
-			if(msg.EditedTimestamp != ""){
-				t += "*";
 			}
 
 			msg, err = session.ChannelMessageSendEmbed(loc.ChannelID, &discordgo.MessageEmbed{
