@@ -396,8 +396,15 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *d
 
 	cmd := contents[len("console."):];
 
+	color.Unset();
+	COLOR_AUTOMATED.Set();
+
 	fmt.Println(cmd);
 	command(session, cmd);
+
+	color.Unset();
+	COLOR_DEFAULT.Set();
+
 	printPointer(session);
 	return true;
 }
