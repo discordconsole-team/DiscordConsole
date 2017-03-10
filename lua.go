@@ -13,9 +13,9 @@ var luaSessionCopy *discordgo.Session;
 func RunLua(session *discordgo.Session, file string, args ...string) error{
 	l := lua.NewState();
 
-	l.PushGoFunction(luaExec); l.SetGlobal("exec");
-	l.PushGoFunction(luaReplace); l.SetGlobal("replace");
-	l.PushGoFunction(luaSleep); l.SetGlobal("sleep");
+	l.Register("exec", luaExec);
+	l.Register("replace", luaReplace);
+	l.Register("sleep", luaSleep);
 
 	l.NewTable();
 	for i, val := range args{

@@ -14,9 +14,11 @@ import (
 	"syscall"
 	"io"
 	"github.com/fatih/color"
+	"io/ioutil"
 )
 
 const VERSION = "1.19";
+const AUTORUN_FILE = ".autorun";
 var ID string;
 var USER bool;
 
@@ -44,6 +46,7 @@ func main(){
 	var commands stringArr;
 
 	var noupdate bool;
+	var noautorun bool;
 
 	flag.StringVar(&token, "t", "", "Set token. Ignored if -e and/or -p are set.");
 	flag.StringVar(&email, "e", "", "Set email.");
@@ -51,6 +54,7 @@ func main(){
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.");
 
 	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking");
+	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in " + AUTORUN_FILE + " file.");
 	flag.Parse();
 
 	stdutil.ErrOutput = os.Stdout;
@@ -208,14 +212,34 @@ func main(){
 
 	COLOR_AUTOMATED.Set();
 
-	for _, cmdstr := range commands{
-		if(cmdstr == ""){
+	if(!noautorun){
+		ar, err := ioutil.ReadFile(AUTORUN_FILE);
+		if(err != nil && os.IsExist(err)){
+			stdutil.PrintErr("Could not read " + AUTORUN_FILE, err);
+		} else if(err == nil){
+			ar_lines := strings.Split(string(ar), "\n");
+
+			for _, cmd := range ar_lines{
+				cmd = strings.TrimSpace(cmd);
+				if(cmd == ""){
+					continue;
+				}
+				printPointer(session);
+				fmt.Println(cmd);
+
+				command(session, cmd);
+			}
+		}
+	}
+	for _, cmd := range commands{
+		cmd = strings.TrimSpace(cmd);
+		if(cmd == ""){
 			continue;
 		}
 		printPointer(session);
-		fmt.Println(cmdstr);
+		fmt.Println(cmd);
 
-		command(session, cmdstr);
+		command(session, cmd);
 	}
 
 	color.Unset();
@@ -224,7 +248,7 @@ func main(){
 	for{
 		READLINE.SetPrompt(pointer(session));
 		color.Set(color.Bold);
-		cmdstr, err := READLINE.Readline();
+		cmd, err := READLINE.Readline();
 		color.Unset();
 		if(err != nil){
 			if(err != io.EOF){
@@ -236,11 +260,12 @@ func main(){
 			return;
 		}
 
-		if(cmdstr == ""){
+		cmd = strings.TrimSpace(cmd);
+		if(cmd == ""){
 			continue;
 		}
 
-		command(session, cmdstr);
+		command(session, cmd);
 	}
 }
 
