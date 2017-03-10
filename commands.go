@@ -34,8 +34,8 @@ var lastLoc location;
 var lastUsedMsg string;
 var lastUsedRole string;
 
-var cacheGuilds = make(map[string]string, 0);
-var cacheChannels = make(map[string]string, 0);
+var cacheGuilds = make(map[string]string);
+var cacheChannels = make(map[string]string);
 var cacheRead *discordgo.Message;
 
 var messages bool;
@@ -109,7 +109,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			cacheGuilds = make(map[string]string, 0);
+			cacheGuilds = make(map[string]string);
 
 			table := gtable.NewStringTable();
 			table.AddStrings("ID", "Name")
@@ -136,7 +136,9 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				loc.GuildID = args[0];
 			}
 
-			loc.ChannelID = loc.GuildID;
+			if(!noguildmatch){
+				loc.ChannelID = loc.GuildID;
+			}
 			clearPointerCache();
 		case "channels":
 			channels(session, "text");
@@ -146,22 +148,22 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			var channelID string;
-			var ok bool;
-			channelID, ok = cacheChannels[strings.ToLower(strings.Join(args, " "))];
+			channelID, ok := cacheChannels[strings.ToLower(strings.Join(args, " "))];
 			if(!ok){
 				channelID = args[0];
 			}
 
-			channel, err := session.Channel(channelID);
-			if(err != nil){
-				stdutil.PrintErr("Could not get channel ", err);
-				return;
-			}
-			lastLoc = loc;
+			if(!noguildmatch){
+				channel, err := session.Channel(channelID);
+				if(err != nil){
+					stdutil.PrintErr("Could not get channel ", err);
+					return;
+				}
+				lastLoc = loc;
 
+				loc.GuildID = channel.GuildID;
+			}
 			loc.ChannelID = channelID;
-			loc.GuildID = channel.GuildID;
 			clearPointerCache();
 		case "say":
 			if(nargs < 1){

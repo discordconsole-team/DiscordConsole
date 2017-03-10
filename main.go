@@ -40,6 +40,8 @@ func (arr *stringArr) String() string{
 	return "[" + strings.Join(*arr, " ") + "]";
 }
 
+var nopointer bool;
+var noguildmatch bool;
 func main(){
 	var token string;
 	var email string;
@@ -54,8 +56,11 @@ func main(){
 	flag.StringVar(&pass, "p", "", "Set password.");
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.");
 
-	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking");
+	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking.");
 	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in " + AUTORUN_FILE + " file.");
+
+	flag.BoolVar(&nopointer, "nopointer", false, "Disable pointer (only reason would be speed, I guess).");
+	flag.BoolVar(&noguildmatch, "noguildmatch", false, "Disable guild and channel matching (only reason would be speed, I guess).");
 	flag.Parse();
 
 	stdutil.ErrOutput = os.Stdout;
@@ -412,6 +417,9 @@ func pointer(session *discordgo.Session) string{
 		return pointerCache;
 	}
 
+	if(nopointer){
+		return EMPTY_POINTER;
+	}
 	if(loc.ChannelID == ""){
 		return EMPTY_POINTER;
 	}
