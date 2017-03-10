@@ -1000,6 +1000,24 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			lastLoc = loc;
 			loc = bookmark;
 			clearPointerCache();
+		case "tts":
+			if(nargs < 1){
+				stdutil.PrintErr("tts <stuff>", nil);
+				return;
+			}
+			if(loc.ChannelID == ""){
+				stdutil.PrintErr("No channel selected!", nil);
+				return;
+			}
+
+			msg, err := session.ChannelMessageSendTTS(loc.ChannelID, strings.Join(args, " "));
+			if(err != nil){
+				stdutil.PrintErr("Could not send", err);
+				return;
+			}
+			fmt.Println("Created message with ID " + msg.ID);
+			lastUsedMsg = msg.ID;
+			returnVal = msg.ID;
 		default:
 			stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}

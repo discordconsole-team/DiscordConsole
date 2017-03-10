@@ -21,6 +21,7 @@ func printHelp(search string){
 	help = append(help, "dm <user id>\tCreate a DM with specific user.");
 	help = append(help, "");
 	help = append(help, "say <stuff>\tSend a message in your selected channel.");
+	help = append(help, "tts <stuff>\tSend a TTS message in your selected channel.");
 	help = append(help, "embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object");
 	help = append(help, "file <file>\tUpload file to selected channel.");
 	help = append(help, "edit <message id> <stuff>\tEdit a message in your selected channel.");
