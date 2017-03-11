@@ -25,6 +25,28 @@ sleep(1);
 exec("edit "..id.." Hey*");
 ```
 
+## Arguments!
+You can also run LUA with arguments!  
+They are stored in the `arg` array.  
+
+Example:
+```LUA
+exec("say "..arg[1]);
+```
+
+But... how do we run it?  
+Simple!  
+Add a colon after `run <file>` and then your arguments!
+
+Example:
+```
+run test.lua: arg1 arg2 arg3 etc
+```
+
+Since we only use `arg[1]`, it'll just say `arg1`.  
+But following [LUA SplitJoin wiki](http://lua-users.org/wiki/SplitJoin),  
+we see that we may use `table.concat(arg, " ")` to use all arguments as one string.
+
 ## Events!
 Another feature of DiscordConsole's LUA are events.  
 The only event available yet is on message event.  
