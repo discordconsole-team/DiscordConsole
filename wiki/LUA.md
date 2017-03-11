@@ -14,9 +14,16 @@ Easy, huh? Now let's get into the details!
 We use LUA 5.2 using the [go-lua](https://github.com/Shopify/go-lua) library.  
 
 Added methods:  
-`exec(string command): string` - Execute a DiscordConsole command.  
+`exec(string command): string` - Execute a DiscordConsole command. It returns the most important element.  
 `replace(string original, string search, string replacement): string` - Replaces `search` with `replacement` in `original` and returns.  
 `sleep(int seconds)` - Waits for `seconds` seconds.  
+
+### Example!
+```
+id = exec("say Hi!");
+sleep(1);
+exec("edit "..id.." Hey*");
+```
 
 ## Events!
 Another feature of DiscordConsole's LUA are events.  
