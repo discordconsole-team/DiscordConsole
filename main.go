@@ -65,6 +65,7 @@ func main(){
 
 	stdutil.ErrOutput = os.Stdout;
 	stdutil.EventPrePrintError = append(stdutil.EventPrePrintError, func(text string) bool{
+		color.Unset();
 		color.Set(color.FgRed, color.Bold);
 		return false;
 	});

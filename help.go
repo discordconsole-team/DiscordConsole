@@ -21,9 +21,11 @@ func printHelp(search string){
 	help = append(help, "dm <user id>\tCreate a DM with specific user.");
 	help = append(help, "");
 	help = append(help, "say <stuff>\tSend a message in your selected channel.");
+	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!");
 	help = append(help, "tts <stuff>\tSend a TTS message in your selected channel.");
 	help = append(help, "embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object");
 	help = append(help, "file <file>\tUpload file to selected channel.");
+	help = append(help, "");
 	help = append(help, "edit <message id> <stuff>\tEdit a message in your selected channel.");
 	help = append(help, "del <message id>\tDelete a message in the selected channel.");
 	help = append(help, "delall [since message id]\tBulk delete messages since a specific message");
@@ -31,6 +33,7 @@ func printHelp(search string){
 						"author_name, author_avatar, author_bot; 'cache' may be used as property to save, and used later as message ID.");
 	help = append(help, "log [output file]\tLog the last few messages in console or to a file.");
 	help = append(help, "reactadd/reactdel <message id> <emoji unicode/id>\tReact to a message");
+	help = append(help, "reactbig <message id> <stuff>\tLike the 'big' command, but in reactions!");
 	help = append(help, "");
 	help = append(help, "playing [game]\tSet your playing status.");
 	help = append(help, "streaming [url] [game]\tSet your streaming status");

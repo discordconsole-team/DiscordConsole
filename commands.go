@@ -1021,6 +1021,50 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			fmt.Println("Created message with ID " + msg.ID);
 			lastUsedMsg = msg.ID;
 			returnVal = msg.ID;
+		case "big":
+			if(nargs < 1){
+				stdutil.PrintErr("big <stuff>", nil);
+				return;
+			}
+			if(loc.ChannelID == ""){
+				stdutil.PrintErr("No channel selected!", nil);
+				return;
+			}
+
+			msg, err := session.ChannelMessageSend(loc.ChannelID, toEmojiString(strings.Join(args, " ")));
+			if(err != nil){
+				stdutil.PrintErr("Could not send", err);
+				return;
+			}
+			fmt.Println("Created message with ID " + msg.ID);
+			lastUsedMsg = msg.ID;
+			returnVal = msg.ID;
+		case "reactbig":
+			if(nargs < 2){
+				stdutil.PrintErr("reactbig <message id> <text>", nil);
+				return;
+			}
+			if(loc.ChannelID == ""){
+				stdutil.PrintErr("No channel selected!", nil);
+				return;
+			}
+
+			used := "";
+
+			for _, c := range args[1]{
+				str := string(toEmoji(c));
+
+				if(strings.Contains(used, str)){
+					fmt.Println("Emoji used already, skipping");
+					continue;
+				}
+				used += str;
+
+				err := session.MessageReactionAdd(loc.ChannelID, args[0], str);
+				if(err != nil){
+					stdutil.PrintErr("Could not react", err);
+				}
+			}
 		default:
 			stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
