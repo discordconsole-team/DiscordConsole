@@ -96,6 +96,24 @@ func main(){
 		stdutil.PrintErr("Could not read bookmarks", err);
 	}
 
+	var ar_lines []string;
+	if(!noautorun){
+		ar, err := ioutil.ReadFile(AUTORUN_FILE);
+		if(err != nil && os.IsExist(err)){
+			stdutil.PrintErr("Could not read " + AUTORUN_FILE, err);
+		} else if(err == nil){
+			ar_lines = strings.Split(string(ar), "\n");
+
+			if(len(ar_lines) > 0){
+				first_line := ar_lines[0];
+				if(strings.HasPrefix(first_line, ":")){
+					token = first_line[1:];
+					ar_lines = ar_lines[1:];
+				}
+			}
+		}
+	}
+
 	READLINE, err = readline.New(EMPTY_POINTER);
 	if(err != nil){
 		stdutil.PrintErr("Could not start readline library", err);
@@ -218,23 +236,16 @@ func main(){
 
 	COLOR_AUTOMATED.Set();
 
-	if(!noautorun){
-		ar, err := ioutil.ReadFile(AUTORUN_FILE);
-		if(err != nil && os.IsExist(err)){
-			stdutil.PrintErr("Could not read " + AUTORUN_FILE, err);
-		} else if(err == nil){
-			ar_lines := strings.Split(string(ar), "\n");
-
-			for _, cmd := range ar_lines{
-				cmd = strings.TrimSpace(cmd);
-				if(cmd == ""){
-					continue;
-				}
-				printPointer(session);
-				fmt.Println(cmd);
-
-				command(session, cmd);
+	if(ar_lines != nil){
+		for _, cmd := range ar_lines{
+			cmd = strings.TrimSpace(cmd);
+			if(cmd == ""){
+				continue;
 			}
+			printPointer(session);
+			fmt.Println(cmd);
+
+			command(session, cmd);
 		}
 	}
 	for _, cmd := range commands{
