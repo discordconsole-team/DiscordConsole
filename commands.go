@@ -13,6 +13,7 @@ import (
 	"errors"
 	"encoding/json"
 	"path/filepath"
+	"unicode"
 )
 
 var RELATIONSHIP_TYPES = map[int]string{
@@ -45,7 +46,9 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 	if(cmd == ""){
 		return;
 	}
-	parts := strings.Fields(cmd);
+	parts := strings.FieldsFunc(cmd, func(c rune) bool{
+		return c != '\n' && unicode.IsSpace(c);
+	});
 
 	cmd = strings.ToLower(parts[0]);
 	args := parts[1:];
