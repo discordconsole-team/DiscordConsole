@@ -268,19 +268,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 			fmt.Println("Wrote chat log to '" + name + "'.");
 		case "playing":
-			if(USER){
-				stdutil.PrintErr("This only works for bots.", nil);
-				return;
-			}
 			err := session.UpdateStatus(0, strings.Join(args, " "));
 			if(err != nil){
 				stdutil.PrintErr("Couldn't update status", err);
 			}
 		case "streaming":
-			if(USER){
-				stdutil.PrintErr("This only works for bots.", nil);
-				return;
-			}
 			var err error;
 			if(nargs <= 0){
 				err = session.UpdateStreamingStatus(0, "", "");
@@ -1051,7 +1043,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 
 			used := "";
 
-			for _, c := range args[1]{
+			for _, c := range strings.Join(args[1:], " "){
 				str := string(toEmoji(c));
 
 				if(strings.Contains(used, str)){
