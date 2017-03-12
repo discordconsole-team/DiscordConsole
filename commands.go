@@ -805,10 +805,12 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 					}
 					returnVal = t;
 				case "author":          returnVal = msg.Author.ID;
+				case "author_email":    returnVal = msg.Author.Email;
 				case "author_name":     returnVal = msg.Author.Username;
 				case "author_avatar":   returnVal = msg.Author.Avatar;
 				case "author_bot":      returnVal = strconv.FormatBool(msg.Author.Bot);
-				default:                stdutil.PrintErr("Invalid property", nil);
+				default:
+					stdutil.PrintErr("Invalid property", nil);
 			}
 
 			lastUsedMsg = msg.ID;
@@ -1111,7 +1113,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			switch(args[0]){
+			switch(strings.ToLower(args[0])){
 				case "name":    returnVal = loc.guild.Name;
 				case "icon":    returnVal = loc.guild.Icon;
 				case "region":  returnVal = loc.guild.Region;
@@ -1166,6 +1168,31 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			lastUsedRole = "";
 
 			cacheRead = nil;
+		case "uinfo":
+			if(nargs < 2){
+				stdutil.PrintErr("uinfo <user id> <property>", nil);
+				return;
+			}
+
+			user, err := session.User(args[0]);
+			if(err != nil){
+				stdutil.PrintErr("Couldn't query user", err);
+				return;
+			}
+
+			switch(strings.ToLower(args[1])){
+				case "id":     returnVal = user.ID;
+				case "email":  returnVal = user.Email;
+				case "name":   returnVal = user.Username;
+				case "avatar": returnVal = user.Avatar;
+				case "bot":    returnVal = strconv.FormatBool(user.Bot);
+				default:
+					stdutil.PrintErr("Invalid property!", nil);
+			}
+
+			if(returnVal != ""){
+				fmt.Println(returnVal);
+			}
 		default:
 			stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}

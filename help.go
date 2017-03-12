@@ -21,6 +21,9 @@ func printHelp(search string){
 	help = append(help, "");
 	help = append(help, "cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
 	help = append(help, "ginfo <property>\tGet information about guild. Properties: name, icon, region, owner, splash, members, level");
+	help = append(help, "uinfo <id> <property>\tGet information about user. Properties: id, email, name, avatar, bot");
+	help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, channel, timestamp, author, " +
+						"author_email, author_name, author_avatar, author_bot; 'cache' may be used as property to save, and used later as message ID.");
 	help = append(help, "");
 	help = append(help, "say <stuff>\tSend a message in your selected channel.");
 	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!");
@@ -31,8 +34,6 @@ func printHelp(search string){
 	help = append(help, "edit <message id> <stuff>\tEdit a message in your selected channel.");
 	help = append(help, "del <message id>\tDelete a message in the selected channel.");
 	help = append(help, "delall [since message id]\tBulk delete messages since a specific message");
-	help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, channel, timestamp, author, " +
-						"author_name, author_avatar, author_bot; 'cache' may be used as property to save, and used later as message ID.");
 	help = append(help, "log [output file]\tLog the last few messages in console or to a file.");
 	help = append(help, "reactadd/reactdel <message id> <emoji unicode/id>\tReact to a message");
 	help = append(help, "reactbig <message id> <stuff>\tLike the 'big' command, but in reactions!");
