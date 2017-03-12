@@ -22,6 +22,12 @@ var RELATIONSHIP_TYPES = map[int]string{
 	3: "Incoming request",
 	4: "Sent request",
 };
+var VERIFICATION_LEVELS = map[discordgo.VerificationLevel]string{
+	discordgo.VerificationLevelNone:   "None",
+	discordgo.VerificationLevelLow:    "Low",
+	discordgo.VerificationLevelMedium: "Medium",
+	discordgo.VerificationLevelHigh:   "High",
+}
 
 type location struct{
 	GuildID string
@@ -482,7 +488,19 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				stdutil.PrintErr("No guild selected.", nil);
 				return;
 			}
-			err := session.GuildMemberNickname(loc.GuildID, "@me/nick", strings.Join(args, " "));
+			if(nargs < 1){
+				stdutil.PrintErr("nick <id/'me'> [nickname]", nil);
+				return;
+			}
+
+			who := args[0];
+			if(strings.EqualFold(who, "me")){
+				who = "@me/nick";
+				// Should hopefully only be @me in the future.
+				// See https://github.com/bwmarrin/discordgo/issues/318
+			}
+
+			err := session.GuildMemberNickname(loc.GuildID, who, strings.Join(args[1:], " "));
 			if(err != nil){
 				stdutil.PrintErr("Could not set nickname", err);
 			}
@@ -797,20 +815,16 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 
 			switch(strings.ToLower(args[0])){
-				case "guild":
-					fmt.Println(channel.GuildID);
-					returnVal = channel.GuildID;
-				case "name":
-					fmt.Println(channel.Name);
-					returnVal = channel.Name;
-				case "topic":
-					fmt.Println(channel.Topic);
-					returnVal = channel.Topic;
-				case "type":
-					fmt.Println(channel.Type);
-					returnVal = channel.Type;
+				case "guild": returnVal = channel.GuildID;
+				case "name":  returnVal = channel.Name;
+				case "topic": returnVal = channel.Topic;
+				case "type":  returnVal = channel.Type;
 				default:
 					stdutil.PrintErr("No such property!", nil);
+			}
+
+			if(returnVal != ""){
+				fmt.Println(returnVal);
 			}
 		case "vchannels":
 			channels(session, "voice");
@@ -1056,6 +1070,35 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				if(err != nil){
 					stdutil.PrintErr("Could not react", err);
 				}
+			}
+		case "ginfo":
+			if(nargs < 1){
+				stdutil.PrintErr("ginfo <property>", nil);
+				return;
+			}
+			if(loc.GuildID == ""){
+				stdutil.PrintErr("No guild selected", nil);
+				return;
+			}
+
+			guild, err := session.Guild(loc.GuildID);
+			if(err != nil){
+				stdutil.PrintErr("Couldn't get guild information", err);
+				return;
+			}
+
+			switch(args[0]){
+				case "name":    returnVal = guild.Name;
+				case "icon":    returnVal = guild.Icon;
+				case "region":  returnVal = guild.Region;
+				case "owner":   returnVal = guild.OwnerID;
+				case "splash":  returnVal = guild.Splash;
+				case "members": returnVal = strconv.Itoa(guild.MemberCount);
+				case "level":   returnVal = VERIFICATION_LEVELS[guild.VerificationLevel];
+			}
+
+			if(returnVal != ""){
+				fmt.Println(returnVal);
 			}
 		default:
 			stdutil.PrintErr("Unknown command. Do 'help' for help", nil);

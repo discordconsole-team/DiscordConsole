@@ -17,8 +17,10 @@ func printHelp(search string){
 	help = append(help, "channel <id>\tSelect a channel to use for further commands.");
 	help = append(help, "pchannels\tList private channels a.k.a. 'DMs'.");
 	help = append(help, "vchannels\tList voice channels in your selected guild.");
-	help = append(help, "cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
 	help = append(help, "dm <user id>\tCreate a DM with specific user.");
+	help = append(help, "");
+	help = append(help, "cinfo <property>\tGet information about channel. Properties: guild, name, topic, type");
+	help = append(help, "ginfo <property>\tGet information about guild. Properties: name, icon, region, owner, splash, members, level");
 	help = append(help, "");
 	help = append(help, "say <stuff>\tSend a message in your selected channel.");
 	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!");
@@ -49,7 +51,7 @@ func printHelp(search string){
 	help = append(help, "roleedit <role id> <flag> <value>\tEdit a role. Flags are: name, color, separate, perms, mention");
 	help = append(help, "roledelete <role id>\tDelete a role.");
 	help = append(help, "");
-	help = append(help, "nick [nickname]\tChange own nickname");
+	help = append(help, "nick <id/'me'> [nickname]\tChange somebody's nickname");
 	help = append(help, "nickall [nickname]\tChange ALL nicknames!");
 	help = append(help, "");
 	help = append(help, "enablemessages\tEnable intercepting messages");
