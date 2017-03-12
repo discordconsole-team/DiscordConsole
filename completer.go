@@ -27,6 +27,23 @@ func setCompleter(rl *readline.Instance){
 
 		readline.PcItem("bookmark", readline.PcItemDynamic(bookmarkTab)),
 		readline.PcItem("go", readline.PcItemDynamic(bookmarkTab)),
+
+		readline.PcItem("read", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
+		readline.PcItem("cinfo",
+			readline.PcItem("guild"),
+			readline.PcItem("name"),
+			readline.PcItem("topic"),
+			readline.PcItem("type"),
+		),
+		readline.PcItem("ginfo",
+			readline.PcItem("name"),
+			readline.PcItem("icon"),
+			readline.PcItem("region"),
+			readline.PcItem("owner"),
+			readline.PcItem("splash"),
+			readline.PcItem("members"),
+			readline.PcItem("level"),
+		),
 	);
 }
 func searchMap(theMap *map[string]string) func(string) []string{

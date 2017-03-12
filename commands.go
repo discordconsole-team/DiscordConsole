@@ -825,17 +825,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			channel, err := session.Channel(loc.channel.ID);
-			if(err != nil){
-				stdutil.PrintErr("Could not get channel", err);
-				return;
-			}
-
 			switch(strings.ToLower(args[0])){
-				case "guild": returnVal = channel.GuildID;
-				case "name":  returnVal = channel.Name;
-				case "topic": returnVal = channel.Topic;
-				case "type":  returnVal = channel.Type;
+				case "guild": returnVal = loc.channel.GuildID;
+				case "name":  returnVal = loc.channel.Name;
+				case "topic": returnVal = loc.channel.Topic;
+				case "type":  returnVal = loc.channel.Type;
 				default:
 					stdutil.PrintErr("No such property!", nil);
 			}
@@ -1117,20 +1111,16 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			guild, err := session.Guild(loc.guild.ID);
-			if(err != nil){
-				stdutil.PrintErr("Couldn't get guild information", err);
-				return;
-			}
-
 			switch(args[0]){
-				case "name":    returnVal = guild.Name;
-				case "icon":    returnVal = guild.Icon;
-				case "region":  returnVal = guild.Region;
-				case "owner":   returnVal = guild.OwnerID;
-				case "splash":  returnVal = guild.Splash;
-				case "members": returnVal = strconv.Itoa(guild.MemberCount);
-				case "level":   returnVal = VERIFICATION_LEVELS[guild.VerificationLevel];
+				case "name":    returnVal = loc.guild.Name;
+				case "icon":    returnVal = loc.guild.Icon;
+				case "region":  returnVal = loc.guild.Region;
+				case "owner":   returnVal = loc.guild.OwnerID;
+				case "splash":  returnVal = loc.guild.Splash;
+				case "members": returnVal = strconv.Itoa(loc.guild.MemberCount);
+				case "level":   returnVal = VERIFICATION_LEVELS[loc.guild.VerificationLevel];
+				default:
+					stdutil.PrintErr("Invalid property!", nil);
 			}
 
 			if(returnVal != ""){
