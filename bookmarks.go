@@ -4,10 +4,16 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"os"
+	"github.com/legolord208/stdutil"
 )
 
+type bookmark struct{
+	GuildID string
+	ChannelID string
+}
+
 const BOOKMARKS_FILE = ".bookmarks";
-var bookmarks = make(map[string]location)
+var bookmarks = make(map[string]string);
 
 func loadBookmarks() error{
 	contents, err := ioutil.ReadFile(BOOKMARKS_FILE);
@@ -19,7 +25,29 @@ func loadBookmarks() error{
 		}
 	}
 
-	return json.Unmarshal(contents, &bookmarks);
+	//TODO return json.Unmarshal(contents, &bookmarks);
+
+	err = json.Unmarshal(contents, &bookmarks);
+	if(err != nil){
+		bookmarks2 := make(map[string]bookmark);
+
+		err = json.Unmarshal(contents, &bookmarks2);
+		if(err != nil){
+			return err;
+		}
+
+		stdutil.PrintErr("Warning: An old bookmark system is used. This system will be unsupported in a later version.", nil);
+		stdutil.PrintErr("You're highly suggested to edit any bookmark and back again for the new system to take effect.", nil);
+
+
+		bookmarks = make(map[string]string, len(bookmarks2));
+
+		for i, mark := range bookmarks2{
+			bookmarks[i] = mark.ChannelID;
+		}
+
+	}
+	return nil;
 }
 
 func saveBookmarks() error{

@@ -76,6 +76,8 @@ func printHelp(search string){
 	help = append(help, "bookmarks\tList all bookmarks in the console.");
 	help = append(help, "bookmark <name>\tCreate new bookmark out of current location. If the name starts with -, it removes the bookmark.");
 	help = append(help, "go <bookmark>\tJump to the specified bookmark.");
+	help = append(help, "");
+	help = append(help, "rl\tReload cache!");
 
 	if(search != ""){
 		help2 := make([]string, 0);

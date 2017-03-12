@@ -305,30 +305,16 @@ func execute(command string, args... string) error{
 	return cmd.Run();
 }
 
-func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool, channel *discordgo.Channel){
+func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool, guild *discordgo.Guild, channel *discordgo.Channel){
 	var s string;
 	if(prefixR){
 		s += "\r";
 	}
 	s += "(";
 
-	var err error;
-	if(channel == nil){
-		channel, err = session.Channel(msg.ChannelID);
-		if(err != nil){
-			stdutil.PrintErr("Could not get channel", err);
-			return;
-		}
-	}
 	if(channel.IsPrivate){
 		s += "Private";
 	} else {
-		guild, err := session.Guild(channel.GuildID);
-		if(err != nil){
-			stdutil.PrintErr("Could not get guild", err);
-			return;
-		}
-
 		s += guild.Name + " " + "#" + channel.Name;
 	}
 
@@ -349,19 +335,28 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 		return;
 	}
 
-	if(messageCommand(session, e.Message, channel)){
+	var guild *discordgo.Guild;
+	if(!channel.IsPrivate){
+		guild, err = session.Guild(channel.GuildID);
+		if(err != nil){
+			stdutil.PrintErr("Could not get guild", err);
+			return;
+		}
+	}
+
+	if(messageCommand(session, e.Message, guild, channel)){
 		return;
 	}
 
 	lastMsg = location{
-		GuildID: channel.GuildID,
-		ChannelID: e.ChannelID,
+		guild: guild,
+		channel: channel,
 	};
 
 	hasOutput := false;
 
 	if(messages){
-		printMessage(session, e.Message, true, channel);
+		printMessage(session, e.Message, true, guild, channel);
 		hasOutput = true;
 	}
 
@@ -382,7 +377,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate){
 	}
 }
 
-func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *discordgo.Channel) bool{
+func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *discordgo.Guild, channel *discordgo.Channel) bool{
 	if(e.Author.ID != ID){
 		return false;
 	} else if(!intercept){
@@ -401,8 +396,8 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *d
 
 	lastLoc = loc;
 	loc = location{
-		GuildID: channel.GuildID,
-		ChannelID: e.ChannelID,
+		guild: guild,
+		channel: channel,
 	};
 	pointerCache = "";
 
@@ -422,12 +417,8 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, channel *d
 }
 
 const EMPTY_POINTER = "> ";
-const ERROR_POINTER = "Error> ";
 var pointerCache string;
 
-func clearPointerCache(){
-	pointerCache = "";
-}
 func printPointer(session *discordgo.Session){
 	fmt.Print(pointer(session));
 }
@@ -439,29 +430,16 @@ func pointer(session *discordgo.Session) string{
 	if(nopointer){
 		return EMPTY_POINTER;
 	}
-	if(loc.ChannelID == ""){
+	if(loc.channel == nil){
 		return EMPTY_POINTER;
 	}
 
 	s := "";
 
-	channel, err := session.Channel(loc.ChannelID);
-	if(err != nil){
-		stdutil.PrintErr("Could not get channel", err);
-		pointerCache = ERROR_POINTER;
-		return ERROR_POINTER;
-	}
-
-	if(channel.IsPrivate){
-		s += "Private";
+	if(loc.channel.IsPrivate){
+		s += "Private (" + loc.channel.Recipient.Username + ")";
 	} else {
-		guild, err := session.Guild(loc.GuildID);
-		if(err != nil){
-			stdutil.PrintErr("Could not get guild", err);
-			pointerCache = ERROR_POINTER;
-			return ERROR_POINTER;
-		}
-		s += guild.Name + " (#" + channel.Name + ")";
+		s += loc.guild.Name + " (#" + loc.channel.Name + ")";
 	}
 
 	s += EMPTY_POINTER;
