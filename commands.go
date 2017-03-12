@@ -1069,14 +1069,34 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
-			msg, err := session.ChannelMessageSend(loc.channel.ID, toEmojiString(strings.Join(args, " ")));
-			if(err != nil){
-				stdutil.PrintErr("Could not send", err);
-				return;
+			send := func(buffer string) (*discordgo.Message, bool){
+				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer);
+				if(err != nil){
+					stdutil.PrintErr("Could not send", err);
+					return nil, false;
+				}
+				fmt.Println("Created message with ID " + msg.ID);
+
+				return msg, true;
+			};
+
+			buffer := "";
+			for _, c := range strings.Join(args, " "){
+				str := toEmojiString(c);
+				if(len(buffer) + len(str) > MSG_LIMIT){
+					_, ok := send(buffer);
+					if(!ok){ return; }
+
+					buffer = "";
+				}
+				buffer += str;
 			}
-			fmt.Println("Created message with ID " + msg.ID);
-			lastUsedMsg = msg.ID;
-			returnVal = msg.ID;
+			msg, ok := send(buffer);
+
+			if(!ok){
+				lastUsedMsg = msg.ID;
+				returnVal = msg.ID;
+			}
 		case "reactbig":
 			if(nargs < 2){
 				stdutil.PrintErr("reactbig <message id> <text>", nil);

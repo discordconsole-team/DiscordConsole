@@ -2,41 +2,35 @@ package main;
 
 import "unicode";
 
-func toEmojiString(text string) string{
-	output := "";
+func toEmojiString(c rune) string{
+	if(c >= 'a' && c <= 'z'){
+		return regional_indicator(c);
+	} else if(c >= 'A' && c <= 'Z'){
+		return regional_indicator(unicode.ToLower(c));
+	} else {
+		switch c{
+			case '-': return ":heavy_minus_sign:";
+			case '+': return ":heavy_plus_sign:";
+			case '$': return ":heavy_dollar_sign:";
+			case '*': return ":heavy_asterisk_sign:";
+			case '!': return ":exclamation:";
+			case '?': return ":question:";
+			case ' ': return "\t";
 
-	for _, c := range text{
-		if(c >= 'a' && c <= 'z'){
-			output += regional_indicator(c);
-		} else if(c >= 'A' && c <= 'Z'){
-			output += regional_indicator(unicode.ToLower(c));
-		} else {
-			switch c{
-				case '-': output += ":heavy_minus_sign:";
-				case '+': output += ":heavy_plus_sign:";
-				case '$': output += ":heavy_dollar_sign:";
-				case '*': output += ":heavy_asterisk_sign:";
-				case '!': output += ":exclamation:";
-				case '?': output += ":question:";
-				case ' ': output += "\t";
+			case '0': return ":zero:";
+			case '1': return ":one:";
+			case '2': return ":two:";
+			case '3': return ":three:";
+			case '4': return ":four:";
+			case '5': return ":five:";
+			case '6': return ":six:";
+			case '7': return ":seven:";
+			case '8': return ":eight:";
+			case '9': return ":nine:";
 
-				case '0': output += ":zero:";
-				case '1': output += ":one:";
-				case '2': output += ":two:";
-				case '3': output += ":three:";
-				case '4': output += ":four:";
-				case '5': output += ":five:";
-				case '6': output += ":six:";
-				case '7': output += ":seven:";
-				case '8': output += ":eight:";
-				case '9': output += ":nine:";
-
-				default: output += string(c);
-			}
+			default: return string(c);
 		}
 	}
-
-	return output;
 }
 func toEmoji(c rune) rune{
 	if(c >= 'a' && c <= 'z'){
