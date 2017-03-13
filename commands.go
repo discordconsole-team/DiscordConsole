@@ -121,12 +121,12 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				}
 			}
 
-			err := fixPath(script);
+			err := fixPath(&script);
 			if(err != nil){
 				stdutil.PrintErr("Could not 'fix' filepath.", err);
 			}
 
-			err := RunLua(session, script, scriptArgs...);
+			err = RunLua(session, script, scriptArgs...);
 			if(err != nil){
 				stdutil.PrintErr("Could not run lua", err);
 			}
@@ -514,12 +514,12 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 			if(nargs < 1){
-				stdutil.PrintErr("nick <id/'me'> [nickname]", nil);
+				stdutil.PrintErr("nick <id> [nickname]", nil);
 				return;
 			}
 
 			who := args[0];
-			if(strings.EqualFold(who, "me")){
+			if(strings.EqualFold(who, "@me")){
 				who = "@me/nick";
 				// Should hopefully only be @me in the future.
 				// See https://github.com/bwmarrin/discordgo/issues/318
@@ -1198,8 +1198,14 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				stdutil.PrintErr("uinfo <user id> <property>", nil);
 				return;
 			}
+			id := args[0];
 
-			user, err := session.User(args[0]);
+			if(USER && !strings.EqualFold(id, "@me")){
+				stdutil.PrintErr("Only bots can do this.", nil);
+				return;
+			}
+
+			user, err := session.User(id);
 			if(err != nil){
 				stdutil.PrintErr("Couldn't query user", err);
 				return;
