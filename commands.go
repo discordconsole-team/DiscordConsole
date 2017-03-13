@@ -121,6 +121,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				}
 			}
 
+			err := fixPath(script);
+			if(err != nil){
+				stdutil.PrintErr("Could not 'fix' filepath.", err);
+			}
+
 			err := RunLua(session, script, scriptArgs...);
 			if(err != nil){
 				stdutil.PrintErr("Could not run lua", err);
