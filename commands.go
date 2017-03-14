@@ -1235,8 +1235,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			}
 
 			var reader io.Reader;
-
 			resource := strings.Join(args, " ");
+
 			if(strings.HasPrefix(resource, "https://") || strings.HasPrefix(resource, "http://")){
 				res, err := http.Get(resource);
 				if(err != nil){
@@ -1269,7 +1269,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			_, err := io.Copy(b64, reader);
 			if(err != nil){
 				stdutil.PrintErr("Couldn't convert to Base64", err);
-				b64.Close();
 				return;
 			}
 			b64.Close();
@@ -1280,6 +1279,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				return;
 			}
 
+			// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
 			_, err = session.UserUpdate("", "", user.Username, "data:image/png;base64," + writer.String(), "");
 			if(err != nil){
 				stdutil.PrintErr("Couldn't set avatar", err);

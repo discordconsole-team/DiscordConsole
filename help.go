@@ -71,6 +71,7 @@ func printHelp(search string){
 	help = append(help, "play <dca audio file>\tPlays a song in the selected voice channel");
 	help = append(help, "stop\tStops playing any song.");
 	help = append(help, "");
+	help = append(help, "avatar <link/file>\tChange avatar to a link or file.");
 	help = append(help, "friends\tList all relationships the account has.");
 	help = append(help, "block <user id>\tBlock a user.");
 	help = append(help, "");
