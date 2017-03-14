@@ -14,6 +14,10 @@ import (
 	"encoding/json"
 	"path/filepath"
 	"unicode"
+	"net/http"
+	"io"
+	"bytes"
+	"encoding/base64"
 )
 
 var RELATIONSHIP_TYPES = map[int]string{
@@ -1224,6 +1228,64 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			if(returnVal != ""){
 				fmt.Println(returnVal);
 			}
+		case "avatar":
+			if(nargs < 1){
+				stdutil.PrintErr("avatar <file/link>", nil);
+				return;
+			}
+
+			var reader io.Reader;
+
+			resource := strings.Join(args, " ");
+			if(strings.HasPrefix(resource, "https://") || strings.HasPrefix(resource, "http://")){
+				res, err := http.Get(resource);
+				if(err != nil){
+					stdutil.PrintErr("Could not read URL", err);
+					return;
+				}
+				defer res.Body.Close();
+
+				reader = res.Body;
+			} else {
+				err := fixPath(&resource);
+				if(err != nil){
+					stdutil.PrintErr("Could not 'fix' filepath", err);
+					return;
+				}
+
+				r, err := os.Open(resource);
+				defer r.Close();
+				if(err != nil){
+					stdutil.PrintErr("Could not open file", err);
+					return;
+				}
+
+				reader = r;
+			}
+
+			writer := bytes.NewBuffer([]byte{});
+			b64 := base64.NewEncoder(base64.StdEncoding, writer);
+
+			_, err := io.Copy(b64, reader);
+			if(err != nil){
+				stdutil.PrintErr("Couldn't convert to Base64", err);
+				b64.Close();
+				return;
+			}
+			b64.Close();
+
+			user, err := session.User("@me");
+			if(err != nil){
+				stdutil.PrintErr("Could not get user data", err);
+				return;
+			}
+
+			_, err = session.UserUpdate("", "", user.Username, "data:image/png;base64," + writer.String(), "");
+			if(err != nil){
+				stdutil.PrintErr("Couldn't set avatar", err);
+				return;
+			}
+			fmt.Println("Avatar set!");
 		default:
 			stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}

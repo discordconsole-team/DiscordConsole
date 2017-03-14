@@ -7,8 +7,8 @@ Or compile it yourself:
 ```
 go get github.com/LEGOlord208/DiscordConsole
 ```
-    
-![Imgur](http://i.imgur.com/EODO9XQ.png)
+
+![Imgur](http://i.imgur.com/ilOhYGb.png)
 
 Type "help" at the prompt for a full list of commands.
 
