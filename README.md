@@ -24,7 +24,7 @@ If you try to do this in discord, it just says:
 ### Bulk delete
 DiscordConsole lets you BULK DELETE messages. This allows you to delete a bunch of messages at once, without needing to write any code!  
 Unfortunately, discord still requires you to have a bot account for this. Shame on you, discord!  
-(Together we can fix this! [Vote for it here!](https://www.reddit.com/r/discordapp/comments/5zbk4u/let_more_endpoints_be_available_for_users/))
+(Together we can fix this! [Vote for it here!](https://www.reddit.com/r/discordapp/comments/5zhq1j/more_endpoints_allowed_for_users/?ref=share&ref_source=link))
 
 ### Log
 Log the last 100 messages to a file, or just view the last 10 directly in the console!
