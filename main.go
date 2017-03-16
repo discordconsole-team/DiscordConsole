@@ -145,7 +145,7 @@ func main(){
 	if(token == "" && email == "" && pass == ""){
 		token, err = READLINE.Readline();
 		if(err != nil){
-			if(err != io.EOF){
+			if(err != io.EOF && err != readline.ErrInterrupt){
 				stdutil.PrintErr("Could not read line", err);
 			}
 			return;
@@ -173,7 +173,7 @@ func main(){
 			fmt.Println();
 
 			if(err != nil){
-				if(err != io.EOF){
+				if(err != io.EOF && err != readline.ErrInterrupt){
 					stdutil.PrintErr("Could not read password", err);
 				}
 				return;
