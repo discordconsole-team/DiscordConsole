@@ -1158,11 +1158,25 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 				fmt.Println(returnVal);
 			}
 		case "rl":
-			fmt.Println("Reloading location cache...");
+			full := nargs >= 1 && strings.EqualFold(args[0], "full");
 
+			var err error;
+			if(full){
+				fmt.Println("Restarting session...");
+				err = session.Close();
+				if(err != nil){
+					stdutil.PrintErr("Couldn't close session", err);
+					return;
+				}
+				err = session.Open();
+				if(err != nil){
+					stdutil.PrintErr("Couldn't open session", err);
+				}
+			}
+
+			fmt.Println("Reloading location cache...");
 			var guild *discordgo.Guild;
 			var channel *discordgo.Channel;
-			var err error;
 
 			if(loc.guild != nil){
 				guild, err = session.Guild(loc.guild.ID);
