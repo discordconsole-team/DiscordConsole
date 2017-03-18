@@ -197,7 +197,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			if(channel.IsPrivate){
 				loc.push(nil, channel);
 			} else {
-				if(channel.GuildID != loc.guild.ID){
+				if(loc.guild == nil || channel.GuildID != loc.guild.ID){
 					guild, err := session.Guild(channel.GuildID);
 
 					if(err != nil){
