@@ -2,7 +2,7 @@ package main;
 
 import (
 	"os/user"
-	"filepath"
+	"path/filepath"
 )
 
 func tokenDir() (string, error){
