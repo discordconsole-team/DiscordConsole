@@ -1314,6 +1314,10 @@ func channels(session *discordgo.Session, kind string){
 
 	cacheChannels = make(map[string]string);
 
+	sort.Slice(channels, func(i int, j int) bool{
+		return channels[i].Position < channels[j].Position;
+	});
+
 	table := gtable.NewStringTable();
 	table.AddStrings("ID", "Name");
 
