@@ -2,7 +2,7 @@ package main;
 
 import (
 	"os"
-	"filepath"
+	"path/filepath"
 )
 
 const SH = "cmd";
