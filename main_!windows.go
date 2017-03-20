@@ -1,4 +1,5 @@
 // +build !windows
+
 package main;
 
 const SH = "sh";
