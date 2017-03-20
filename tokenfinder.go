@@ -1,8 +1,6 @@
 package main;
 
 import (
-	"os"
-	"os/user"
 	"path/filepath"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -13,20 +11,7 @@ const STORAGEFILENAME = "https_discordapp.com_0.localstorage";
 const TOKENQUERY = "SELECT value FROM ItemTable WHERE key='token'";
 
 func findToken() (string, error){
-	var path string;
-	if(WINDOWS){
-		path = os.Getenv("APPDATA") + "/Discord";
-	} else {
-		current, err := user.Current();
-		if(err != nil){
-			return "", err;
-		}
-		if(MAC){
-			path = filepath.Join(current.HomeDir, "Library", "Application Support", "discord");
-		} else {
-			path = filepath.Join(current.HomeDir, ".config", "discord");
-		}
-	}
+	path, err := tokenDir();
 
 	path = filepath.Join(path, "Local Storage", STORAGEFILENAME);
 	db, err := sql.Open("sqlite3", path);

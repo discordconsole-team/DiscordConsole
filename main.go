@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"flag"
-	"runtime"
 	"os/signal"
 	"syscall"
 	"io"
@@ -21,9 +20,6 @@ const VERSION = "1.21.1";
 const AUTORUN_FILE = ".autorun";
 var ID string;
 var USER bool;
-
-const WINDOWS = runtime.GOOS == "windows";
-const MAC = runtime.GOOS == "darwin";
 
 var READLINE *readline.Instance;
 var COLOR_DEFAULT = color.New(color.Bold);

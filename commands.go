@@ -92,12 +92,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 
 			cmd := strings.Join(args, " ");
 
-			var err error;
-			if(WINDOWS){
-				err = execute("cmd", "/c", cmd);
-			} else {
-				err = execute("sh", "-c", cmd);
-			}
+			err := execute(SH, C, cmd);
 			if(err != nil){
 				stdutil.PrintErr("Could not execute", err);
 			}
