@@ -709,11 +709,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		}
 
 		table := gtable.NewStringTable();
-		table.AddStrings("User", "Reason");
+		table.AddStrings("User ID", "Username", "Reason");
 
 		for _, ban := range bans{
 			table.AddRow();
-			table.AddStrings(ban.User.Username, ban.Reason);
+			table.AddStrings(ban.User.ID, ban.User.Username, ban.Reason);
 		}
 
 		printTable(table);
