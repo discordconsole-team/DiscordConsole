@@ -222,10 +222,8 @@ func main(){
 		c := make(chan os.Signal, 2);
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM);
 
-		for _ = range c{
-			exit(session);
-			return;
-		}
+		<-c;
+		exit(session);
 	}();
 
 	COLOR_AUTOMATED.Set();
