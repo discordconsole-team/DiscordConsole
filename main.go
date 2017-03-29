@@ -16,7 +16,7 @@ import (
 	"io/ioutil"
 )
 
-const VERSION = "1.21.2";
+const VERSION = "1.21.3";
 const AUTORUN_FILE = ".autorun";
 var ID string;
 var USER bool;
