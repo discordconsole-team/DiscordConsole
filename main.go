@@ -57,15 +57,7 @@ func main(){
 	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in " + AUTORUN_FILE + " file.");
 	flag.Parse();
 
-	stdutil.EventPrePrintError = append(stdutil.EventPrePrintError, func(text string) bool{
-		color.Unset();
-		COLOR_ERROR.Set();
-		return false;
-	});
-	stdutil.EventPostPrintError = append(stdutil.EventPostPrintError, func(text string){
-		color.Unset();
-	});
-
+	doHook();
 	fmt.Println("DiscordConsole " + VERSION);
 
 	if(!noupdate){
