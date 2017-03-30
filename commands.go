@@ -1,6 +1,7 @@
 package main;
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/legolord208/stdutil"
 	"github.com/bwmarrin/discordgo"
@@ -214,8 +215,13 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 			stdutil.PrintErr("No channel selected!", nil);
 			return;
 		}
+		msgStr := strings.Join(args, " ");
 
-		msg, err := session.ChannelMessageSend(loc.channel.ID, strings.Join(args, " "));
+		if(len(msgStr) > MSG_LIMIT){
+			stdutil.PrintErr("Message exceeds character limit", nil);
+			return;
+		}
+		msg, err := session.ChannelMessageSend(loc.channel.ID, msgStr);
 		if(err != nil){
 			stdutil.PrintErr("Could not send", err);
 			return;
@@ -1247,58 +1253,115 @@ func command(session *discordgo.Session, cmd string) (returnVal string){
 		resource := strings.Join(args, " ");
 
 		if(strings.HasPrefix(resource, "https://") || strings.HasPrefix(resource, "http://")){
-		res, err := http.Get(resource);
+			res, err := http.Get(resource);
+			if(err != nil){
+				stdutil.PrintErr("Could not read URL", err);
+				return;
+			}
+			defer res.Body.Close();
+
+			reader = res.Body;
+		} else {
+			err := fixPath(&resource);
+			if(err != nil){
+				stdutil.PrintErr("Could not 'fix' filepath", err);
+				return;
+			}
+
+			r, err := os.Open(resource);
+			defer r.Close();
+			if(err != nil){
+				stdutil.PrintErr("Could not open file", err);
+				return;
+			}
+
+			reader = r;
+		}
+
+		writer := bytes.NewBuffer([]byte{});
+		b64 := base64.NewEncoder(base64.StdEncoding, writer);
+
+		_, err := io.Copy(b64, reader);
 		if(err != nil){
-			stdutil.PrintErr("Could not read URL", err);
+			stdutil.PrintErr("Couldn't convert to Base64", err);
 			return;
 		}
-		defer res.Body.Close();
+		b64.Close();
 
-		reader = res.Body;
-	} else {
-		err := fixPath(&resource);
+		user, err := session.User("@me");
 		if(err != nil){
-			stdutil.PrintErr("Could not 'fix' filepath", err);
+			stdutil.PrintErr("Could not get user data", err);
 			return;
 		}
 
-		r, err := os.Open(resource);
-		defer r.Close();
+		// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
+		_, err = session.UserUpdate("", "", user.Username, "data:image/png;base64," + writer.String(), "");
 		if(err != nil){
-			stdutil.PrintErr("Could not open file", err);
+			stdutil.PrintErr("Couldn't set avatar", err);
+			return;
+		}
+		fmt.Println("Avatar set!");
+	case "sayfile":
+		if(nargs < 1){
+			stdutil.PrintErr("sayfile <path>", nil);
 			return;
 		}
 
-		reader = r;
-	}
+		path := args[0];
+		err := fixPath(&path);
+		if(err != nil){
+			stdutil.PrintErr("Couldn't 'fix' path", err);
+			return;
+		}
 
-	writer := bytes.NewBuffer([]byte{});
-	b64 := base64.NewEncoder(base64.StdEncoding, writer);
+		reader, err := os.Open(path);
+		if(err != nil){
+			stdutil.PrintErr("Couldn't open file", err);
+			return;
+		}
+		defer reader.Close();
 
-	_, err := io.Copy(b64, reader);
-	if(err != nil){
-		stdutil.PrintErr("Couldn't convert to Base64", err);
-		return;
-	}
-	b64.Close();
+		send := func(buffer string) (*discordgo.Message, bool){
+			msg, err := session.ChannelMessageSend(loc.channel.ID, buffer);
+			if(err != nil){
+				stdutil.PrintErr("Could not send", err);
+				return nil, false;
+			}
+			fmt.Println("Created message with ID " + msg.ID);
 
-	user, err := session.User("@me");
-	if(err != nil){
-		stdutil.PrintErr("Could not get user data", err);
-		return;
-	}
+			return msg, true;
+		};
 
-	// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
-	_, err = session.UserUpdate("", "", user.Username, "data:image/png;base64," + writer.String(), "");
-	if(err != nil){
-		stdutil.PrintErr("Couldn't set avatar", err);
-		return;
+		scanner := bufio.NewScanner(reader);
+		buffer := "";
+
+		for i := 1; scanner.Scan(); i++{
+			text := scanner.Text();
+			if(len(text) > MSG_LIMIT){
+				stdutil.PrintErr("Line " + strconv.Itoa(i) + " exceeded " + strconv.Itoa(MSG_LIMIT) + " characters.", nil);
+				return;
+			} else if(len(buffer) + len(text) > MSG_LIMIT){
+				_, ok := send(buffer);
+				if(!ok){ return; }
+
+				buffer = "";
+			}
+			buffer += text + "\n";
+		}
+
+		err = scanner.Err();
+		if(err != nil){
+			stdutil.PrintErr("Couldn't read file", err);
+		}
+		msg, ok := send(buffer);
+		if(!ok){ return; }
+
+		returnVal = msg.ID;
+		lastUsedMsg = msg.ID;
+	default:
+		stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
 	}
-	fmt.Println("Avatar set!");
-default:
-	stdutil.PrintErr("Unknown command. Do 'help' for help", nil);
-}
-return;
+	return;
 }
 
 func channels(session *discordgo.Session, kind string){

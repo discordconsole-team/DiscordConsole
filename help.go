@@ -26,6 +26,7 @@ func printHelp(search string){
 						"author_email, author_name, author_avatar, author_bot; 'cache' may be used as property to save, and used later as message ID.");
 	help = append(help, "");
 	help = append(help, "say <stuff>\tSend a message in your selected channel.");
+	help = append(help, "sayfile <path>\tSend the contents of a file (auto-splitted).");
 	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!");
 	help = append(help, "tts <stuff>\tSend a TTS message in your selected channel.");
 	help = append(help, "embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object");
