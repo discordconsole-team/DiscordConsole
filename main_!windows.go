@@ -1,6 +1,6 @@
 // +build !windows
 
-package main;
+package main
 
-const SH = "sh";
-const C = "-c";
+const SH = "sh"
+const C = "-c"

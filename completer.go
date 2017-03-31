@@ -1,10 +1,10 @@
-package main;
+package main
 
 import (
 	"github.com/chzyer/readline"
 )
 
-func setCompleter(rl *readline.Instance){
+func setCompleter(rl *readline.Instance) {
 	rl.Config.AutoComplete = readline.NewPrefixCompleter(
 		readline.PcItem("guild", readline.PcItemDynamic(searchMap(&cacheGuilds))),
 		readline.PcItem("channel", readline.PcItemDynamic(searchMap(&cacheChannels))),
@@ -44,32 +44,32 @@ func setCompleter(rl *readline.Instance){
 			readline.PcItem("members"),
 			readline.PcItem("level"),
 		),
-	);
+	)
 }
-func searchMap(theMap *map[string]string) func(string) []string{
-	return func(line string) []string{
-		items := make([]string, len(*theMap));
+func searchMap(theMap *map[string]string) func(string) []string {
+	return func(line string) []string {
+		items := make([]string, len(*theMap))
 
-		i := 0;
-		for key := range *theMap{
-			items[i] = key;
-			i++;
+		i := 0
+		for key := range *theMap {
+			items[i] = key
+			i++
 		}
-		return items;
-	};
-}
-func bookmarkTab(line string) []string{
-	items := make([]string, len(bookmarks));
-
-	i := 0;
-	for key := range bookmarks{
-		items[i] = key;
-		i++;
+		return items
 	}
-	return items;
 }
-func singleValue(val *string) func(string) []string{
-	return func(line string) []string{
-		return []string{ *val };
-	};
+func bookmarkTab(line string) []string {
+	items := make([]string, len(bookmarks))
+
+	i := 0
+	for key := range bookmarks {
+		items[i] = key
+		i++
+	}
+	return items
+}
+func singleValue(val *string) func(string) []string {
+	return func(line string) []string {
+		return []string{*val}
+	}
 }
