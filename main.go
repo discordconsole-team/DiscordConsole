@@ -3,10 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"github.com/chzyer/readline"
-	"github.com/fatih/color"
-	"github.com/legolord208/stdutil"
 	"io"
 	"io/ioutil"
 	"os"
@@ -14,9 +10,18 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/chzyer/readline"
+	"github.com/fatih/color"
+	"github.com/legolord208/stdutil"
 )
 
 const VERSION = "1.21.3dev"
+
+var DEV_VERSION = strings.Contains(VERSION, "dev")
+
 const AUTORUN_FILE = ".autorun"
 
 var ID string
@@ -70,7 +75,11 @@ func main() {
 		}
 		if update.UpdateAvailable {
 			fmt.Println()
-			color.Cyan("Update available: Version " + update.Version + ".")
+			if DEV_VERSION {
+				color.Cyan("Latest stable release: " + update.Version + ".")
+			} else {
+				color.Cyan("Update available: Version " + update.Version + ".")
+			}
 			color.Cyan("Download from " + update.Url + ".")
 		} else {
 			fmt.Println("No updates found.")
@@ -362,16 +371,50 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	}
 }
 
-func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *discordgo.Guild, channel *discordgo.Channel) bool {
+func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *discordgo.Guild, channel *discordgo.Channel) (isCmd bool) {
 	if e.Author.ID != ID {
-		return false
+		return
 	} else if !intercept {
-		return false
+		return
 	}
 
 	contents := strings.TrimSpace(e.Content)
 	if !strings.HasPrefix(contents, "console.") {
-		return false
+		return
+	}
+	cmd := contents[len("console."):]
+
+	isCmd = true
+
+	if strings.EqualFold(cmd, "ping") {
+		now := time.Now()
+
+		_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, "Pong!")
+		if err != nil {
+			stdutil.PrintErr("Couldn't edit message", err)
+			return
+		}
+
+		now2 := time.Now()
+		timestamp, err := e.Timestamp.Parse()
+		if err != nil {
+			stdutil.PrintErr("Couldn't parse timestamp", err)
+			return
+		}
+
+		in := now.Sub(timestamp)
+		out := now2.Sub(now)
+
+		inMS := int(in.Nanoseconds() / time.Millisecond.Nanoseconds())
+		outMS := int(out.Nanoseconds() / time.Millisecond.Nanoseconds())
+
+		_, err = session.ChannelMessageEditEmbed(e.ChannelID, e.ID, &discordgo.MessageEmbed{
+			Description: fmt.Sprintf("In: `%dms`\nOut: `%dms`", inMS, outMS),
+		})
+		if err != nil {
+			stdutil.PrintErr("Couldn't edit message", err)
+		}
+		return
 	}
 
 	err := session.ChannelMessageDelete(e.ChannelID, e.ID)
@@ -386,8 +429,6 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	}
 	pointerCache = ""
 
-	cmd := contents[len("console."):]
-
 	color.Unset()
 	COLOR_AUTOMATED.Set()
 
@@ -398,7 +439,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	COLOR_DEFAULT.Set()
 
 	printPointer(session)
-	return true
+	return
 }
 
 const EMPTY_POINTER = "> "

@@ -975,7 +975,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		msg, err = session.ChannelMessageSendEmbed(loc.channel.ID, &discordgo.MessageEmbed{
 			Author: &discordgo.MessageEmbedAuthor{
 				Name:    msg.Author.Username,
-				IconURL: "https://cdn.discordapp.com/avatars/" + msg.Author.ID + "/" + msg.Author.Avatar,
+				IconURL: discordgo.EndpointUserAvatar(msg.Author.ID, msg.Author.Avatar),
 			},
 			Description: msg.Content,
 			Footer: &discordgo.MessageEmbedFooter{
@@ -1401,6 +1401,24 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		returnVal = msg.ID
 		lastUsedMsg = msg.ID
+	case "name":
+		if nargs < 1 {
+			stdutil.PrintErr("name <handle>", nil)
+			return
+		}
+
+		user, err := session.User("@me")
+		if err != nil {
+			stdutil.PrintErr("Couldn't get user", err)
+			return
+		}
+
+		user, err = session.UserUpdate("", "", strings.Join(args, " "), user.Avatar, "")
+		if err != nil {
+			stdutil.PrintErr("Couldn't update user", err)
+			return
+		}
+		fmt.Println("Updated!")
 	default:
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil)
 	}
