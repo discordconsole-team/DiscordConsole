@@ -21,6 +21,10 @@ In addition, you are even able to delete bot defined roles.
 If you try to do this in discord, it just says:  
 ![Imgur](http://i.imgur.com/Ubr2OMZ.png)
 
+This was also discovered recently, by a friend of mine:  
+You can bypass the black background in an avatar when setting the bot avatar.  
+![Imgur](http://i.imgur.com/J811dFb.png)
+
 ### Bulk delete
 DiscordConsole lets you BULK DELETE messages. This allows you to delete a bunch of messages at once, without needing to write any code!  
 Unfortunately, discord still requires you to have a bot account for this. Shame on you, discord!  
