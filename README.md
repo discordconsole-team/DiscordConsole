@@ -23,7 +23,7 @@ If you try to do this in discord, it just says:
 
 This was also discovered recently, by a friend of mine:  
 You can bypass the black background in an avatar when setting the bot avatar.  
-![Imgur](http://i.imgur.com/J811dFb.png)
+![Imgur](http://i.imgur.com/Q0GQR8d.png)
 
 ### Bulk delete
 DiscordConsole lets you BULK DELETE messages. This allows you to delete a bunch of messages at once, without needing to write any code!  
