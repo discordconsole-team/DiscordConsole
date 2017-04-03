@@ -349,7 +349,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		for _, channel := range channels {
 			table.AddRow()
-			table.AddStrings(channel.ID, channel.Recipient.Username)
+			recipient := ""
+			if channel.Recipient != nil {
+				recipient = channel.Recipient.Username
+			}
+			table.AddStrings(channel.ID, recipient)
 		}
 		printTable(table)
 	case "dm":
