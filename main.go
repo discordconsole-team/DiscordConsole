@@ -320,10 +320,6 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 }
 
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
-	if e.Author == nil {
-		return
-	}
-
 	channel, err := session.Channel(e.ChannelID)
 	if err != nil {
 		stdutil.PrintErr("Could not get channel", err)
