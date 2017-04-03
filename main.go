@@ -18,7 +18,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-const VERSION = "1.22.1"
+const VERSION = "1.22.2"
 
 var DEV_VERSION = strings.Contains(VERSION, "dev")
 
@@ -458,9 +458,17 @@ func pointer(session *discordgo.Session) string {
 	s := ""
 
 	if loc.channel.IsPrivate {
-		s += "Private (" + loc.channel.Recipient.Username + ")"
+		recipient := "Unknown"
+		if loc.channel.Recipient != nil {
+			recipient = loc.channel.Recipient.Username
+		}
+		s += "Private (" + recipient + ")"
 	} else {
-		s += loc.guild.Name + " (#" + loc.channel.Name + ")"
+		guild := ""
+		if loc.guild != nil {
+			guild = loc.guild.Name
+		}
+		s += guild + " (#" + loc.channel.Name + ")"
 	}
 
 	s += EMPTY_POINTER
