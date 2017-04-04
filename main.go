@@ -18,7 +18,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-const VERSION = "1.22.2"
+const VERSION = "1.22.3dev"
 
 var DEV_VERSION = strings.Contains(VERSION, "dev")
 
@@ -76,7 +76,7 @@ func main() {
 		if update.UpdateAvailable {
 			fmt.Println()
 			if DEV_VERSION {
-				color.Cyan("Latest stable release: " + update.Version + ".")
+				fmt.Println("Latest stable release: " + update.Version + ".")
 			} else {
 				color.Cyan("Update available: Version " + update.Version + ".")
 			}
@@ -189,6 +189,7 @@ func main() {
 		} else {
 			token = "Bot " + token
 			USER = false
+			intercept = false
 		}
 		session, err = discordgo.New(token)
 	}
@@ -336,6 +337,13 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	}
 
 	if messageCommand(session, e.Message, guild, channel) {
+		return
+	}
+
+	if (guild == nil || loc.guild == nil) && loc.channel != nil && channel.ID != loc.channel.ID {
+		return
+	}
+	if guild != nil && loc.guild != nil && guild.ID != loc.guild.ID {
 		return
 	}
 

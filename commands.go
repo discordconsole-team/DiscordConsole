@@ -65,7 +65,7 @@ var cacheGuilds = make(map[string]string)
 var cacheChannels = make(map[string]string)
 var cacheRead *discordgo.Message
 
-var messages bool
+var messages = true
 var intercept = true
 
 func command(session *discordgo.Session, cmd string) (returnVal string) {
