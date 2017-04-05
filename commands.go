@@ -132,7 +132,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("Could not run lua", err)
 		}
 	case "guilds":
-		guilds, err := session.UserGuilds()
+		guilds, err := session.UserGuilds(100, "", "")
 		if err != nil {
 			stdutil.PrintErr("Could not get guilds", err)
 			return
@@ -275,7 +275,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			limit = 10
 		}
 
-		msgs, err := session.ChannelMessages(loc.channel.ID, limit, "", "")
+		msgs, err := session.ChannelMessages(loc.channel.ID, limit, "", "", "")
 		if err != nil {
 			stdutil.PrintErr("Could not get messages", err)
 			return
@@ -378,7 +378,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		if nargs >= 1 {
 			since = args[0]
 		}
-		messages, err := session.ChannelMessages(loc.channel.ID, 100, "", since)
+		messages, err := session.ChannelMessages(loc.channel.ID, 100, "", since, "")
 		if err != nil {
 			stdutil.PrintErr("Could not get messages", err)
 			return
@@ -806,10 +806,10 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			msg = cacheRead
 		} else {
 			msg, err = getMessage(session, loc.channel.ID, msgID)
-		}
-		if err != nil {
-			stdutil.PrintErr("Could not get message", err)
-			return
+			if err != nil {
+				stdutil.PrintErr("Could not get message", err)
+				return
+			}
 		}
 
 		property := ""
