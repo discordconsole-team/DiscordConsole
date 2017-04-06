@@ -18,7 +18,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-const VERSION = "1.22.3dev"
+const VERSION = "1.22.3"
 
 var DEV_VERSION = strings.Contains(VERSION, "dev")
 
@@ -71,18 +71,18 @@ func main() {
 		update, err := checkUpdate()
 		if err != nil {
 			stdutil.PrintErr("Error checking for updates", err)
-			return
-		}
-		if update.UpdateAvailable {
-			fmt.Println()
-			if DEV_VERSION {
-				fmt.Println("Latest stable release: " + update.Version + ".")
-			} else {
-				color.Cyan("Update available: Version " + update.Version + ".")
-			}
-			color.Cyan("Download from " + update.Url + ".")
 		} else {
-			fmt.Println("No updates found.")
+			if update.UpdateAvailable {
+				fmt.Println()
+				if DEV_VERSION {
+					fmt.Println("Latest stable release: " + update.Version + ".")
+				} else {
+					color.Cyan("Update available: Version " + update.Version + ".")
+				}
+				color.Cyan("Download from " + update.Url + ".")
+			} else {
+				fmt.Println("No updates found.")
+			}
 		}
 	}
 
