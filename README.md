@@ -1,7 +1,7 @@
 # DiscordConsole
 The console that allows you to control both your user and bot account in interesting ways.
 
-[Download Win/Mac/Linux 64-bit binaries](https://krake.one/software#discordconsole)
+[Download Win/Mac/Linux 64-bit binaries](https://github.com/LEGOlord208/DiscordConsole/releases)
 
 Or compile it yourself:
 ```
