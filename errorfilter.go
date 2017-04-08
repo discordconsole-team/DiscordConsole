@@ -10,11 +10,11 @@ import (
 func doHook() {
 	stdutil.EventPrePrintError = append(stdutil.EventPrePrintError, func(full string, msg string, err error) bool {
 		if err != nil && isPermission(err) {
-			COLOR_ERROR.Fprintln(os.Stderr, "No permissions to perform this action.")
+			ColorError.Fprintln(os.Stderr, "No permissions to perform this action.")
 			return true
 		}
 		color.Unset()
-		COLOR_ERROR.Set()
+		ColorError.Set()
 		return false
 	})
 	stdutil.EventPostPrintError = append(stdutil.EventPostPrintError, func(text string, msg string, err error) {

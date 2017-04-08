@@ -21,7 +21,7 @@ func timestamp(e *discordgo.Message) (string, error) {
 	return s, nil
 }
 func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.Message, error) {
-	if USER {
+	if IsUser {
 		msgs, err := session.ChannelMessages(channel, 3, "", "", msgID)
 		if err != nil {
 			return nil, err

@@ -18,10 +18,10 @@ func setCompleter(rl *readline.Instance) {
 		readline.PcItem("roleedit", readline.PcItemDynamic(singleValue(&lastUsedRole))),
 		readline.PcItem("roledelete", readline.PcItemDynamic(singleValue(&lastUsedRole))),
 
-		readline.PcItem("roleadd", readline.PcItem(ID,
+		readline.PcItem("roleadd", readline.PcItem(UserId,
 			readline.PcItemDynamic(singleValue(&lastUsedRole)),
 		)),
-		readline.PcItem("roledel", readline.PcItem(ID,
+		readline.PcItem("roledel", readline.PcItem(UserId,
 			readline.PcItemDynamic(singleValue(&lastUsedRole)),
 		)),
 
@@ -43,6 +43,12 @@ func setCompleter(rl *readline.Instance) {
 			readline.PcItem("splash"),
 			readline.PcItem("members"),
 			readline.PcItem("level"),
+		),
+		readline.PcItem("enablemessages",
+			readline.PcItem("all"),
+			readline.PcItem("mentions"),
+			readline.PcItem("private"),
+			readline.PcItem("current"),
 		),
 	)
 }

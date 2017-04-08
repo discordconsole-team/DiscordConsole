@@ -19,19 +19,18 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-const VERSION = "1.22.4"
+const AutoRunFile = ".autorun"
+const Version = "1.22.4dev"
 
-var DEV_VERSION = strings.Contains(VERSION, "dev")
+var DevVersion = strings.Contains(Version, "dev")
 
-const AUTORUN_FILE = ".autorun"
+var UserId string
+var IsUser bool
 
-var ID string
-var USER bool
-
-var READLINE *readline.Instance
-var COLOR_DEFAULT = color.New(color.Bold)
-var COLOR_AUTOMATED = color.New(color.Italic)
-var COLOR_ERROR = color.New(color.FgRed, color.Bold)
+var rl *readline.Instance
+var ColorDefault = color.New(color.Bold)
+var ColorAutomated = color.New(color.Italic)
+var ColorError = color.New(color.FgRed, color.Bold)
 
 const MSG_LIMIT = 2000
 
@@ -61,11 +60,11 @@ func main() {
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.")
 
 	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking.")
-	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in "+AUTORUN_FILE+" file.")
+	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in "+AutoRunFile+" file.")
 	flag.Parse()
 
 	doHook()
-	fmt.Println("DiscordConsole " + VERSION)
+	fmt.Println("DiscordConsole " + Version)
 
 	if !noupdate {
 		fmt.Print("Checking for updates... ")
@@ -75,7 +74,7 @@ func main() {
 		} else {
 			if update.UpdateAvailable {
 				fmt.Println()
-				if DEV_VERSION {
+				if DevVersion {
 					fmt.Println("Latest stable release: " + update.Version + ".")
 				} else {
 					color.Cyan("Update available: Version " + update.Version + ".")
@@ -95,9 +94,9 @@ func main() {
 
 	var ar_lines []string
 	if !noautorun {
-		ar, err := ioutil.ReadFile(AUTORUN_FILE)
+		ar, err := ioutil.ReadFile(AutoRunFile)
 		if err != nil && os.IsExist(err) {
-			stdutil.PrintErr("Could not read "+AUTORUN_FILE, err)
+			stdutil.PrintErr("Could not read "+AutoRunFile, err)
 		} else if err == nil {
 			ar_lines = strings.Split(string(ar), "\n")
 
@@ -111,7 +110,7 @@ func main() {
 		}
 	}
 
-	READLINE, err = readline.New(EMPTY_POINTER)
+	rl, err = readline.New(EMPTY_POINTER)
 	if err != nil {
 		stdutil.PrintErr("Could not start readline library", err)
 		return
@@ -142,7 +141,7 @@ func main() {
 	fmt.Println("Please paste your 'token' here, or leave blank for a username/password prompt.")
 	fmt.Print("> ")
 	if token == "" && email == "" && pass == "" {
-		token, err = READLINE.Readline()
+		token, err = rl.Readline()
 		if err != nil {
 			if err != io.EOF && err != readline.ErrInterrupt {
 				stdutil.PrintErr("Could not read line", err)
@@ -158,17 +157,17 @@ func main() {
 
 	var session *discordgo.Session
 	if token == "" {
-		USER = true
+		IsUser = true
 
-		READLINE.SetPrompt("Email: ")
+		rl.SetPrompt("Email: ")
 		if email == "" {
-			email, err = READLINE.Readline()
+			email, err = rl.Readline()
 		} else {
 			fmt.Println(email)
 		}
 
 		if pass == "" {
-			pass2, err := READLINE.ReadPassword("Password: ")
+			pass2, err := rl.ReadPassword("Password: ")
 			fmt.Println()
 
 			if err != nil {
@@ -186,10 +185,10 @@ func main() {
 		fmt.Println("Authenticating...")
 		if strings.HasPrefix(strings.ToLower(token), "user ") {
 			token = token[len("user "):]
-			USER = true
+			IsUser = true
 		} else {
 			token = "Bot " + token
-			USER = false
+			IsUser = false
 			intercept = false
 		}
 		session, err = discordgo.New(token)
@@ -206,7 +205,7 @@ func main() {
 		return
 	}
 
-	ID = user.ID
+	UserId = user.ID
 
 	session.AddHandler(messageCreate)
 	err = session.Open()
@@ -214,7 +213,7 @@ func main() {
 		stdutil.PrintErr("Could not open session", err)
 	}
 
-	fmt.Println("Logged in with user ID " + ID)
+	fmt.Println("Logged in with user ID " + UserId)
 	fmt.Println("Write 'help' for help")
 	fmt.Println("Press Ctrl+D or type 'exit' to exit.")
 
@@ -230,7 +229,7 @@ func main() {
 		exit(session)
 	}()
 
-	COLOR_AUTOMATED.Set()
+	ColorAutomated.Set()
 
 	if ar_lines != nil {
 		for _, cmd := range ar_lines {
@@ -256,13 +255,13 @@ func main() {
 	}
 
 	color.Unset()
-	setCompleter(READLINE)
+	setCompleter(rl)
 
 	for {
-		COLOR_DEFAULT.Set()
+		ColorDefault.Set()
 
-		READLINE.SetPrompt(pointer(session))
-		cmd, err := READLINE.Readline()
+		rl.SetPrompt(pointer(session))
+		cmd, err := rl.Readline()
 
 		color.Unset()
 
@@ -318,7 +317,7 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 
 	color.Unset()
 	color.Yellow(s)
-	COLOR_DEFAULT.Set()
+	ColorDefault.Set()
 }
 
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
@@ -346,15 +345,55 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 		channel: channel,
 	}
 
-	if (guild == nil || loc.guild == nil) && loc.channel != nil && channel.ID != loc.channel.ID {
-		return
-	}
-	if guild != nil && loc.guild != nil && guild.ID != loc.guild.ID {
-		return
-	}
 	hasOutput := false
 
-	if messages {
+	print := false
+Switch:
+	switch messages {
+	case MessagesAll:
+		print = true
+	case MessagesPrivate:
+		if channel.IsPrivate {
+			print = true
+		}
+	case MessagesMentions:
+		if channel.IsPrivate || e.MentionEveryone {
+			print = true
+			break
+		}
+
+		for _, u := range e.Mentions {
+			if u.ID == UserId {
+				print = true
+				break Switch
+			}
+		}
+
+		user, err := session.GuildMember(guild.ID, UserId)
+		if err != nil {
+			stdutil.PrintErr("Could not query user", err)
+			break
+		}
+
+		for _, role := range user.Roles {
+			for _, role2 := range e.MentionRoles {
+				if role == role2 {
+					print = true
+					break Switch
+				}
+			}
+		}
+	case MessagesCurrent:
+		if (guild == nil || loc.guild == nil) && loc.channel != nil && channel.ID != loc.channel.ID {
+			break
+		}
+		if guild != nil && loc.guild != nil && guild.ID != loc.guild.ID {
+			break
+		}
+
+		print = true
+	}
+	if print {
 		printMessage(session, e.Message, true, guild, channel)
 		hasOutput = true
 	}
@@ -363,13 +402,13 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 		hasOutput = true
 
 		color.Unset()
-		COLOR_AUTOMATED.Set()
+		ColorAutomated.Set()
 
 		fmt.Print("\r" + strings.Repeat(" ", 20) + "\r")
 		luaMessageEvent(session, e.Message)
 
 		color.Unset()
-		COLOR_DEFAULT.Set()
+		ColorDefault.Set()
 	}
 	if hasOutput {
 		printPointer(session)
@@ -377,7 +416,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 }
 
 func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *discordgo.Guild, channel *discordgo.Channel) (isCmd bool) {
-	if e.Author.ID != ID {
+	if e.Author.ID != UserId {
 		return
 	} else if !intercept {
 		return
@@ -441,13 +480,13 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	pointerCache = ""
 
 	color.Unset()
-	COLOR_AUTOMATED.Set()
+	ColorAutomated.Set()
 
 	fmt.Println(cmd)
 	command(session, cmd)
 
 	color.Unset()
-	COLOR_DEFAULT.Set()
+	ColorDefault.Set()
 
 	printPointer(session)
 	return

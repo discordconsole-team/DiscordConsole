@@ -65,7 +65,15 @@ var cacheGuilds = make(map[string]string)
 var cacheChannels = make(map[string]string)
 var cacheRead *discordgo.Message
 
-var messages = true
+const (
+	MessagesNone = iota
+	MessagesCurrent
+	MessagesPrivate
+	MessagesMentions
+	MessagesAll
+)
+
+var messages = MessagesNone
 var intercept = true
 
 func command(session *discordgo.Session, cmd string) (returnVal string) {
@@ -418,7 +426,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		printTable(table)
 	case "invite":
 		if nargs >= 1 {
-			if !USER {
+			if !IsUser {
 				stdutil.PrintErr("This only works for users.", nil)
 				return
 			}
@@ -541,10 +549,27 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("Could not set nickname", err)
 		}
 	case "enablemessages":
-		messages = true
+		if len(args) < 1 {
+			messages = MessagesCurrent
+			return
+		} else {
+			switch strings.ToLower(args[0]) {
+			case "all":
+				messages = MessagesAll
+			case "mentions":
+				messages = MessagesMentions
+			case "private":
+				messages = MessagesPrivate
+			case "current":
+				messages = MessagesCurrent
+			default:
+				stdutil.PrintErr("No such value", nil)
+				return
+			}
+		}
 		fmt.Println("Messages will now be intercepted.")
 	case "disablemessages":
-		messages = false
+		messages = MessagesNone
 		fmt.Println("Messages will no longer be intercepted.")
 	case "enableintercept":
 		intercept = true
@@ -880,7 +905,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 	case "vchannels":
 		channels(session, "voice")
 	case "play":
-		if USER {
+		if IsUser {
 			stdutil.PrintErr("This command only works for bot users.", nil)
 			return
 		}
@@ -927,7 +952,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			playing = ""
 		}(buffer, session, loc.guild.ID, loc.channel.ID)
 	case "stop":
-		if USER {
+		if IsUser {
 			stdutil.PrintErr("This command only works for bot users.", nil)
 			return
 		}
@@ -998,7 +1023,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("block <user id>", nil)
 			return
 		}
-		if !USER {
+		if !IsUser {
 			stdutil.PrintErr("Only users can use this.", nil)
 			return
 		}
@@ -1008,7 +1033,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 	case "friends":
-		if !USER {
+		if !IsUser {
 			stdutil.PrintErr("Only users can use this.", nil)
 			return
 		}
@@ -1257,7 +1282,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		id := args[0]
 
-		if USER && !strings.EqualFold(id, "@me") {
+		if IsUser && !strings.EqualFold(id, "@me") {
 			stdutil.PrintErr("Only bots can do this.", nil)
 			return
 		}
