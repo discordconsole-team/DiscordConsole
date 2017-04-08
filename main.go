@@ -341,18 +341,17 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 		return
 	}
 
+	lastMsg = location{
+		guild:   guild,
+		channel: channel,
+	}
+
 	if (guild == nil || loc.guild == nil) && loc.channel != nil && channel.ID != loc.channel.ID {
 		return
 	}
 	if guild != nil && loc.guild != nil && guild.ID != loc.guild.ID {
 		return
 	}
-
-	lastMsg = location{
-		guild:   guild,
-		channel: channel,
-	}
-
 	hasOutput := false
 
 	if messages {
