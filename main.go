@@ -19,7 +19,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-const VERSION = "1.22.3"
+const VERSION = "1.22.4"
 
 var DEV_VERSION = strings.Contains(VERSION, "dev")
 

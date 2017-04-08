@@ -1349,6 +1349,10 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("sayfile <path>", nil)
 			return
 		}
+		if loc.channel == nil {
+			stdutil.PrintErr("No channel selected!", nil)
+			return
+		}
 
 		path := args[0]
 		err := fixPath(&path)
