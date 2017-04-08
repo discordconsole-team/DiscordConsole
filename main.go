@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -392,29 +393,35 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	isCmd = true
 
 	if strings.EqualFold(cmd, "ping") {
-		now := time.Now()
+		first := time.Now().UTC()
 
-		_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, "Pong!")
-		if err != nil {
-			stdutil.PrintErr("Couldn't edit message", err)
-			return
-		}
-
-		now2 := time.Now()
 		timestamp, err := e.Timestamp.Parse()
 		if err != nil {
 			stdutil.PrintErr("Couldn't parse timestamp", err)
 			return
 		}
+		inMS := first.Sub(timestamp).Nanoseconds() / time.Millisecond.Nanoseconds()
+		text := "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
 
-		in := now.Sub(timestamp)
-		out := now2.Sub(now)
+		middle := time.Now().UTC()
+		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, &discordgo.MessageEdit{
+			Content: "Pong! 1/2",
+			Embed: &discordgo.MessageEmbed{
+				Description: text,
+			},
+		})
 
-		inMS := int(in.Nanoseconds() / time.Millisecond.Nanoseconds())
-		outMS := int(out.Nanoseconds() / time.Millisecond.Nanoseconds())
+		last := time.Now().UTC()
+		outMS := last.Sub(middle).Nanoseconds() / time.Millisecond.Nanoseconds()
+		text += "\nOutgoing: `" + strconv.FormatInt(outMS, 10) + "ms`"
+		text += "\n\n\nIncoming is the time it takes for the message to reach DiscordConsole."
+		text += "\nOutgoing is the time it takes for DiscordConsole to reach discord."
 
-		_, err = session.ChannelMessageEditEmbed(e.ChannelID, e.ID, &discordgo.MessageEmbed{
-			Description: fmt.Sprintf("In: `%dms`\nOut: `%dms`", inMS, outMS),
+		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, &discordgo.MessageEdit{
+			Content: "Pong! 2/2",
+			Embed: &discordgo.MessageEmbed{
+				Description: text,
+			},
 		})
 		if err != nil {
 			stdutil.PrintErr("Couldn't edit message", err)
