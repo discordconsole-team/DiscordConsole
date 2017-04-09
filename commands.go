@@ -21,17 +21,23 @@ import (
 	"unicode"
 )
 
-var RELATIONSHIP_TYPES = map[int]string{
+var TypeRelationships = map[int]string{
 	1: "Friend",
 	2: "Blocked",
 	3: "Incoming request",
 	4: "Sent request",
 }
-var VERIFICATION_LEVELS = map[discordgo.VerificationLevel]string{
+var TypeVerifications = map[discordgo.VerificationLevel]string{
 	discordgo.VerificationLevelNone:   "None",
 	discordgo.VerificationLevelLow:    "Low",
 	discordgo.VerificationLevelMedium: "Medium",
 	discordgo.VerificationLevelHigh:   "High",
+}
+var TypeMessages = map[string]int{
+	"all":      MessagesAll,
+	"mentions": MessagesMentions,
+	"private":  MessagesPrivate,
+	"current":  MessagesCurrent,
 }
 
 type location struct {
@@ -552,21 +558,14 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		if len(args) < 1 {
 			messages = MessagesCurrent
 			return
-		} else {
-			switch strings.ToLower(args[0]) {
-			case "all":
-				messages = MessagesAll
-			case "mentions":
-				messages = MessagesMentions
-			case "private":
-				messages = MessagesPrivate
-			case "current":
-				messages = MessagesCurrent
-			default:
-				stdutil.PrintErr("No such value", nil)
-				return
-			}
 		}
+
+		val, ok := TypeMessages[strings.ToLower(args[0])]
+		if !ok {
+			stdutil.PrintErr("No such value", nil)
+			return
+		}
+		messages = val
 		fmt.Println("Messages will now be intercepted.")
 	case "disablemessages":
 		messages = MessagesNone
@@ -1048,7 +1047,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		for _, relation := range relations {
 			table.AddRow()
-			table.AddStrings(relation.ID, RELATIONSHIP_TYPES[relation.Type], relation.User.Username)
+			table.AddStrings(relation.ID, TypeRelationships[relation.Type], relation.User.Username)
 		}
 
 		printTable(table)
@@ -1213,7 +1212,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		case "members":
 			returnVal = strconv.Itoa(loc.guild.MemberCount)
 		case "level":
-			returnVal = VERIFICATION_LEVELS[loc.guild.VerificationLevel]
+			returnVal = TypeVerifications[loc.guild.VerificationLevel]
 		default:
 			stdutil.PrintErr("Invalid property!", nil)
 		}
