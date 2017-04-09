@@ -39,6 +39,13 @@ var TypeMessages = map[string]int{
 	"private":  MessagesPrivate,
 	"current":  MessagesCurrent,
 }
+var TypeStatuses = map[string]discordgo.Status{
+	"online":    discordgo.StatusOnline,
+	"idle":      discordgo.StatusIdle,
+	"dnd":       discordgo.StatusDoNotDisturb,
+	"invisible": discordgo.StatusInvisible,
+	"offline":   discordgo.StatusOffline,
+}
 
 type location struct {
 	guild   *discordgo.Guild
@@ -1451,6 +1458,28 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		fmt.Println("Updated!")
+	case "status":
+		if nargs < 1 {
+			stdutil.PrintErr("status <value>", nil)
+			return
+		}
+		status, ok := TypeStatuses[strings.ToLower(args[0])]
+		if !ok {
+			stdutil.PrintErr("No such status", nil)
+			return
+		}
+
+		if status == discordgo.StatusOffline {
+			stdutil.PrintErr("The offline status exists, but cannot be set through the API", nil)
+			return
+		}
+
+		_, err := session.UserUpdateStatus(status)
+		if err != nil {
+			stdutil.PrintErr("Could not set status", err)
+			return
+		}
+		fmt.Println("Status set!")
 	default:
 		stdutil.PrintErr("Unknown command. Do 'help' for help", nil)
 	}

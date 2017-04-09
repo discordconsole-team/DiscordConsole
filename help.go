@@ -75,6 +75,7 @@ func printHelp(search string) {
 	help = append(help, "")
 	help = append(help, "name <name>\tChange username completely.")
 	help = append(help, "avatar <link/file>\tChange avatar to a link or file.")
+	help = append(help, "status <value>\tSet the user status. Possible values are: online, idle, dnd and invisible.")
 	help = append(help, "")
 	help = append(help, "friends\tList all relationships the account has.")
 	help = append(help, "block <user id>\tBlock a user.")
