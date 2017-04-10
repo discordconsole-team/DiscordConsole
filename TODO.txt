@@ -1,0 +1,3 @@
+TODO FILE FOR DISCORDCONSOLE
++ `runs` command. `run`, but silenced and in background.
+
