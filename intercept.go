@@ -136,7 +136,6 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		text := ""
 		if inMS < 0 {
 			text += "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
-		  text += "Calculating outgoing.."
 		} else {
 			text += "Message was received earlier than timestamp. Discord bug."
 		}
@@ -146,7 +145,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		msg := &discordgo.MessageEdit{}
 		msg.SetContent("Pong! 1/2")
 		msg.Embed = &discordgo.MessageEmbed{
-			Description: text,
+			Description: text + "\nCalculating outgoing..",
 		}
 		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, msg)
 
