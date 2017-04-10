@@ -134,7 +134,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 
 		// Discord 'bug' makes us receive the message before the timestamp, sometimes.
 		text := ""
-		if inMS < 0 {
+		if inMS >= 0 {
 			text += "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
 		} else {
 			text += "Message was received earlier than timestamp. Discord bug."
