@@ -145,7 +145,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		msg := &discordgo.MessageEdit{}
 		msg.SetContent("Pong! 1/2")
 		msg.Embed = &discordgo.MessageEmbed{
-			Description: text,
+			Description: text + "\nCalculating outgoing..",
 		}
 		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, msg)
 

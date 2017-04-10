@@ -150,7 +150,7 @@ func main() {
 		if email != "" || pass != "" {
 			token = ""
 		}
-		fmt.Println("[CENSORED]")
+		fmt.Println("[HIDDEN]")
 	}
 
 	var session *discordgo.Session
