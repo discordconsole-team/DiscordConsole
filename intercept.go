@@ -130,9 +130,16 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 			return
 		}
 
-		inMS := timestamp.Sub(first).Nanoseconds() / time.Millisecond.Nanoseconds()
-		text += "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
-		text += "Calculating outgoing.."
+		inMS := first.Sub(timestamp).Nanoseconds() / time.Millisecond.Nanoseconds()
+
+		// Discord 'bug' makes us receive the message before the timestamp, sometimes.
+		text := ""
+		if inMS < 0 {
+			text += "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
+		  text += "Calculating outgoing.."
+		} else {
+			text += "Message was received earlier than timestamp. Discord bug."
+		}
 
 		middle := time.Now().UTC()
 

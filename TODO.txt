@@ -1,3 +1,6 @@
 TODO FILE FOR DISCORDCONSOLE
-+ `runs` command. `run`, but silenced and in background.
-
+// + `runs` command. `run`, but silenced and in background.
+EDIT: Impossible. go-lua just isn't good enough
+      What would be the best possible way to
+      resolve this, while still being user friendly,
+      I wonder.
