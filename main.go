@@ -18,7 +18,7 @@ import (
 )
 
 const AutoRunFile = ".autorun"
-const Version = "1.22.4dev"
+const Version = "1.22.5dev"
 
 var DevVersion = strings.Contains(Version, "dev")
 
@@ -150,7 +150,7 @@ func main() {
 		if email != "" || pass != "" {
 			token = ""
 		}
-		fmt.Println("[CENSORED]")
+		fmt.Println("[HIDDEN]")
 	}
 
 	var session *discordgo.Session

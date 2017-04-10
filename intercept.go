@@ -131,7 +131,8 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		}
 
 		inMS := timestamp.Sub(first).Nanoseconds() / time.Millisecond.Nanoseconds()
-		text := "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
+		text += "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
+		text += "Calculating outgoing.."
 
 		middle := time.Now().UTC()
 
