@@ -37,7 +37,7 @@ var ColorDefault = color.New(color.Bold)
 var ColorAutomated = color.New(color.Italic)
 var ColorError = color.New(color.FgRed, color.Bold)
 
-const MSG_LIMIT = 2000
+const MsgLimit = 2000
 
 type stringArr []string
 
@@ -54,6 +54,7 @@ func main() {
 	var token string
 	var email string
 	var pass string
+	var langfile string
 	var commands stringArr
 
 	var noupdate bool
@@ -62,46 +63,62 @@ func main() {
 	flag.StringVar(&token, "t", "", "Set token. Ignored if -e and/or -p are set.")
 	flag.StringVar(&email, "e", "", "Set email.")
 	flag.StringVar(&pass, "p", "", "Set password.")
+	flag.StringVar(&langfile, "lang", "en", "Set language. Either a file path, or any of the following: en")
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.")
 
 	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking.")
 	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in "+AutoRunFile+" file.")
 	flag.Parse()
 
-	doHook()
+	doErrorHook()
 	fmt.Println("DiscordConsole " + Version)
 
+	fmt.Println("Loading language...")
+	switch langfile {
+	case "en":
+		loadLangDefault()
+	default:
+		reader, err := os.Open(langfile)
+		if err != nil {
+			stdutil.PrintErr("Could not read language file", err)
+			return
+		}
+		defer reader.Close()
+
+		err = loadLang(reader)
+		if err != nil {
+			stdutil.PrintErr("Could not load language file", err)
+			loadLangDefault()
+		}
+	}
+
 	if !noupdate {
-		fmt.Print("Checking for updates... ")
+		fmt.Print(lang["update.checking"])
 		update, err := checkUpdate()
 		if err != nil {
-			stdutil.PrintErr("Error checking for updates", err)
+			stdutil.PrintErr(lang["update.error"], err)
 		} else {
 			if update.UpdateAvailable {
 				fmt.Println()
-				if DevVersion {
-					fmt.Println("Latest stable release: " + update.Version + ".")
-				} else {
-					color.Cyan("Update available: Version " + update.Version + ".")
-				}
-				color.Cyan("Download from " + update.Url + ".")
+				color.Cyan(lang["update.available"] + " " + update.Version + ".")
+				color.Cyan(lang["update.download"] + " " + update.Url + ".")
 			} else {
-				fmt.Println("No updates found.")
+				fmt.Println(lang["update.none"])
 			}
 		}
 	}
 
-	fmt.Println("Reading bookmarks...")
+	fmt.Println(lang["loading.bookmarks"])
 	err := loadBookmarks()
 	if err != nil {
-		stdutil.PrintErr("Could not read bookmarks", err)
+		stdutil.PrintErr(lang["failed.reading"], err)
 	}
 
 	var ar_lines []string
 	if !noautorun {
 		ar, err := ioutil.ReadFile(AutoRunFile)
 		if err != nil && os.IsExist(err) {
-			stdutil.PrintErr("Could not read "+AutoRunFile, err)
+			stdutil.PrintErr(lang["failed.reading"]+AutoRunFile, err)
 		} else if err == nil {
 			ar_lines = strings.Split(string(ar), "\n")
 
@@ -117,7 +134,7 @@ func main() {
 
 	rl, err = readline.New(EMPTY_POINTER)
 	if err != nil {
-		stdutil.PrintErr("Could not start readline library", err)
+		stdutil.PrintErr(lang["failed.realine.start"], err)
 		return
 	}
 
@@ -126,7 +143,7 @@ func main() {
 		if err == nil {
 			for {
 				color.Set(color.FgYellow)
-				fmt.Print("You are logged into Discord. Use that login? (y/n): ")
+				fmt.Print(lang["login.detect"] + " ")
 				response := stdutil.MustScanTrim()
 				color.Unset()
 
@@ -135,7 +152,7 @@ func main() {
 					foundtoken = strings.TrimSuffix(foundtoken, "\"")
 					token = "user " + foundtoken
 				} else if !strings.EqualFold(response, "n") {
-					stdutil.PrintErr("Please type either 'y' or 'n'.", nil)
+					stdutil.PrintErr(lang["invalid.yn"], nil)
 					continue
 				}
 				break
@@ -143,15 +160,15 @@ func main() {
 		}
 	}
 
-	fmt.Println("Please paste your bot 'token' here, or leave blank for a username/password prompt.")
-	fmt.Println("User tokens are prefixed with 'user '")
-	fmt.Println("Webhook tokens are prefixed with 'webhook ', and their URL or id/token")
+	fmt.Println(lang["login.token"])
+	fmt.Println(lang["login.token.user"])
+	fmt.Println(lang["login.token.webhook"])
 	fmt.Print("> ")
 	if token == "" && email == "" && pass == "" {
 		token, err = rl.Readline()
 		if err != nil {
 			if err != io.EOF && err != readline.ErrInterrupt {
-				stdutil.PrintErr("Could not read line", err)
+				stdutil.PrintErr(lang["failed.realine.read"], err)
 			}
 			return
 		}
@@ -179,17 +196,17 @@ func main() {
 
 			if err != nil {
 				if err != io.EOF && err != readline.ErrInterrupt {
-					stdutil.PrintErr("Could not read password", err)
+					stdutil.PrintErr(lang["failed.realine.read"], err)
 				}
 				return
 			}
 			pass = string(pass2)
 		}
 
-		fmt.Println("Authenticating...")
+		fmt.Println(lang["login.starting"])
 		session, err = discordgo.New(email, pass)
 	} else {
-		fmt.Println("Authenticating...")
+		fmt.Println(lang["login.starting"])
 
 		lower := strings.ToLower(token)
 
@@ -203,7 +220,7 @@ func main() {
 				UserId = parts[len-2]
 				UserToken = parts[len-1]
 			} else {
-				stdutil.PrintErr("Webhook format invalid. Format: id/token", nil)
+				stdutil.PrintErr(lang["invalid.webhook"], nil)
 				return
 			}
 
@@ -224,7 +241,7 @@ func main() {
 
 	if UserType == TypeUser {
 		if err != nil {
-			stdutil.PrintErr("Couldn't authenticate", err)
+			stdutil.PrintErr(lang["failed.auth"], err)
 			return
 		}
 
@@ -232,7 +249,7 @@ func main() {
 
 		user, err := session.User("@me")
 		if err != nil {
-			stdutil.PrintErr("Couldn't query user", err)
+			stdutil.PrintErr(lang["failed.user"], err)
 			return
 		}
 
@@ -241,13 +258,14 @@ func main() {
 		session.AddHandler(messageCreate)
 		err = session.Open()
 		if err != nil {
-			stdutil.PrintErr("Could not open session", err)
+			stdutil.PrintErr(lang["failed.session.open"], err)
+			return
 		}
 
-		fmt.Println("Logged in with user ID " + UserId)
+		fmt.Println(lang["login.finish"] + " " + UserId)
 	}
-	fmt.Println("Write 'help' for help")
-	fmt.Println("Press Ctrl+D or type 'exit' to exit.")
+	fmt.Println(lang["intro.help"])
+	fmt.Println(lang["intro.exit"])
 
 	for i := 0; i < 3; i++ {
 		fmt.Println()
@@ -299,7 +317,7 @@ func main() {
 
 		if err != nil {
 			if err != io.EOF && err != readline.ErrInterrupt {
-				stdutil.PrintErr("Could not read line", err)
+				stdutil.PrintErr(lang["failed.realine.read"], err)
 			} else {
 				fmt.Println("exit")
 			}
@@ -372,11 +390,11 @@ func pointer(session *discordgo.Session) string {
 	s := ""
 
 	if loc.channel.IsPrivate {
-		recipient := "Unknown"
+		recipient := lang["pointer.unknown"]
 		if loc.channel.Recipient != nil {
 			recipient = loc.channel.Recipient.Username
 		}
-		s += "Private (" + recipient + ")"
+		s += lang["pointer.private"] + " (" + recipient + ")"
 	} else {
 		guild := ""
 		if loc.guild != nil {

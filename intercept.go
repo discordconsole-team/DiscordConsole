@@ -14,7 +14,7 @@ import (
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	channel, err := session.Channel(e.ChannelID)
 	if err != nil {
-		stdutil.PrintErr("Could not get channel", err)
+		stdutil.PrintErr(lang["failed.channel"], err)
 		return
 	}
 
@@ -22,7 +22,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	if !channel.IsPrivate {
 		guild, err = session.Guild(channel.GuildID)
 		if err != nil {
-			stdutil.PrintErr("Could not get guild", err)
+			stdutil.PrintErr(lang["failed.guild"], err)
 			return
 		}
 	}
@@ -62,7 +62,7 @@ Switch:
 
 		user, err := session.GuildMember(guild.ID, UserId)
 		if err != nil {
-			stdutil.PrintErr("Could not query user", err)
+			stdutil.PrintErr(lang["failed.user"], err)
 			break
 		}
 
@@ -126,7 +126,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 
 		timestamp, err := e.Timestamp.Parse()
 		if err != nil {
-			stdutil.PrintErr("Couldn't parse timestamp", err)
+			stdutil.PrintErr(lang["failed.timestamp"], err)
 			return
 		}
 
@@ -162,14 +162,14 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		}
 		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, msg)
 		if err != nil {
-			stdutil.PrintErr("Couldn't edit message", err)
+			stdutil.PrintErr(lang["failed.msg.edit"], err)
 		}
 		return
 	}
 
 	err := session.ChannelMessageDelete(e.ChannelID, e.ID)
 	if err != nil {
-		stdutil.PrintErr("Could not delete message", err)
+		stdutil.PrintErr(lang["failed.msg.delete"], err)
 	}
 
 	lastLoc = loc

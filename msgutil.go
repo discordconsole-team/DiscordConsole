@@ -37,7 +37,7 @@ func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.M
 				return m, nil
 			}
 		}
-		return nil, errors.New("Message not found!")
+		return nil, errors.New(lang["failed.msg.notfound"])
 	} else {
 		return session.ChannelMessage(channel, msgID)
 	}

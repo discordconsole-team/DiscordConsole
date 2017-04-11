@@ -19,7 +19,7 @@ func fixPath(path *string) error {
 
 		current, err := user.Current()
 		if err != nil {
-			return errors.New("Could not determine value of ~, " + err.Error())
+			return errors.New(lang["failed.path.home"] + ", " + err.Error())
 		}
 
 		s = filepath.Join(s[:i], current.HomeDir, s[i+1:])

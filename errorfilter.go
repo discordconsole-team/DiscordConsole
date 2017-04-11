@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-func doHook() {
+func doErrorHook() {
 	stdutil.EventPrePrintError = append(stdutil.EventPrePrintError, func(full string, msg string, err error) bool {
 		if err != nil && isPermission(err) {
-			ColorError.Fprintln(os.Stderr, "No permissions to perform this action.")
+			ColorError.Fprintln(os.Stderr, lang["failed.perms"])
 			return true
 		}
 		color.Unset()
@@ -23,5 +23,5 @@ func doHook() {
 }
 
 func isPermission(err error) bool {
-	return strings.Contains(err.Error(), "Missing Permission")
+	return strings.Contains(err.Error(), lang["failed.perms"])
 }
