@@ -41,6 +41,6 @@ func checkUpdate() (*updateObj, error) {
 
 	update := updates[0]
 
-	update.UpdateAvailable = update.Version != VERSION
+	update.UpdateAvailable = update.Version != Version
 	return &update, nil
 }

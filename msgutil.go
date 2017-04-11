@@ -21,7 +21,7 @@ func timestamp(e *discordgo.Message) (string, error) {
 	return s, nil
 }
 func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.Message, error) {
-	if USER {
+	if UserType == TypeUser {
 		msgs, err := session.ChannelMessages(channel, 3, "", "", msgID)
 		if err != nil {
 			return nil, err
@@ -37,7 +37,7 @@ func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.M
 				return m, nil
 			}
 		}
-		return nil, errors.New("Message not found!")
+		return nil, errors.New(lang["failed.msg.notfound"])
 	} else {
 		return session.ChannelMessage(channel, msgID)
 	}

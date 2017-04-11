@@ -12,7 +12,9 @@ import (
 var playing string
 var cacheAudio = make(map[string][][]byte, 0)
 
-func load(file string, buffer *[][]byte) error {
+var ErrDcaNegaitve = errors.New("Negative number in DCA file")
+
+func loadAudio(file string, buffer *[][]byte) error {
 	cache, ok := cacheAudio[file]
 	if ok {
 		*buffer = cache
@@ -35,7 +37,7 @@ func load(file string, buffer *[][]byte) error {
 		}
 
 		if length <= 0 {
-			return errors.New("Negative number in DCA file")
+			return ErrDcaNegaitve
 		}
 
 		buf := make([]byte, length)
@@ -54,17 +56,17 @@ func load(file string, buffer *[][]byte) error {
 func play(buffer [][]byte, session *discordgo.Session, guild, channel string) {
 	vc, err := session.ChannelVoiceJoin(guild, channel, false, true)
 	if err != nil {
-		stdutil.PrintErr("Could not connect to voice channel", err)
+		stdutil.PrintErr(lang["failed.voice.connect"], err)
 		return
 	}
 
 	err = vc.Speaking(true)
 	if err != nil {
-		stdutil.PrintErr("Could not start speaking", err)
+		stdutil.PrintErr(lang["failed.voice.speak"], err)
 
 		err = vc.Disconnect()
 		if err != nil {
-			stdutil.PrintErr("Could not disconnect", err)
+			stdutil.PrintErr(lang["failed.voice.disconnect"], err)
 		}
 		return
 	}
@@ -78,11 +80,11 @@ func play(buffer [][]byte, session *discordgo.Session, guild, channel string) {
 
 	err = vc.Speaking(false)
 	if err != nil {
-		stdutil.PrintErr("Could not stop speaking", err)
+		stdutil.PrintErr(lang["failed.voice.speak"], err)
 	}
 
 	err = vc.Disconnect()
 	if err != nil {
-		stdutil.PrintErr("Could not disconnect", err)
+		stdutil.PrintErr(lang["failed.voice.disconnect"], err)
 	}
 }

@@ -21,17 +21,30 @@ import (
 	"unicode"
 )
 
-var RELATIONSHIP_TYPES = map[int]string{
+var TypeRelationships = map[int]string{
 	1: "Friend",
 	2: "Blocked",
 	3: "Incoming request",
 	4: "Sent request",
 }
-var VERIFICATION_LEVELS = map[discordgo.VerificationLevel]string{
+var TypeVerifications = map[discordgo.VerificationLevel]string{
 	discordgo.VerificationLevelNone:   "None",
 	discordgo.VerificationLevelLow:    "Low",
 	discordgo.VerificationLevelMedium: "Medium",
 	discordgo.VerificationLevelHigh:   "High",
+}
+var TypeMessages = map[string]int{
+	"all":      MessagesAll,
+	"mentions": MessagesMentions,
+	"private":  MessagesPrivate,
+	"current":  MessagesCurrent,
+}
+var TypeStatuses = map[string]discordgo.Status{
+	"online":    discordgo.StatusOnline,
+	"idle":      discordgo.StatusIdle,
+	"dnd":       discordgo.StatusDoNotDisturb,
+	"invisible": discordgo.StatusInvisible,
+	"offline":   discordgo.StatusOffline,
 }
 
 type location struct {
@@ -65,8 +78,18 @@ var cacheGuilds = make(map[string]string)
 var cacheChannels = make(map[string]string)
 var cacheRead *discordgo.Message
 
-var messages = true
+const (
+	MessagesNone = iota
+	MessagesCurrent
+	MessagesPrivate
+	MessagesMentions
+	MessagesAll
+)
+
+var messages = MessagesNone
 var intercept = true
+
+var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run"}
 
 func command(session *discordgo.Session, cmd string) (returnVal string) {
 	if cmd == "" {
@@ -79,6 +102,20 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 	nargs := len(args)
+
+	if UserType == TypeWebhook {
+		allowed := false
+		for _, allow := range webhookCommands {
+			if cmd == allow {
+				allowed = true
+			}
+		}
+
+		if !allowed {
+			stdutil.PrintErr(lang["invalid.webhook.command"], nil)
+			return
+		}
+	}
 
 	switch cmd {
 	case "help":
@@ -96,7 +133,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		err := execute(SH, C, cmd)
 		if err != nil {
-			stdutil.PrintErr("Could not execute", err)
+			stdutil.PrintErr(lang["failed.exec"], err)
 		}
 	case "run":
 		if nargs < 1 {
@@ -124,17 +161,17 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		err := fixPath(&script)
 		if err != nil {
-			stdutil.PrintErr("Could not 'fix' filepath.", err)
+			stdutil.PrintErr(lang["failed.fixpath"], err)
 		}
 
 		err = RunLua(session, script, scriptArgs...)
 		if err != nil {
-			stdutil.PrintErr("Could not run lua", err)
+			stdutil.PrintErr(lang["failed.lua.run"], err)
 		}
 	case "guilds":
 		guilds, err := session.UserGuilds(100, "", "")
 		if err != nil {
-			stdutil.PrintErr("Could not get guilds", err)
+			stdutil.PrintErr(lang["failed.guild"], err)
 			return
 		}
 
@@ -163,13 +200,13 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		guild, err := session.Guild(guildID)
 		if err != nil {
-			stdutil.PrintErr("Couldn't query guild", err)
+			stdutil.PrintErr(lang["failed.guild"], err)
 			return
 		}
 
 		channel, err := session.Channel(guildID)
 		if err != nil {
-			stdutil.PrintErr("Couldn't query channel", err)
+			stdutil.PrintErr(lang["failed.channel"], err)
 			return
 		}
 		loc.push(guild, channel)
@@ -188,7 +225,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		channel, err := session.Channel(channelID)
 		if err != nil {
-			stdutil.PrintErr("Could not get channel", err)
+			stdutil.PrintErr(lang["failed.channel"], err)
 			return
 		}
 		if channel.IsPrivate {
@@ -198,7 +235,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 				guild, err := session.Guild(channel.GuildID)
 
 				if err != nil {
-					stdutil.PrintErr("Could not get guild", err)
+					stdutil.PrintErr(lang["failed.guild"], err)
 					return
 				}
 
@@ -212,22 +249,33 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("say <stuff>", nil)
 			return
 		}
-		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+		if loc.channel == nil && UserType != TypeWebhook {
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 		msgStr := strings.Join(args, " ")
 
-		if len(msgStr) > MSG_LIMIT {
-			stdutil.PrintErr("Message exceeds character limit", nil)
+		if len(msgStr) > MsgLimit {
+			stdutil.PrintErr(lang["invalid.limit.message"], nil)
+			return
+		}
+
+		if UserType == TypeWebhook {
+			err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+				Content: msgStr,
+			})
+			if err != nil {
+				stdutil.PrintErr(lang["failed.msg.send"], err)
+				return
+			}
 			return
 		}
 		msg, err := session.ChannelMessageSend(loc.channel.ID, msgStr)
 		if err != nil {
-			stdutil.PrintErr("Could not send", err)
+			stdutil.PrintErr(lang["failed.msg.send"], err)
 			return
 		}
-		fmt.Println("Created message with ID " + msg.ID)
+		fmt.Println(lang["status.msg.create"] + " " + msg.ID)
 		lastUsedMsg = msg.ID
 		returnVal = msg.ID
 	case "edit":
@@ -236,16 +284,15 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
 		msg, err := session.ChannelMessageEdit(loc.channel.ID, args[0], strings.Join(args[1:], " "))
 		if err != nil {
-			stdutil.PrintErr("Could not edit", err)
+			stdutil.PrintErr(lang["failed.msg.edit"], err)
 			return
 		}
-		fmt.Println("Edited " + msg.ID + "!")
 		lastUsedMsg = msg.ID
 	case "del":
 		if nargs < 1 {
@@ -253,18 +300,18 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
 		err := session.ChannelMessageDelete(loc.channel.ID, args[0])
 		if err != nil {
-			stdutil.PrintErr("Couldn't delete", err)
+			stdutil.PrintErr(lang["failed.msg.delete"], err)
 			return
 		}
 	case "log":
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
@@ -277,7 +324,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		msgs, err := session.ChannelMessages(loc.channel.ID, limit, "", "", "")
 		if err != nil {
-			stdutil.PrintErr("Could not get messages", err)
+			stdutil.PrintErr(lang["failed.msg.query"], err)
 			return
 		}
 		s := ""
@@ -302,19 +349,19 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		name := strings.Join(args, " ")
 		err = fixPath(&name)
 		if err != nil {
-			stdutil.PrintErr("Could not 'fix' file path", err)
+			stdutil.PrintErr(lang["failed.fixpath"], err)
 		}
 
 		err = ioutil.WriteFile(name, []byte(s), 0666)
 		if err != nil {
-			stdutil.PrintErr("Could not write log file", err)
+			stdutil.PrintErr(lang["failed.file.write"], err)
 			return
 		}
 		fmt.Println("Wrote chat log to '" + name + "'.")
 	case "playing":
 		err := session.UpdateStatus(0, strings.Join(args, " "))
 		if err != nil {
-			stdutil.PrintErr("Couldn't update status", err)
+			stdutil.PrintErr(lang["failed.status"], err)
 		}
 	case "streaming":
 		var err error
@@ -326,21 +373,21 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			err = session.UpdateStreamingStatus(0, strings.Join(args[1:], " "), args[0])
 		}
 		if err != nil {
-			stdutil.PrintErr("Couldn't update status", err)
+			stdutil.PrintErr(lang["failed.status"], err)
 		}
 	case "typing":
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected.", nil)
+			stdutil.PrintErr(lang["failed.channel"], nil)
 			return
 		}
 		err := session.ChannelTyping(loc.channel.ID)
 		if err != nil {
-			stdutil.PrintErr("Couldn't start typing", err)
+			stdutil.PrintErr(lang["failed.typing"], err)
 		}
 	case "pchannels":
 		channels, err := session.UserChannels()
 		if err != nil {
-			stdutil.PrintErr("Could not get private channels", err)
+			stdutil.PrintErr(lang["failed.channel"], err)
 			return
 		}
 
@@ -363,15 +410,15 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		channel, err := session.UserChannelCreate(args[0])
 		if err != nil {
-			stdutil.PrintErr("Could not create DM", err)
+			stdutil.PrintErr(lang["failed.channel.create"], err)
 			return
 		}
 		loc.push(nil, channel)
 
-		fmt.Println("Selected DM with channel ID " + channel.ID + ".")
+		fmt.Println(lang["channel.select"] + " " + channel.ID)
 	case "delall":
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected.", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 		since := ""
@@ -380,7 +427,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		messages, err := session.ChannelMessages(loc.channel.ID, 100, "", since, "")
 		if err != nil {
-			stdutil.PrintErr("Could not get messages", err)
+			stdutil.PrintErr(lang["failed.msg.query"], err)
 			return
 		}
 
@@ -391,20 +438,20 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		err = session.ChannelMessagesBulkDelete(loc.channel.ID, ids)
 		if err != nil {
-			stdutil.PrintErr("Could not delete messages", err)
+			stdutil.PrintErr(lang["failed.msg.query"], err)
 			return
 		}
 		returnVal := strconv.Itoa(len(ids))
 		fmt.Println("Deleted " + returnVal + " messages!")
 	case "members":
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		members, err := session.GuildMembers(loc.guild.ID, "", 100)
 		if err != nil {
-			stdutil.PrintErr("Could not list members", err)
+			stdutil.PrintErr(lang["failed.members"], err)
 			return
 		}
 
@@ -418,30 +465,30 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		printTable(table)
 	case "invite":
 		if nargs >= 1 {
-			if !USER {
-				stdutil.PrintErr("This only works for users.", nil)
+			if UserType != TypeUser {
+				stdutil.PrintErr(lang["invalid.onlyfor.users"], nil)
 				return
 			}
 
 			invite, err := session.InviteAccept(args[0])
 			if err != nil {
-				stdutil.PrintErr("Could not accept invite", err)
+				stdutil.PrintErr(lang["failed.invite.accept"], err)
 				return
 			}
-			fmt.Println("Accepted invite.")
+			fmt.Println(lang["status.invite.accept"])
 
 			loc.push(invite.Guild, invite.Channel)
 		} else {
 			if loc.channel == nil {
-				stdutil.PrintErr("No channel selected", nil)
+				stdutil.PrintErr(lang["failed.channel"], nil)
 				return
 			}
 			invite, err := session.ChannelInviteCreate(loc.channel.ID, discordgo.Invite{})
 			if err != nil {
-				stdutil.PrintErr("Invite could not be created", err)
+				stdutil.PrintErr(lang["failed.invite.create"], err)
 				return
 			}
-			fmt.Println("Created invite with code " + invite.Code)
+			fmt.Println(lang["status.invite.create"] + " " + invite.Code)
 			returnVal = invite.Code
 		}
 	case "file":
@@ -450,38 +497,38 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 		name := strings.Join(args, " ")
 		err := fixPath(&name)
 		if err != nil {
-			stdutil.PrintErr("Could not 'fix' file path", err)
+			stdutil.PrintErr(lang["failed.fixpath"], err)
 		}
 
 		file, err := os.Open(name)
 		if err != nil {
-			stdutil.PrintErr("Couldn't open file", nil)
+			stdutil.PrintErr(lang["failed.file.open"], nil)
 			return
 		}
 		defer file.Close()
 
 		msg, err := session.ChannelFileSend(loc.channel.ID, filepath.Base(name), file)
 		if err != nil {
-			stdutil.PrintErr("Could not send file", err)
+			stdutil.PrintErr(lang["failed.msg.send"], err)
 			return
 		}
-		fmt.Println("Sent '" + name + "' with message ID " + msg.ID + ".")
+		fmt.Println(lang["status.msg.created"] + " " + msg.ID)
 		return msg.ID
 	case "roles":
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		roles, err := session.GuildRoles(loc.guild.ID)
 		if err != nil {
-			stdutil.PrintErr("Could not get roles", err)
+			stdutil.PrintErr(lang["failed.roles"], err)
 			return
 		}
 		sort.Slice(roles, func(i, j int) bool {
@@ -505,7 +552,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
@@ -517,11 +564,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 
 		if err != nil {
-			stdutil.PrintErr("Could not add/remove role", err)
+			stdutil.PrintErr(lang["failed.role.change"], err)
 		}
 	case "nick":
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected.", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 		if nargs < 1 {
@@ -538,20 +585,30 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		err := session.GuildMemberNickname(loc.guild.ID, who, strings.Join(args[1:], " "))
 		if err != nil {
-			stdutil.PrintErr("Could not set nickname", err)
+			stdutil.PrintErr(lang["failed.nick"], err)
 		}
 	case "enablemessages":
-		messages = true
-		fmt.Println("Messages will now be intercepted.")
+		if len(args) < 1 {
+			messages = MessagesCurrent
+			return
+		}
+
+		val, ok := TypeMessages[strings.ToLower(args[0])]
+		if !ok {
+			stdutil.PrintErr(lang["invalid.value"], nil)
+			return
+		}
+		messages = val
+		fmt.Println(lang["status.msg.intercept"])
 	case "disablemessages":
-		messages = false
-		fmt.Println("Messages will no longer be intercepted.")
+		messages = MessagesNone
+		fmt.Println(lang["status.msg.nointercept"])
 	case "enableintercept":
 		intercept = true
-		fmt.Println("'console.' commands will now be intercepted.")
+		fmt.Println(lang["status.cmd.intercept"])
 	case "disableintercept":
 		intercept = false
-		fmt.Println("'console.' commands will no longer be intercepted.")
+		fmt.Println(lang["status.cmd.nointercept"])
 	case "reply":
 		loc.push(lastMsg.guild, lastMsg.channel)
 	case "back":
@@ -559,16 +616,16 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		pointerCache = ""
 	case "rolecreate":
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		role, err := session.GuildRoleCreate(loc.guild.ID)
 		if err != nil {
-			stdutil.PrintErr("Could not create role", err)
+			stdutil.PrintErr(lang["failed.role.create"], err)
 			return
 		}
-		fmt.Println("Created role with ID " + role.ID + ".")
+		fmt.Println("Created role with ID " + role.ID)
 		lastUsedRole = role.ID
 		returnVal = role.ID
 	case "roleedit":
@@ -577,7 +634,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
@@ -585,7 +642,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		roles, err := session.GuildRoles(loc.guild.ID)
 		if err != nil {
-			stdutil.PrintErr("Could not get roles", err)
+			stdutil.PrintErr(lang["failed.roles"], err)
 			return
 		}
 
@@ -597,7 +654,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			}
 		}
 		if role == nil {
-			stdutil.PrintErr("Role does not exist with that ID", nil)
+			stdutil.PrintErr(lang["invalid.role"], nil)
 			return
 		}
 
@@ -614,7 +671,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			value = strings.TrimPrefix(value, "#")
 			color, err = strconv.ParseInt(value, 16, 0)
 			if err != nil {
-				stdutil.PrintErr("Not a number", nil)
+				stdutil.PrintErr(lang["invalid.number"], nil)
 				return
 			}
 		case "separate":
@@ -626,7 +683,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		case "perms":
 			perms, err = strconv.Atoi(value)
 			if err != nil {
-				stdutil.PrintErr("Not a number", nil)
+				stdutil.PrintErr(lang["invalid.number"], nil)
 				return
 			}
 		case "mention":
@@ -636,30 +693,30 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 				return
 			}
 		default:
-			stdutil.PrintErr("No such property", nil)
+			stdutil.PrintErr(lang["invalid.value"], nil)
 			return
 		}
 
 		role, err = session.GuildRoleEdit(loc.guild.ID, args[0], name, int(color), hoist, perms, mention)
 		if err != nil {
-			stdutil.PrintErr("Could not edit role", err)
+			stdutil.PrintErr(lang["failed.role.edit"], err)
 			return
 		}
 		lastUsedRole = role.ID
-		fmt.Println("Edited role " + role.ID + ".")
+		fmt.Println("Edited role " + role.ID)
 	case "roledelete":
 		if nargs < 1 {
 			stdutil.PrintErr("roledelete <roleid>", nil)
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		err := session.GuildRoleDelete(loc.guild.ID, args[0])
 		if err != nil {
-			fmt.Println("Could not delete role!", err)
+			fmt.Println(lang["failed.role.delete"], err)
 		}
 	case "ban":
 		if nargs < 1 {
@@ -667,13 +724,13 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		err := session.GuildBanCreate(loc.guild.ID, args[0], 0)
 		if err != nil {
-			stdutil.PrintErr("Could not ban user", err)
+			stdutil.PrintErr(lang["failed.ban.create"], err)
 		}
 	case "unban":
 		if nargs < 1 {
@@ -681,13 +738,13 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		err := session.GuildBanDelete(loc.guild.ID, args[0])
 		if err != nil {
-			stdutil.PrintErr("Could not unban user", err)
+			stdutil.PrintErr(lang["failed.ban.delete"], err)
 		}
 	case "kick":
 		if nargs < 1 {
@@ -695,36 +752,36 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		err := session.GuildMemberDelete(loc.guild.ID, args[0])
 		if err != nil {
-			stdutil.PrintErr("Could not kick user", err)
+			stdutil.PrintErr(lang["failed.kick"], err)
 		}
 	case "leave":
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		err := session.GuildLeave(loc.guild.ID)
 		if err != nil {
-			stdutil.PrintErr("Could not leave", err)
+			stdutil.PrintErr(lang["failed.leave"], err)
 			return
 		}
 
 		loc.push(nil, nil)
 	case "bans":
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		bans, err := session.GuildBans(loc.guild.ID)
 		if err != nil {
-			stdutil.PrintErr("Could not list bans", err)
+			stdutil.PrintErr(lang["failed.ban.list"], err)
 			return
 		}
 
@@ -739,13 +796,13 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		printTable(table)
 	case "nickall":
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
 		members, err := session.GuildMembers(loc.guild.ID, "", 100)
 		if err != nil {
-			stdutil.PrintErr("Could not get members", err)
+			stdutil.PrintErr(lang["failed.members"], err)
 			return
 		}
 
@@ -754,7 +811,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		for _, member := range members {
 			err := session.GuildMemberNickname(loc.guild.ID, member.User.ID, nick)
 			if err != nil {
-				stdutil.PrintErr("Could not nickname", err)
+				stdutil.PrintErr(lang["failed.nick"], err)
 			}
 		}
 	case "embed":
@@ -762,8 +819,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("embed <embed json>", nil)
 			return
 		}
-		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+		if loc.channel == nil && UserType != TypeWebhook {
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
@@ -772,25 +829,35 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		err := json.Unmarshal([]byte(jsonstr), embed)
 		if err != nil {
-			stdutil.PrintErr("Could not parse json", err)
+			stdutil.PrintErr(lang["failed.json"], err)
 			return
 		}
 
-		msg, err := session.ChannelMessageSendEmbed(loc.channel.ID, embed)
-		if err != nil {
-			stdutil.PrintErr("Could not send embed", err)
-			return
+		if UserType == TypeWebhook {
+			err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+				Embeds: []*discordgo.MessageEmbed{embed},
+			})
+			if err != nil {
+				stdutil.PrintErr(lang["failed.msg.send"], err)
+				return
+			}
+		} else {
+			msg, err := session.ChannelMessageSendEmbed(loc.channel.ID, embed)
+			if err != nil {
+				stdutil.PrintErr(lang["failed.msg.send"], err)
+				return
+			}
+			fmt.Println(lang["status.msg.create"] + " " + msg.ID)
+			lastUsedMsg = msg.ID
+			returnVal = msg.ID
 		}
-		fmt.Println("Created message with ID " + msg.ID + ".")
-		lastUsedMsg = msg.ID
-		returnVal = msg.ID
 	case "read":
 		if nargs < 1 {
 			stdutil.PrintErr("read <message id> [property]", nil)
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 		msgID := args[0]
@@ -799,7 +866,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		var err error
 		if strings.EqualFold(msgID, "cache") {
 			if cacheRead == nil {
-				stdutil.PrintErr("No cache!", nil)
+				stdutil.PrintErr(lang["invalid.cache"], nil)
 				return
 			}
 
@@ -807,7 +874,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		} else {
 			msg, err = getMessage(session, loc.channel.ID, msgID)
 			if err != nil {
-				stdutil.PrintErr("Could not get message", err)
+				stdutil.PrintErr(lang["failed.msg.query"], err)
 				return
 			}
 		}
@@ -821,7 +888,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			printMessage(session, msg, false, loc.guild, loc.channel)
 		case "cache":
 			cacheRead = msg
-			fmt.Println("Message cached!")
+			fmt.Println(lang["status.cache"])
 		case "text":
 			returnVal = msg.Content
 		case "channel":
@@ -829,7 +896,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		case "timestamp":
 			t, err := timestamp(msg)
 			if err != nil {
-				stdutil.PrintErr("Could not parse timestamp", err)
+				stdutil.PrintErr(lang["failed.timestamp"], err)
 				return
 			}
 			returnVal = t
@@ -844,7 +911,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		case "author_bot":
 			returnVal = strconv.FormatBool(msg.Author.Bot)
 		default:
-			stdutil.PrintErr("Invalid property", nil)
+			stdutil.PrintErr(lang["invalid.value"], nil)
 		}
 
 		lastUsedMsg = msg.ID
@@ -857,7 +924,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
@@ -871,7 +938,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		case "type":
 			returnVal = loc.channel.Type
 		default:
-			stdutil.PrintErr("No such property!", nil)
+			stdutil.PrintErr(lang["invalid.value"], nil)
 		}
 
 		if returnVal != "" {
@@ -880,8 +947,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 	case "vchannels":
 		channels(session, "voice")
 	case "play":
-		if USER {
-			stdutil.PrintErr("This command only works for bot users.", nil)
+		if UserType != TypeBot {
+			stdutil.PrintErr(lang["invalid.onlyfor.bots"], nil)
 			return
 		}
 		if nargs < 1 {
@@ -889,32 +956,32 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected!", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 		if playing != "" {
-			stdutil.PrintErr("Already playing something", nil)
+			stdutil.PrintErr(lang["invalid.music.playing"], nil)
 			return
 		}
 
 		file := strings.Join(args, " ")
 		err := fixPath(&file)
 		if err != nil {
-			stdutil.PrintErr("Could not 'fix' file path", err)
+			stdutil.PrintErr(lang["failed.fixpath"], err)
 		}
 
 		playing = file
 
-		fmt.Println("Loading...")
+		fmt.Println(lang["status.loading"])
 
 		var buffer [][]byte
-		err = load(file, &buffer)
+		err = loadAudio(file, &buffer)
 		if err != nil {
-			stdutil.PrintErr("Could not load file.", err)
+			stdutil.PrintErr(lang["failed.file.load"], err)
 			playing = ""
 			return
 		}
@@ -927,8 +994,8 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			playing = ""
 		}(buffer, session, loc.guild.ID, loc.channel.ID)
 	case "stop":
-		if USER {
-			stdutil.PrintErr("This command only works for bot users.", nil)
+		if UserType != TypeBot {
+			stdutil.PrintErr(lang["invalid.onlyfor.bots"], nil)
 			return
 		}
 		playing = ""
@@ -940,7 +1007,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
@@ -951,7 +1018,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			err = session.MessageReactionRemove(loc.channel.ID, args[0], args[1], "@me")
 		}
 		if err != nil {
-			stdutil.PrintErr("Could not react", err)
+			stdutil.PrintErr(lang["failed.react"], err)
 			return
 		}
 	case "quote":
@@ -960,19 +1027,19 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("You're not in a channel!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
 		msg, err := getMessage(session, loc.channel.ID, args[0])
 		if err != nil {
-			stdutil.PrintErr("Could not get message", err)
+			stdutil.PrintErr(lang["failed.msg.query"], err)
 			return
 		}
 
 		t, err := timestamp(msg)
 		if err != nil {
-			stdutil.PrintErr("Could not parse timestamp", err)
+			stdutil.PrintErr(lang["failed.timestamp"], err)
 			return
 		}
 
@@ -987,10 +1054,10 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			},
 		})
 		if err != nil {
-			stdutil.PrintErr("Could not send quote", err)
+			stdutil.PrintErr(lang["failed.msg.send"], err)
 			return
 		}
-		fmt.Println("Created message with ID " + msg.ID + ".")
+		fmt.Println("Created message with ID " + msg.ID)
 		lastUsedMsg = msg.ID
 		returnVal = msg.ID
 	case "block":
@@ -998,23 +1065,23 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("block <user id>", nil)
 			return
 		}
-		if !USER {
-			stdutil.PrintErr("Only users can use this.", nil)
+		if UserType != TypeUser {
+			stdutil.PrintErr(lang["invalid.onlyfor.users"], nil)
 			return
 		}
 		err := session.RelationshipUserBlock(args[0])
 		if err != nil {
-			stdutil.PrintErr("Couldn't block user", err)
+			stdutil.PrintErr(lang["failed.block"], err)
 			return
 		}
 	case "friends":
-		if !USER {
-			stdutil.PrintErr("Only users can use this.", nil)
+		if UserType != TypeUser {
+			stdutil.PrintErr(lang["invalid.onlyfor.users"], nil)
 			return
 		}
 		relations, err := session.RelationshipsGet()
 		if err != nil {
-			stdutil.PrintErr("Couldn't block user", err)
+			stdutil.PrintErr(lang["failed.friends"], err)
 			return
 		}
 
@@ -1023,7 +1090,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		for _, relation := range relations {
 			table.AddRow()
-			table.AddStrings(relation.ID, RELATIONSHIP_TYPES[relation.Type], relation.User.Username)
+			table.AddStrings(relation.ID, TypeRelationships[relation.Type], relation.User.Username)
 		}
 
 		printTable(table)
@@ -1046,7 +1113,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		err := saveBookmarks()
 		if err != nil {
-			stdutil.PrintErr("Could not save bookmarks", err)
+			stdutil.PrintErr(lang["failed.file.save"], err)
 		}
 	case "go":
 		if nargs < 1 {
@@ -1055,7 +1122,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		bookmark, ok := bookmarks[args[0]]
 		if !ok {
-			stdutil.PrintErr("Bookmark doesn't exist", nil)
+			stdutil.PrintErr(lang["invalid.bookmark"], nil)
 			return
 		}
 
@@ -1066,7 +1133,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		if bookmark != "" {
 			channel, err = session.Channel(bookmark)
 			if err != nil {
-				stdutil.PrintErr("Could not query channel", err)
+				stdutil.PrintErr(lang["failed.channel"], err)
 				return
 			}
 		}
@@ -1074,7 +1141,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		if channel != nil && !channel.IsPrivate {
 			guild, err = session.Guild(channel.GuildID)
 			if err != nil {
-				stdutil.PrintErr("Could not query guild", err)
+				stdutil.PrintErr(lang["failed.guild"], err)
 				return
 			}
 		}
@@ -1086,16 +1153,22 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
-		msg, err := session.ChannelMessageSendTTS(loc.channel.ID, strings.Join(args, " "))
-		if err != nil {
-			stdutil.PrintErr("Could not send", err)
+		msgStr := strings.Join(args, " ")
+		if len(msgStr) > MsgLimit {
+			stdutil.PrintErr(lang["invalid.limit.message"], nil)
 			return
 		}
-		fmt.Println("Created message with ID " + msg.ID)
+
+		msg, err := session.ChannelMessageSendTTS(loc.channel.ID, msgStr)
+		if err != nil {
+			stdutil.PrintErr(lang["failed.msg.send"], err)
+			return
+		}
+		fmt.Println(lang["status.msg.create"] + msg.ID)
 		lastUsedMsg = msg.ID
 		returnVal = msg.ID
 	case "big":
@@ -1103,26 +1176,37 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("big <stuff>", nil)
 			return
 		}
-		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+		if loc.channel == nil && UserType != TypeWebhook {
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
 		send := func(buffer string) (*discordgo.Message, bool) {
-			msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-			if err != nil {
-				stdutil.PrintErr("Could not send", err)
-				return nil, false
-			}
-			fmt.Println("Created message with ID " + msg.ID)
+			if UserType == TypeWebhook {
+				err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+					Content: buffer,
+				})
+				if err != nil {
+					stdutil.PrintErr(lang["failed.msg.send"], err)
+					return nil, false
+				}
+				return nil, true
+			} else {
+				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
+				if err != nil {
+					stdutil.PrintErr(lang["failed.msg.send"], err)
+					return nil, false
+				}
+				fmt.Println(lang["status.msg.create"] + msg.ID)
 
-			return msg, true
+				return msg, true
+			}
 		}
 
 		buffer := ""
 		for _, c := range strings.Join(args, " ") {
 			str := toEmojiString(c)
-			if len(buffer)+len(str) > MSG_LIMIT {
+			if len(buffer)+len(str) > MsgLimit {
 				_, ok := send(buffer)
 				if !ok {
 					return
@@ -1132,9 +1216,9 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			}
 			buffer += str
 		}
-		msg, ok := send(buffer)
+		msg, _ := send(buffer)
 
-		if !ok {
+		if msg != nil {
 			lastUsedMsg = msg.ID
 			returnVal = msg.ID
 		}
@@ -1144,7 +1228,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
@@ -1154,14 +1238,14 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			str := string(toEmoji(c))
 
 			if strings.Contains(used, str) {
-				fmt.Println("Emoji used already, skipping")
+				fmt.Println(lang["failed.react.used"])
 				continue
 			}
 			used += str
 
 			err := session.MessageReactionAdd(loc.channel.ID, args[0], str)
 			if err != nil {
-				stdutil.PrintErr("Could not react", err)
+				stdutil.PrintErr(lang["failed.react"], err)
 			}
 		}
 	case "ginfo":
@@ -1170,7 +1254,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		if loc.guild == nil {
-			stdutil.PrintErr("No guild selected", nil)
+			stdutil.PrintErr(lang["invalid.guild"], nil)
 			return
 		}
 
@@ -1188,9 +1272,9 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		case "members":
 			returnVal = strconv.Itoa(loc.guild.MemberCount)
 		case "level":
-			returnVal = VERIFICATION_LEVELS[loc.guild.VerificationLevel]
+			returnVal = TypeVerifications[loc.guild.VerificationLevel]
 		default:
-			stdutil.PrintErr("Invalid property!", nil)
+			stdutil.PrintErr(lang["invalid.value"], nil)
 		}
 
 		if returnVal != "" {
@@ -1201,19 +1285,19 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		var err error
 		if full {
-			fmt.Println("Restarting session...")
+			fmt.Println(lang["restarting.session"])
 			err = session.Close()
 			if err != nil {
-				stdutil.PrintErr("Couldn't close session", err)
+				stdutil.PrintErr(lang["failed.session.close"], err)
 				return
 			}
 			err = session.Open()
 			if err != nil {
-				stdutil.PrintErr("Couldn't open session", err)
+				stdutil.PrintErr(lang["failed.session.start"], err)
 			}
 		}
 
-		fmt.Println("Reloading location cache...")
+		fmt.Println(lang["restarting.cache.loc"])
 		var guild *discordgo.Guild
 		var channel *discordgo.Channel
 
@@ -1221,7 +1305,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			guild, err = session.Guild(loc.guild.ID)
 
 			if err != nil {
-				stdutil.PrintErr("Could not query guild", err)
+				stdutil.PrintErr(lang["failed.guild"], err)
 				return
 			}
 		}
@@ -1230,7 +1314,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			channel, err = session.Channel(loc.channel.ID)
 
 			if err != nil {
-				stdutil.PrintErr("Could not query channel", err)
+				stdutil.PrintErr(lang["failed.channel"], err)
 				return
 			}
 		}
@@ -1239,7 +1323,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		loc.channel = channel
 		pointerCache = ""
 
-		fmt.Println("Deleting cache variables...")
+		fmt.Println(lang["restarting.cache.vars"])
 		cacheGuilds = make(map[string]string)
 		cacheChannels = make(map[string]string)
 		cacheAudio = make(map[string][][]byte)
@@ -1257,14 +1341,14 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		id := args[0]
 
-		if USER && !strings.EqualFold(id, "@me") {
-			stdutil.PrintErr("Only bots can do this.", nil)
+		if UserType != TypeBot && !strings.EqualFold(id, "@me") {
+			stdutil.PrintErr(lang["invalid.onlyfor.bots"], nil)
 			return
 		}
 
 		user, err := session.User(id)
 		if err != nil {
-			stdutil.PrintErr("Couldn't query user", err)
+			stdutil.PrintErr(lang["failed.user"], err)
 			return
 		}
 
@@ -1280,7 +1364,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		case "bot":
 			returnVal = strconv.FormatBool(user.Bot)
 		default:
-			stdutil.PrintErr("Invalid property!", nil)
+			stdutil.PrintErr(lang["invalid.value"], nil)
 		}
 
 		if returnVal != "" {
@@ -1298,7 +1382,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		if strings.HasPrefix(resource, "https://") || strings.HasPrefix(resource, "http://") {
 			res, err := http.Get(resource)
 			if err != nil {
-				stdutil.PrintErr("Could not read URL", err)
+				stdutil.PrintErr(lang["failed.webrequest"], err)
 				return
 			}
 			defer res.Body.Close()
@@ -1307,14 +1391,14 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		} else {
 			err := fixPath(&resource)
 			if err != nil {
-				stdutil.PrintErr("Could not 'fix' filepath", err)
+				stdutil.PrintErr(lang["failed.fixpath"], err)
 				return
 			}
 
 			r, err := os.Open(resource)
 			defer r.Close()
 			if err != nil {
-				stdutil.PrintErr("Could not open file", err)
+				stdutil.PrintErr(lang["failed.file.open"], err)
 				return
 			}
 
@@ -1326,57 +1410,79 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		_, err := io.Copy(b64, reader)
 		if err != nil {
-			stdutil.PrintErr("Couldn't convert to Base64", err)
+			stdutil.PrintErr(lang["failed.base64"], err)
 			return
 		}
 		b64.Close()
 
-		user, err := session.User("@me")
-		if err != nil {
-			stdutil.PrintErr("Could not get user data", err)
+		// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
+		str := "data:image/png;base64," + writer.String()
+
+		if UserType == TypeWebhook {
+			_, err = session.WebhookEditWithToken(UserId, UserToken, "", str)
+			if err != nil {
+				stdutil.PrintErr(lang["failed.avatar"], err)
+				return
+			}
 			return
 		}
 
-		// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
-		_, err = session.UserUpdate("", "", user.Username, "data:image/png;base64,"+writer.String(), "")
+		user, err := session.User("@me")
 		if err != nil {
-			stdutil.PrintErr("Couldn't set avatar", err)
+			stdutil.PrintErr(lang["failed.user"], err)
 			return
 		}
-		fmt.Println("Avatar set!")
+
+		_, err = session.UserUpdate("", "", user.Username, str, "")
+		if err != nil {
+			stdutil.PrintErr(lang["failed.avatar"], err)
+			return
+		}
+		fmt.Println(lang["status.avatar"])
 	case "sayfile":
 		if nargs < 1 {
 			stdutil.PrintErr("sayfile <path>", nil)
 			return
 		}
-		if loc.channel == nil {
-			stdutil.PrintErr("No channel selected!", nil)
+		if loc.channel == nil && UserType != TypeWebhook {
+			stdutil.PrintErr(lang["invalid.channel"], nil)
 			return
 		}
 
 		path := args[0]
 		err := fixPath(&path)
 		if err != nil {
-			stdutil.PrintErr("Couldn't 'fix' path", err)
+			stdutil.PrintErr(lang["failed.fixpath"], err)
 			return
 		}
 
 		reader, err := os.Open(path)
 		if err != nil {
-			stdutil.PrintErr("Couldn't open file", err)
+			stdutil.PrintErr(lang["failed.file.open"], err)
 			return
 		}
 		defer reader.Close()
 
 		send := func(buffer string) (*discordgo.Message, bool) {
-			msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-			if err != nil {
-				stdutil.PrintErr("Could not send", err)
-				return nil, false
-			}
-			fmt.Println("Created message with ID " + msg.ID)
+			if UserType == TypeWebhook {
+				err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+					Content: buffer,
+				})
+				if err != nil {
+					stdutil.PrintErr(lang["failed.msg.send"], err)
+					return nil, false
+				}
+				return nil, true
+			} else {
+				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
+				if err != nil {
+					stdutil.PrintErr(lang["failed.msg.send"], err)
+					return nil, false
+				}
+				fmt.Println("Created message with ID " + msg.ID)
 
-			return msg, true
+				return msg, true
+			}
 		}
 
 		scanner := bufio.NewScanner(reader)
@@ -1384,10 +1490,10 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		for i := 1; scanner.Scan(); i++ {
 			text := scanner.Text()
-			if len(text) > MSG_LIMIT {
-				stdutil.PrintErr("Line "+strconv.Itoa(i)+" exceeded "+strconv.Itoa(MSG_LIMIT)+" characters.", nil)
+			if len(text) > MsgLimit {
+				stdutil.PrintErr("Line "+strconv.Itoa(i)+" exceeded "+strconv.Itoa(MsgLimit)+" characters.", nil)
 				return
-			} else if len(buffer)+len(text) > MSG_LIMIT {
+			} else if len(buffer)+len(text) > MsgLimit {
 				_, ok := send(buffer)
 				if !ok {
 					return
@@ -1400,47 +1506,75 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		err = scanner.Err()
 		if err != nil {
-			stdutil.PrintErr("Couldn't read file", err)
+			stdutil.PrintErr(lang["failed.file.read"], err)
 		}
-		msg, ok := send(buffer)
-		if !ok {
-			return
+		msg, _ := send(buffer)
+		if msg != nil {
+			returnVal = msg.ID
+			lastUsedMsg = msg.ID
 		}
-
-		returnVal = msg.ID
-		lastUsedMsg = msg.ID
 	case "name":
 		if nargs < 1 {
 			stdutil.PrintErr("name <handle>", nil)
 			return
 		}
 
+		if UserType == TypeWebhook {
+			_, err := session.WebhookEditWithToken(UserId, UserToken, strings.Join(args, " "), "")
+			if err != nil {
+				stdutil.PrintErr(lang["failed.user.edit"], err)
+			}
+			return
+		}
+
 		user, err := session.User("@me")
 		if err != nil {
-			stdutil.PrintErr("Couldn't get user", err)
+			stdutil.PrintErr(lang["failed.user"], err)
 			return
 		}
 
 		user, err = session.UserUpdate("", "", strings.Join(args, " "), user.Avatar, "")
 		if err != nil {
-			stdutil.PrintErr("Couldn't update user", err)
+			stdutil.PrintErr(lang["failed.user.edit"], err)
 			return
 		}
-		fmt.Println("Updated!")
+		fmt.Println(lang["status.name"])
+	case "status":
+		if nargs < 1 {
+			stdutil.PrintErr("status <value>", nil)
+			return
+		}
+		status, ok := TypeStatuses[strings.ToLower(args[0])]
+		if !ok {
+			stdutil.PrintErr(lang["invalid.value"], nil)
+			return
+		}
+
+		if status == discordgo.StatusOffline {
+			stdutil.PrintErr(lang["invalid.status.offline"], nil)
+			return
+		}
+
+		_, err := session.UserUpdateStatus(status)
+		if err != nil {
+			stdutil.PrintErr(lang["failed.status"], err)
+			return
+		}
+		fmt.Println(lang["status.status"])
 	default:
-		stdutil.PrintErr("Unknown command. Do 'help' for help", nil)
+		stdutil.PrintErr(lang["invalid.command"], nil)
 	}
 	return
 }
 
 func channels(session *discordgo.Session, kind string) {
 	if loc.guild == nil {
-		stdutil.PrintErr("No guild selected!", nil)
+		stdutil.PrintErr(lang["invalid.guild"], nil)
 		return
 	}
 	channels, err := session.GuildChannels(loc.guild.ID)
 	if err != nil {
-		stdutil.PrintErr("Could not get channels", nil)
+		stdutil.PrintErr(lang["failed.channel"], nil)
 		return
 	}
 
@@ -1466,12 +1600,12 @@ func channels(session *discordgo.Session, kind string) {
 }
 
 func parseBool(str string) (bool, error) {
-	if str == "yes" || str == "true" {
+	if str == "yes" || str == "true" || str == "y" {
 		return true, nil
-	} else if str == "no" || str == "false" {
+	} else if str == "no" || str == "false" || str == "n" {
 		return false, nil
 	}
-	return false, errors.New("Please use yes or no")
+	return false, errors.New(lang["invalid.yn"])
 }
 
 func printTable(table gtable.StringTable) {
