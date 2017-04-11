@@ -89,6 +89,8 @@ const (
 var messages = MessagesNone
 var intercept = true
 
+var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run"}
+
 func command(session *discordgo.Session, cmd string) (returnVal string) {
 	if cmd == "" {
 		return
@@ -100,6 +102,20 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 	nargs := len(args)
+
+	if UserType == TypeWebhook {
+		allowed := false
+		for _, allow := range webhookCommands {
+			if cmd == allow {
+				allowed = true
+			}
+		}
+
+		if !allowed {
+			stdutil.PrintErr("Not an allowed webhook command", nil)
+			return
+		}
+	}
 
 	switch cmd {
 	case "help":
@@ -233,7 +249,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("say <stuff>", nil)
 			return
 		}
-		if loc.channel == nil {
+		if loc.channel == nil && UserType != TypeWebhook {
 			stdutil.PrintErr("No channel selected!", nil)
 			return
 		}
@@ -241,6 +257,17 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		if len(msgStr) > MSG_LIMIT {
 			stdutil.PrintErr("Message exceeds character limit", nil)
+			return
+		}
+
+		if UserType == TypeWebhook {
+			err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+				Content: msgStr,
+			})
+			if err != nil {
+				stdutil.PrintErr("Could not send", err)
+				return
+			}
 			return
 		}
 		msg, err := session.ChannelMessageSend(loc.channel.ID, msgStr)
@@ -439,7 +466,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		printTable(table)
 	case "invite":
 		if nargs >= 1 {
-			if !IsUser {
+			if UserType != TypeUser {
 				stdutil.PrintErr("This only works for users.", nil)
 				return
 			}
@@ -793,7 +820,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("embed <embed json>", nil)
 			return
 		}
-		if loc.channel == nil {
+		if loc.channel == nil && UserType != TypeWebhook {
 			stdutil.PrintErr("No channel selected!", nil)
 			return
 		}
@@ -807,14 +834,24 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 
-		msg, err := session.ChannelMessageSendEmbed(loc.channel.ID, embed)
-		if err != nil {
-			stdutil.PrintErr("Could not send embed", err)
-			return
+		if UserType == TypeWebhook {
+			err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+				Embeds: []*discordgo.MessageEmbed{embed},
+			})
+			if err != nil {
+				stdutil.PrintErr("Could not send embed", err)
+				return
+			}
+		} else {
+			msg, err := session.ChannelMessageSendEmbed(loc.channel.ID, embed)
+			if err != nil {
+				stdutil.PrintErr("Could not send embed", err)
+				return
+			}
+			fmt.Println("Created message with ID " + msg.ID + ".")
+			lastUsedMsg = msg.ID
+			returnVal = msg.ID
 		}
-		fmt.Println("Created message with ID " + msg.ID + ".")
-		lastUsedMsg = msg.ID
-		returnVal = msg.ID
 	case "read":
 		if nargs < 1 {
 			stdutil.PrintErr("read <message id> [property]", nil)
@@ -911,7 +948,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 	case "vchannels":
 		channels(session, "voice")
 	case "play":
-		if IsUser {
+		if UserType != TypeBot {
 			stdutil.PrintErr("This command only works for bot users.", nil)
 			return
 		}
@@ -958,7 +995,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			playing = ""
 		}(buffer, session, loc.guild.ID, loc.channel.ID)
 	case "stop":
-		if IsUser {
+		if UserType != TypeBot {
 			stdutil.PrintErr("This command only works for bot users.", nil)
 			return
 		}
@@ -1029,7 +1066,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("block <user id>", nil)
 			return
 		}
-		if !IsUser {
+		if UserType != TypeUser {
 			stdutil.PrintErr("Only users can use this.", nil)
 			return
 		}
@@ -1039,7 +1076,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 	case "friends":
-		if !IsUser {
+		if UserType != TypeUser {
 			stdutil.PrintErr("Only users can use this.", nil)
 			return
 		}
@@ -1134,20 +1171,31 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("big <stuff>", nil)
 			return
 		}
-		if loc.channel == nil {
+		if loc.channel == nil && UserType != TypeWebhook {
 			stdutil.PrintErr("No channel selected!", nil)
 			return
 		}
 
 		send := func(buffer string) (*discordgo.Message, bool) {
-			msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-			if err != nil {
-				stdutil.PrintErr("Could not send", err)
-				return nil, false
-			}
-			fmt.Println("Created message with ID " + msg.ID)
+			if UserType == TypeWebhook {
+				err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+					Content: buffer,
+				})
+				if err != nil {
+					stdutil.PrintErr("Could not send", err)
+					return nil, false
+				}
+				return nil, true
+			} else {
+				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
+				if err != nil {
+					stdutil.PrintErr("Could not send", err)
+					return nil, false
+				}
+				fmt.Println("Created message with ID " + msg.ID)
 
-			return msg, true
+				return msg, true
+			}
 		}
 
 		buffer := ""
@@ -1163,9 +1211,9 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			}
 			buffer += str
 		}
-		msg, ok := send(buffer)
+		msg, _ := send(buffer)
 
-		if !ok {
+		if msg != nil {
 			lastUsedMsg = msg.ID
 			returnVal = msg.ID
 		}
@@ -1288,7 +1336,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		id := args[0]
 
-		if IsUser && !strings.EqualFold(id, "@me") {
+		if UserType != TypeBot && !strings.EqualFold(id, "@me") {
 			stdutil.PrintErr("Only bots can do this.", nil)
 			return
 		}
@@ -1362,14 +1410,25 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		b64.Close()
 
+		// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
+		str := "data:image/png;base64," + writer.String()
+
+		if UserType == TypeWebhook {
+			_, err = session.WebhookEditWithToken(UserId, UserToken, "", str)
+			if err != nil {
+				stdutil.PrintErr("Couldn't set avatar", err)
+				return
+			}
+			return
+		}
+
 		user, err := session.User("@me")
 		if err != nil {
 			stdutil.PrintErr("Could not get user data", err)
 			return
 		}
 
-		// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
-		_, err = session.UserUpdate("", "", user.Username, "data:image/png;base64,"+writer.String(), "")
+		_, err = session.UserUpdate("", "", user.Username, str, "")
 		if err != nil {
 			stdutil.PrintErr("Couldn't set avatar", err)
 			return
@@ -1380,7 +1439,7 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr("sayfile <path>", nil)
 			return
 		}
-		if loc.channel == nil {
+		if loc.channel == nil && UserType != TypeWebhook {
 			stdutil.PrintErr("No channel selected!", nil)
 			return
 		}
@@ -1400,14 +1459,25 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		defer reader.Close()
 
 		send := func(buffer string) (*discordgo.Message, bool) {
-			msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-			if err != nil {
-				stdutil.PrintErr("Could not send", err)
-				return nil, false
-			}
-			fmt.Println("Created message with ID " + msg.ID)
+			if UserType == TypeWebhook {
+				err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+					Content: buffer,
+				})
+				if err != nil {
+					stdutil.PrintErr("Could not send", err)
+					return nil, false
+				}
+				return nil, true
+			} else {
+				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
+				if err != nil {
+					stdutil.PrintErr("Could not send", err)
+					return nil, false
+				}
+				fmt.Println("Created message with ID " + msg.ID)
 
-			return msg, true
+				return msg, true
+			}
 		}
 
 		scanner := bufio.NewScanner(reader)
@@ -1433,16 +1503,22 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		if err != nil {
 			stdutil.PrintErr("Couldn't read file", err)
 		}
-		msg, ok := send(buffer)
-		if !ok {
-			return
+		msg, _ := send(buffer)
+		if msg != nil {
+			returnVal = msg.ID
+			lastUsedMsg = msg.ID
 		}
-
-		returnVal = msg.ID
-		lastUsedMsg = msg.ID
 	case "name":
 		if nargs < 1 {
 			stdutil.PrintErr("name <handle>", nil)
+			return
+		}
+
+		if UserType == TypeWebhook {
+			_, err := session.WebhookEditWithToken(UserId, UserToken, strings.Join(args, " "), "")
+			if err != nil {
+				stdutil.PrintErr("Couldn't edit", err)
+			}
 			return
 		}
 

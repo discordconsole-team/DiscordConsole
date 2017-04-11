@@ -10,12 +10,12 @@ type bookmark struct {
 	ChannelID string
 }
 
-const BOOKMARKS_FILE = ".bookmarks"
+const FileBookmarks = ".bookmarks"
 
 var bookmarks = make(map[string]string)
 
 func loadBookmarks() error {
-	reader, err := os.Open(BOOKMARKS_FILE)
+	reader, err := os.Open(FileBookmarks)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -29,7 +29,7 @@ func loadBookmarks() error {
 }
 
 func saveBookmarks() error {
-	writer, err := os.Open(BOOKMARKS_FILE)
+	writer, err := os.Open(FileBookmarks)
 	if err != nil {
 		return err
 	}

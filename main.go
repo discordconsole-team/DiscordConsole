@@ -22,8 +22,15 @@ const Version = "1.22.4dev"
 
 var DevVersion = strings.Contains(Version, "dev")
 
+const (
+	TypeUser = iota
+	TypeBot
+	TypeWebhook
+)
+
 var UserId string
-var IsUser bool
+var UserToken string
+var UserType int
 
 var rl *readline.Instance
 var ColorDefault = color.New(color.Bold)
@@ -136,7 +143,9 @@ func main() {
 		}
 	}
 
-	fmt.Println("Please paste your 'token' here, or leave blank for a username/password prompt.")
+	fmt.Println("Please paste your bot 'token' here, or leave blank for a username/password prompt.")
+	fmt.Println("User tokens are prefixed with 'user '")
+	fmt.Println("Webhook tokens are prefixed with 'webhook ', and their URL or id/token")
 	fmt.Print("> ")
 	if token == "" && email == "" && pass == "" {
 		token, err = rl.Readline()
@@ -155,7 +164,7 @@ func main() {
 
 	var session *discordgo.Session
 	if token == "" {
-		IsUser = true
+		UserType = TypeUser
 
 		rl.SetPrompt("Email: ")
 		if email == "" {
@@ -181,37 +190,62 @@ func main() {
 		session, err = discordgo.New(email, pass)
 	} else {
 		fmt.Println("Authenticating...")
-		if strings.HasPrefix(strings.ToLower(token), "user ") {
-			token = token[len("user "):]
-			IsUser = true
+
+		lower := strings.ToLower(token)
+
+		if strings.HasPrefix(lower, "webhook ") {
+			token = token[len("webhook "):]
+
+			parts := strings.Split(token, "/")
+
+			len := len(parts)
+			if len >= 2 {
+				UserId = parts[len-2]
+				UserToken = parts[len-1]
+			} else {
+				stdutil.PrintErr("Webhook format invalid. Format: id/token", nil)
+				return
+			}
+
+			UserType = TypeWebhook
+			session, _ = discordgo.New(UserToken)
 		} else {
-			token = "Bot " + token
-			IsUser = false
-			intercept = false
+			if strings.HasPrefix(lower, "user ") {
+				token = token[len("user "):]
+				UserType = TypeUser
+			} else {
+				token = "Bot " + token
+				UserType = TypeBot
+				intercept = false
+			}
+			session, _ = discordgo.New(token)
 		}
-		session, err = discordgo.New(token)
 	}
 
-	if err != nil {
-		stdutil.PrintErr("Couldn't authenticate", err)
-		return
+	if UserType == TypeUser {
+		if err != nil {
+			stdutil.PrintErr("Couldn't authenticate", err)
+			return
+		}
+
+		UserToken = session.Token
+
+		user, err := session.User("@me")
+		if err != nil {
+			stdutil.PrintErr("Couldn't query user", err)
+			return
+		}
+
+		UserId = user.ID
+
+		session.AddHandler(messageCreate)
+		err = session.Open()
+		if err != nil {
+			stdutil.PrintErr("Could not open session", err)
+		}
+
+		fmt.Println("Logged in with user ID " + UserId)
 	}
-
-	user, err := session.User("@me")
-	if err != nil {
-		stdutil.PrintErr("Couldn't query user", err)
-		return
-	}
-
-	UserId = user.ID
-
-	session.AddHandler(messageCreate)
-	err = session.Open()
-	if err != nil {
-		stdutil.PrintErr("Could not open session", err)
-	}
-
-	fmt.Println("Logged in with user ID " + UserId)
 	fmt.Println("Write 'help' for help")
 	fmt.Println("Press Ctrl+D or type 'exit' to exit.")
 
@@ -285,8 +319,9 @@ func main() {
 func exit(session *discordgo.Session) {
 	color.Unset()
 	playing = ""
-	session.Close()
-	os.Exit(0)
+	if TypeUser != TypeWebhook {
+		session.Close()
+	}
 }
 
 func execute(command string, args ...string) error {
