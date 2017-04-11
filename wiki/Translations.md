@@ -18,3 +18,9 @@ Example:
 update.available=Update available! Version
 update.available.dev=Latest stable release:
 ```
+
+## Running
+Just use the `--lang` parameter. You can point it to a file!
+```
+DiscordConsole --lang <file>
+```
