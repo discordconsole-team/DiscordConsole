@@ -9,4 +9,4 @@ thing=Sak
 
 ...  
 Well you gotta know what things to put in there.  
-Don't worry, see the English file in `language.go`!
+Don't worry, see the English file in `languages.go`!
