@@ -14,7 +14,7 @@ import (
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	channel, err := session.Channel(e.ChannelID)
 	if err != nil {
-		stdutil.PrintErr(lang["failed.channel"], err)
+		stdutil.PrintErr(tl("failed.channel"), err)
 		return
 	}
 
@@ -22,7 +22,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	if !channel.IsPrivate {
 		guild, err = session.Guild(channel.GuildID)
 		if err != nil {
-			stdutil.PrintErr(lang["failed.guild"], err)
+			stdutil.PrintErr(tl("failed.guild"), err)
 			return
 		}
 	}
@@ -62,7 +62,7 @@ Switch:
 
 		user, err := session.GuildMember(guild.ID, UserId)
 		if err != nil {
-			stdutil.PrintErr(lang["failed.user"], err)
+			stdutil.PrintErr(tl("failed.user"), err)
 			break
 		}
 
@@ -126,7 +126,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 
 		timestamp, err := e.Timestamp.Parse()
 		if err != nil {
-			stdutil.PrintErr(lang["failed.timestamp"], err)
+			stdutil.PrintErr(tl("failed.timestamp"), err)
 			return
 		}
 
@@ -162,14 +162,14 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		}
 		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, msg)
 		if err != nil {
-			stdutil.PrintErr(lang["failed.msg.edit"], err)
+			stdutil.PrintErr(tl("failed.msg.edit"), err)
 		}
 		return
 	}
 
 	err := session.ChannelMessageDelete(e.ChannelID, e.ID)
 	if err != nil {
-		stdutil.PrintErr(lang["failed.msg.delete"], err)
+		stdutil.PrintErr(tl("failed.msg.delete"), err)
 	}
 
 	lastLoc = loc

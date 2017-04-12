@@ -56,17 +56,17 @@ func loadAudio(file string, buffer *[][]byte) error {
 func play(buffer [][]byte, session *discordgo.Session, guild, channel string) {
 	vc, err := session.ChannelVoiceJoin(guild, channel, false, true)
 	if err != nil {
-		stdutil.PrintErr(lang["failed.voice.connect"], err)
+		stdutil.PrintErr(tl("failed.voice.connect"), err)
 		return
 	}
 
 	err = vc.Speaking(true)
 	if err != nil {
-		stdutil.PrintErr(lang["failed.voice.speak"], err)
+		stdutil.PrintErr(tl("failed.voice.speak"), err)
 
 		err = vc.Disconnect()
 		if err != nil {
-			stdutil.PrintErr(lang["failed.voice.disconnect"], err)
+			stdutil.PrintErr(tl("failed.voice.disconnect"), err)
 		}
 		return
 	}
@@ -80,11 +80,11 @@ func play(buffer [][]byte, session *discordgo.Session, guild, channel string) {
 
 	err = vc.Speaking(false)
 	if err != nil {
-		stdutil.PrintErr(lang["failed.voice.speak"], err)
+		stdutil.PrintErr(tl("failed.voice.speak"), err)
 	}
 
 	err = vc.Disconnect()
 	if err != nil {
-		stdutil.PrintErr(lang["failed.voice.disconnect"], err)
+		stdutil.PrintErr(tl("failed.voice.disconnect"), err)
 	}
 }

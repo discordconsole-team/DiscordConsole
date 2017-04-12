@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var ErrMsgNotFound = errors.New("Message not found!")
+
 func timestamp(e *discordgo.Message) (string, error) {
 	t, err := e.Timestamp.Parse()
 	if err != nil {
@@ -37,7 +39,7 @@ func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.M
 				return m, nil
 			}
 		}
-		return nil, errors.New(lang["failed.msg.notfound"])
+		return nil, ErrMsgNotFound
 	} else {
 		return session.ChannelMessage(channel, msgID)
 	}

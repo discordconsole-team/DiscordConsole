@@ -73,13 +73,13 @@ func luaRegister(l *lua.State) int {
 func luaMessageEvent(session *discordgo.Session, e *discordgo.Message) {
 	timestamp, err := timestamp(e)
 	if err != nil {
-		stdutil.PrintErr(lang["failed.timestamp"], err)
+		stdutil.PrintErr(tl("failed.timestamp"), err)
 	}
 
 	defer func() {
 		r := recover()
 		if r != nil {
-			stdutil.PrintErr(lang["failed.lua.event"], nil)
+			stdutil.PrintErr(tl("failed.lua.event"), nil)
 		}
 	}()
 

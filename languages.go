@@ -10,6 +10,16 @@ import (
 var ErrLangCorrupt = errors.New("Corrupt language file")
 var lang map[string]string
 
+// TL stands for TransLate kek
+func tl(name string) string {
+	str, ok := lang[name]
+	if ok {
+		return str
+	} else {
+		return name
+	}
+}
+
 func loadLang(reader io.Reader) error {
 	lang = make(map[string]string)
 	scanner := bufio.NewScanner(reader)
@@ -76,7 +86,6 @@ failed.msg.query=Could not get message
 failed.msg.send=Could not send message
 failed.msg.edit=Couldn't edit message
 failed.msg.delete=Couldn't delete message
-failed.msg.notfound=Message not found!
 failed.lua.run=Could not run lua
 failed.lua.event=Recovered from LUA error
 failed.voice.connect=Could not connect to voice channel
@@ -161,4 +170,113 @@ status.status=Status set!
 restarting.session=Restarting session...
 restarting.cache.loc=Reloading location cache...
 restarting.cache.vars=Deleting cache variables...
+`
+
+// Translated by @Mnpn.
+// All credit goes to him.
+var LangSv = `
+update.checking=Letar efter uppdateringar...
+update.error=Ett fel inträffade under letandet efter nya uppdateringar.
+update.available=En uppdatering finns tillgänglig! Version
+update.available.dev=Senaste stabila version:
+update.download=Ladda ner från
+update.none=Hittade inga uppdateringar.
+loading.bookmarks=Läser bokmärken...
+failed.reading=Kunde inte läsa
+failed.realine.start=Kunde inte starta "readline"-biblioteket
+failed.realine.read=Kunde inte läsa linje
+failed.auth=Kunde inte autentisera
+failed.session.start=Kunde inte öppna sessionen
+failed.session.close=Kunde inte stänga sessionen
+failed.perms=Inga behörigheter för att utföra den här åtgärden.
+failed.path.home=Det gick inte att bedöma värdet av ~
+failed.user=Kunde inte förfråga efter användarinformation
+failed.user.edit=Kunde inte ändra användarinformationen
+failed.channel=Kunde inte fråga efter kanal
+failed.guild=Kunde inte fråga efter server
+failed.timestamp=Kunde inte tolka tidsstämplar
+failed.channel.create=Kunde inte skapa kanal
+failed.msg.query=Kunde inte ta emot meddelande
+failed.msg.send=Kunde inte skicka meddelande
+failed.msg.edit=Kunde inte ändra meddelande
+failed.msg.delete=Kunde inte ta bort meddelande
+failed.lua.run=Kunde inte köra lua
+failed.lua.event=Återhämtade från LUA-fel
+failed.voice.connect=Kunde inte ansluta till röstkanal
+failed.voice.speak=Kunde inte börja prata
+failed.voice.disconnect=Kunde inte koppla ifrån
+failed.exec=Kunde inte köra
+failed.fixpath=Kunde inte 'fixa' sökväg
+failed.file.open=Kunde inte öppna fil
+failed.file.write=Kunde inte skriva till
+failed.file.read=Kunde inte läsa fil
+failed.file.load=Kunde inte ladda fil
+failed.file.save=Kunde inte spara fil
+failed.status=Kunde inte uppdatera status
+failed.typing=Kunde inte börja skriva
+failed.members=Kunde inte visa medlemmarna
+failed.invite.accept=Kunde inte acceptera inbjudningen
+failed.invite.create=Inbjudningen kunde inte skapas
+failed.roles=Kunde inte ta emot roller
+failed.role.change=Kunde inte lägga till/ta bort roll
+failed.role.create=Kunde inte skapa roll
+failed.role.edit=Kunde inte ändra roll
+failed.role.delete=Kunde inte ta bort roll!
+failed.nick=Kunde inte sätta smeknamn
+failed.ban.create=Kunde inte bannlysa användaren
+failed.ban.delete=Kunde inte avbannlysa användaren
+failed.ban.list=Kunde inte lista bannlysningar
+failed.kick=Kunde inte sparka användaren
+failed.leave=Kunde inte lämna
+failed.block=Kunde inte blockera användaren
+failed.friends=Kunde inte få vänner :(
+failed.json=Kunde inte tolka JSON
+failed.base64=Kunde inte konvertera till Bas64
+failed.react=Could not react to message
+failed.react.used=Emoji redan använd, hoppar
+failed.webrequest=Det gick inte att göra webbegäran
+failed.avatar=Kunde inte sätta avatar
+failed.status=Kunde inte sätta status
+invalid.yn=Vänligen skriv antigen 'y' eller 'n'.
+invalid.webhook=Webhook-formatet är ogiltit. Format: id/token
+invalid.webhook.command=Inte ett tillåtet Webhook-commando
+invalid.limit.message=Meddelande överskrider teckenbegränsningen
+invalid.channel=Ingen kanal vald!
+invalid.guild=Ingen server vald!
+invalid.value=Inget sådant värde
+invalid.role=Ingen roll med det ID:t
+invalid.number=Inte ett nummer
+invalid.cache=Ingen cache tillgänglig!
+invalid.onlyfor.users=Detta kommandot fungerar endast för användare
+invalid.onlyfor.bots=Detta kommandot fungerar endast för bot-användare.
+invalid.music.playing=Spelar redan något
+invalid.bookmark=Bokmärket finns inte
+invalid.status.offline=Offline-statusen finns men kan inte ställas in via API:n
+invalid.command=Okänt kommando. Körhelp 'hjälp' för att få hjälp
+login.detect=Du är inloggad i Discord. Använd den inloggningen? (y/n):
+login.token=Vänligen klistra in en bot-'token' här, eller lämna tomt för användarnamn/lösenord-prompt.
+login.token.user=Användar-'tokens' har prefixet 'user '
+login.token.webhook=Webhook-'tokens' har prefixet 'webhook ', och deras URL eller id/token
+login.starting=Autentiserar...
+login.finish=Loggade in med användar-ID:t
+intro.help=Kör 'help' för hjälp
+intro.exit=Tryck Ctrl+D eller kör 'exit' för att avsluta.
+pointer.unknown=Okänd
+pointer.private=Privat
+status.msg.create=Skapade meddelande med ID
+status.msg.intercept=Meddelanden kommer nu att avlyssnas.
+status.msg.nointercept=Meddelanden kommer inte längre att avlyssnas.
+status.cmd.intercept='console.'-kommandon kommer nu att avlyssnas.
+status.cmd.nointercept='console.'-kommandon kommer inte längre att avlyssnas.
+status.channel=Valde kanalen med ID
+status.invite.accept=Accepterade inbjudan.
+status.invite.create=Skapade en inbjudan med kod:
+status.cache=Meddelande cache-at!
+status.loading=Laddar...
+status.avatar=Avatar satt!
+status.name=Namn satt!
+status.status=Status satt!
+restarting.session=Startar om session...
+restarting.cache.loc=Laddar om plats-cache...
+restarting.cache.vars=Tar boft cache-variablar...
 `
