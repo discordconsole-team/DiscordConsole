@@ -319,7 +319,16 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 		printTable(table)
 	case "invite":
-		if nargs >= 1 {
+		if nargs < 1 {
+			stdutil.PrintErr("invite accept <code> OR invite create [expire] [max uses] ['temp']", nil)
+			return
+		}
+		switch args[0] {
+		case "accept":
+			if nargs < 2 {
+				stdutil.PrintErr("invite accept <code>", nil)
+				return
+			}
 			if UserType != TypeUser {
 				stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
 				return
@@ -333,18 +342,43 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			fmt.Println(tl("status.invite.accept"))
 
 			loc.push(invite.Guild, invite.Channel)
-		} else {
+		case "create":
 			if loc.channel == nil {
 				stdutil.PrintErr(tl("failed.channel"), nil)
 				return
 			}
-			invite, err := session.ChannelInviteCreate(loc.channel.ID, discordgo.Invite{})
+
+			inviteObj := discordgo.Invite{}
+			if nargs >= 2 {
+				min, err := strconv.Atoi(args[1])
+				if err != nil {
+					stdutil.PrintErr(tl("invalid.number"), nil)
+					return
+				}
+				inviteObj.MaxAge = 60 * min
+				if nargs >= 3 {
+					num, err := strconv.Atoi(args[2])
+					if err != nil {
+						stdutil.PrintErr(tl("invalid.number"), nil)
+						return
+					}
+					inviteObj.MaxUses = num
+
+					if nargs >= 4 && strings.EqualFold(args[3], "temp") {
+						inviteObj.Temporary = true
+					}
+				}
+			}
+
+			invite, err := session.ChannelInviteCreate(loc.channel.ID, inviteObj)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.invite.create"), err)
 				return
 			}
 			fmt.Println(tl("status.invite.create") + " " + invite.Code)
 			returnVal = invite.Code
+		default:
+			stdutil.PrintErr(tl("invalid.value"), nil)
 		}
 	case "roles":
 		if loc.guild == nil {
