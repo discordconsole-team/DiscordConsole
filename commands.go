@@ -1,24 +1,17 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"github.com/legolord208/gtable"
-	"github.com/legolord208/stdutil"
-	"io"
 	"io/ioutil"
-	"net/http"
-	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/legolord208/gtable"
+	"github.com/legolord208/stdutil"
 )
 
 var TypeRelationships = map[int]string{
@@ -169,115 +162,35 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr(tl("failed.lua.run"), err)
 		}
 	case "guilds":
-		guilds, err := session.UserGuilds(100, "", "")
-		if err != nil {
-			stdutil.PrintErr(tl("failed.guild"), err)
-			return
-		}
-
-		cacheGuilds = make(map[string]string)
-
-		table := gtable.NewStringTable()
-		table.AddStrings("ID", "Name")
-
-		for _, guild := range guilds {
-			table.AddRow()
-			table.AddStrings(guild.ID, guild.Name)
-			cacheGuilds[strings.ToLower(guild.Name)] = guild.ID
-		}
-
-		printTable(table)
+		fallthrough
 	case "guild":
-		if nargs < 1 {
-			stdutil.PrintErr("guild <id>", nil)
-			return
-		}
-
-		guildID, ok := cacheGuilds[strings.ToLower(strings.Join(args, " "))]
-		if !ok {
-			guildID = args[0]
-		}
-
-		guild, err := session.Guild(guildID)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.guild"), err)
-			return
-		}
-
-		channel, err := session.Channel(guildID)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.channel"), err)
-			return
-		}
-		loc.push(guild, channel)
+		fallthrough
 	case "channels":
-		channels(session, "text")
+		fallthrough
 	case "channel":
-		if nargs < 1 {
-			stdutil.PrintErr("channel <id>", nil)
-			return
-		}
-
-		channelID, ok := cacheChannels[strings.ToLower(strings.Join(args, " "))]
-		if !ok {
-			channelID = args[0]
-		}
-
-		channel, err := session.Channel(channelID)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.channel"), err)
-			return
-		}
-		if channel.IsPrivate {
-			loc.push(nil, channel)
-		} else {
-			if loc.guild == nil || channel.GuildID != loc.guild.ID {
-				guild, err := session.Guild(channel.GuildID)
-
-				if err != nil {
-					stdutil.PrintErr(tl("failed.guild"), err)
-					return
-				}
-
-				loc.push(guild, channel)
-			} else {
-				loc.push(loc.guild, channel)
-			}
-		}
+		fallthrough
+	case "dm":
+		fallthrough
+	case "pchannels":
+		fallthrough
+	case "bookmarks":
+		fallthrough
+	case "bookmark":
+		fallthrough
+	case "go":
+		returnVal = commands_navigate(session, cmd, args, nargs)
 	case "say":
-		if nargs < 1 {
-			stdutil.PrintErr("say <stuff>", nil)
-			return
-		}
-		if loc.channel == nil && UserType != TypeWebhook {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-		msgStr := strings.Join(args, " ")
-
-		if len(msgStr) > MsgLimit {
-			stdutil.PrintErr(tl("invalid.limit.message"), nil)
-			return
-		}
-
-		if UserType == TypeWebhook {
-			err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
-				Content: msgStr,
-			})
-			if err != nil {
-				stdutil.PrintErr(tl("failed.msg.send"), err)
-				return
-			}
-			return
-		}
-		msg, err := session.ChannelMessageSend(loc.channel.ID, msgStr)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.send"), err)
-			return
-		}
-		fmt.Println(tl("status.msg.create") + " " + msg.ID)
-		lastUsedMsg = msg.ID
-		returnVal = msg.ID
+		fallthrough
+	case "tts":
+		fallthrough
+	case "embed":
+		fallthrough
+	case "big":
+		fallthrough
+	case "file":
+		fallthrough
+	case "sayfile":
+		returnVal = commands_say(session, cmd, args, nargs)
 	case "edit":
 		if nargs < 2 {
 			stdutil.PrintErr("edit <message id> <stuff>", nil)
@@ -358,64 +271,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		fmt.Println("Wrote chat log to '" + name + "'.")
-	case "playing":
-		err := session.UpdateStatus(0, strings.Join(args, " "))
-		if err != nil {
-			stdutil.PrintErr(tl("failed.status"), err)
-		}
-	case "streaming":
-		var err error
-		if nargs <= 0 {
-			err = session.UpdateStreamingStatus(0, "", "")
-		} else if nargs < 2 {
-			err = session.UpdateStreamingStatus(0, strings.Join(args[1:], " "), "")
-		} else {
-			err = session.UpdateStreamingStatus(0, strings.Join(args[1:], " "), args[0])
-		}
-		if err != nil {
-			stdutil.PrintErr(tl("failed.status"), err)
-		}
-	case "typing":
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("failed.channel"), nil)
-			return
-		}
-		err := session.ChannelTyping(loc.channel.ID)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.typing"), err)
-		}
-	case "pchannels":
-		channels, err := session.UserChannels()
-		if err != nil {
-			stdutil.PrintErr(tl("failed.channel"), err)
-			return
-		}
-
-		table := gtable.NewStringTable()
-		table.AddStrings("ID", "Recipient")
-
-		for _, channel := range channels {
-			table.AddRow()
-			recipient := ""
-			if channel.Recipient != nil {
-				recipient = channel.Recipient.Username
-			}
-			table.AddStrings(channel.ID, recipient)
-		}
-		printTable(table)
-	case "dm":
-		if nargs < 1 {
-			stdutil.PrintErr("dm <user id>", nil)
-			return
-		}
-		channel, err := session.UserChannelCreate(args[0])
-		if err != nil {
-			stdutil.PrintErr(tl("failed.channel.create"), err)
-			return
-		}
-		loc.push(nil, channel)
-
-		fmt.Println(tl("channel.select") + " " + channel.ID)
 	case "delall":
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
@@ -491,35 +346,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			fmt.Println(tl("status.invite.create") + " " + invite.Code)
 			returnVal = invite.Code
 		}
-	case "file":
-		if nargs < 1 {
-			stdutil.PrintErr("file <file>", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-		name := strings.Join(args, " ")
-		err := fixPath(&name)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.fixpath"), err)
-		}
-
-		file, err := os.Open(name)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.file.open"), nil)
-			return
-		}
-		defer file.Close()
-
-		msg, err := session.ChannelFileSend(loc.channel.ID, filepath.Base(name), file)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.send"), err)
-			return
-		}
-		fmt.Println(tl("status.msg.created") + " " + msg.ID)
-		return msg.ID
 	case "roles":
 		if loc.guild == nil {
 			stdutil.PrintErr(tl("invalid.guild"), nil)
@@ -565,27 +391,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 
 		if err != nil {
 			stdutil.PrintErr(tl("failed.role.change"), err)
-		}
-	case "nick":
-		if loc.guild == nil {
-			stdutil.PrintErr(tl("invalid.guild"), nil)
-			return
-		}
-		if nargs < 1 {
-			stdutil.PrintErr("nick <id> [nickname]", nil)
-			return
-		}
-
-		who := args[0]
-		if strings.EqualFold(who, "@me") {
-			who = "@me/nick"
-			// Should hopefully only be @me in the future.
-			// See https://github.com/bwmarrin/discordgo/issues/318
-		}
-
-		err := session.GuildMemberNickname(loc.guild.ID, who, strings.Join(args[1:], " "))
-		if err != nil {
-			stdutil.PrintErr(tl("failed.nick"), err)
 		}
 	case "enablemessages":
 		if len(args) < 1 {
@@ -814,136 +619,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 				stdutil.PrintErr(tl("failed.nick"), err)
 			}
 		}
-	case "embed":
-		if nargs < 1 {
-			stdutil.PrintErr("embed <embed json>", nil)
-			return
-		}
-		if loc.channel == nil && UserType != TypeWebhook {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		jsonstr := strings.Join(args, " ")
-		var embed = &discordgo.MessageEmbed{}
-
-		err := json.Unmarshal([]byte(jsonstr), embed)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.json"), err)
-			return
-		}
-
-		if UserType == TypeWebhook {
-			err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
-				Embeds: []*discordgo.MessageEmbed{embed},
-			})
-			if err != nil {
-				stdutil.PrintErr(tl("failed.msg.send"), err)
-				return
-			}
-		} else {
-			msg, err := session.ChannelMessageSendEmbed(loc.channel.ID, embed)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.msg.send"), err)
-				return
-			}
-			fmt.Println(tl("status.msg.create") + " " + msg.ID)
-			lastUsedMsg = msg.ID
-			returnVal = msg.ID
-		}
-	case "read":
-		if nargs < 1 {
-			stdutil.PrintErr("read <message id> [property]", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-		msgID := args[0]
-
-		var msg *discordgo.Message
-		var err error
-		if strings.EqualFold(msgID, "cache") {
-			if cacheRead == nil {
-				stdutil.PrintErr(tl("invalid.cache"), nil)
-				return
-			}
-
-			msg = cacheRead
-		} else {
-			msg, err = getMessage(session, loc.channel.ID, msgID)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.msg.query"), err)
-				return
-			}
-		}
-
-		property := ""
-		if len(args) >= 2 {
-			property = strings.ToLower(args[1])
-		}
-		switch property {
-		case "":
-			printMessage(session, msg, false, loc.guild, loc.channel)
-		case "cache":
-			cacheRead = msg
-			fmt.Println(tl("status.cache"))
-		case "text":
-			returnVal = msg.Content
-		case "channel":
-			returnVal = msg.ChannelID
-		case "timestamp":
-			t, err := timestamp(msg)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.timestamp"), err)
-				return
-			}
-			returnVal = t
-		case "author":
-			returnVal = msg.Author.ID
-		case "author_email":
-			returnVal = msg.Author.Email
-		case "author_name":
-			returnVal = msg.Author.Username
-		case "author_avatar":
-			returnVal = msg.Author.Avatar
-		case "author_bot":
-			returnVal = strconv.FormatBool(msg.Author.Bot)
-		default:
-			stdutil.PrintErr(tl("invalid.value"), nil)
-		}
-
-		lastUsedMsg = msg.ID
-		if returnVal != "" {
-			fmt.Println(returnVal)
-		}
-	case "cinfo":
-		if nargs < 1 {
-			stdutil.PrintErr("cinfo <property>", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		switch strings.ToLower(args[0]) {
-		case "guild":
-			returnVal = loc.channel.GuildID
-		case "name":
-			returnVal = loc.channel.Name
-		case "topic":
-			returnVal = loc.channel.Topic
-		case "type":
-			returnVal = loc.channel.Type
-		default:
-			stdutil.PrintErr(tl("invalid.value"), nil)
-		}
-
-		if returnVal != "" {
-			fmt.Println(returnVal)
-		}
 	case "vchannels":
 		channels(session, "voice")
 	case "play":
@@ -1021,45 +696,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			stdutil.PrintErr(tl("failed.react"), err)
 			return
 		}
-	case "quote":
-		if nargs < 1 {
-			stdutil.PrintErr("quote <message id>", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		msg, err := getMessage(session, loc.channel.ID, args[0])
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.query"), err)
-			return
-		}
-
-		t, err := timestamp(msg)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.timestamp"), err)
-			return
-		}
-
-		msg, err = session.ChannelMessageSendEmbed(loc.channel.ID, &discordgo.MessageEmbed{
-			Author: &discordgo.MessageEmbedAuthor{
-				Name:    msg.Author.Username,
-				IconURL: discordgo.EndpointUserAvatar(msg.Author.ID, msg.Author.Avatar),
-			},
-			Description: msg.Content,
-			Footer: &discordgo.MessageEmbedFooter{
-				Text: "Sent " + t,
-			},
-		})
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.send"), err)
-			return
-		}
-		fmt.Println("Created message with ID " + msg.ID)
-		lastUsedMsg = msg.ID
-		returnVal = msg.ID
 	case "block":
 		if nargs < 1 {
 			stdutil.PrintErr("block <user id>", nil)
@@ -1094,134 +730,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		}
 
 		printTable(table)
-	case "bookmarks":
-		for key, _ := range bookmarks {
-			fmt.Println(key)
-		}
-	case "bookmark":
-		if nargs < 1 {
-			stdutil.PrintErr("bookmark <name>", nil)
-			return
-		}
-
-		key := strings.Join(args, " ")
-		if strings.HasPrefix(key, "-") {
-			key = key[1:]
-			delete(bookmarks, key)
-		} else {
-			bookmarks[key] = loc.channel.ID
-		}
-		err := saveBookmarks()
-		if err != nil {
-			stdutil.PrintErr(tl("failed.file.save"), err)
-		}
-	case "go":
-		if nargs < 1 {
-			stdutil.PrintErr("go <bookmark>", nil)
-			return
-		}
-		bookmark, ok := bookmarks[args[0]]
-		if !ok {
-			stdutil.PrintErr(tl("invalid.bookmark"), nil)
-			return
-		}
-
-		var guild *discordgo.Guild
-		var channel *discordgo.Channel
-		var err error
-
-		if bookmark != "" {
-			channel, err = session.Channel(bookmark)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.channel"), err)
-				return
-			}
-		}
-
-		if channel != nil && !channel.IsPrivate {
-			guild, err = session.Guild(channel.GuildID)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.guild"), err)
-				return
-			}
-		}
-
-		loc.push(guild, channel)
-	case "tts":
-		if nargs < 1 {
-			stdutil.PrintErr("tts <stuff>", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		msgStr := strings.Join(args, " ")
-		if len(msgStr) > MsgLimit {
-			stdutil.PrintErr(tl("invalid.limit.message"), nil)
-			return
-		}
-
-		msg, err := session.ChannelMessageSendTTS(loc.channel.ID, msgStr)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.send"), err)
-			return
-		}
-		fmt.Println(tl("status.msg.create") + msg.ID)
-		lastUsedMsg = msg.ID
-		returnVal = msg.ID
-	case "big":
-		if nargs < 1 {
-			stdutil.PrintErr("big <stuff>", nil)
-			return
-		}
-		if loc.channel == nil && UserType != TypeWebhook {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		send := func(buffer string) (*discordgo.Message, bool) {
-			if UserType == TypeWebhook {
-				err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
-					Content: buffer,
-				})
-				if err != nil {
-					stdutil.PrintErr(tl("failed.msg.send"), err)
-					return nil, false
-				}
-				return nil, true
-			} else {
-				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-				if err != nil {
-					stdutil.PrintErr(tl("failed.msg.send"), err)
-					return nil, false
-				}
-				fmt.Println(tl("status.msg.create") + msg.ID)
-
-				return msg, true
-			}
-		}
-
-		buffer := ""
-		for _, c := range strings.Join(args, " ") {
-			str := toEmojiString(c)
-			if len(buffer)+len(str) > MsgLimit {
-				_, ok := send(buffer)
-				if !ok {
-					return
-				}
-
-				buffer = ""
-			}
-			buffer += str
-		}
-		msg, _ := send(buffer)
-
-		if msg != nil {
-			lastUsedMsg = msg.ID
-			returnVal = msg.ID
-		}
 	case "reactbig":
 		if nargs < 2 {
 			stdutil.PrintErr("reactbig <message id> <text>", nil)
@@ -1247,38 +755,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			if err != nil {
 				stdutil.PrintErr(tl("failed.react"), err)
 			}
-		}
-	case "ginfo":
-		if nargs < 1 {
-			stdutil.PrintErr("ginfo <property>", nil)
-			return
-		}
-		if loc.guild == nil {
-			stdutil.PrintErr(tl("invalid.guild"), nil)
-			return
-		}
-
-		switch strings.ToLower(args[0]) {
-		case "name":
-			returnVal = loc.guild.Name
-		case "icon":
-			returnVal = loc.guild.Icon
-		case "region":
-			returnVal = loc.guild.Region
-		case "owner":
-			returnVal = loc.guild.OwnerID
-		case "splash":
-			returnVal = loc.guild.Splash
-		case "members":
-			returnVal = strconv.Itoa(loc.guild.MemberCount)
-		case "level":
-			returnVal = TypeVerifications[loc.guild.VerificationLevel]
-		default:
-			stdutil.PrintErr(tl("invalid.value"), nil)
-		}
-
-		if returnVal != "" {
-			fmt.Println(returnVal)
 		}
 	case "rl":
 		full := nargs >= 1 && strings.EqualFold(args[0], "full")
@@ -1334,211 +810,6 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 		lastUsedRole = ""
 
 		cacheRead = nil
-	case "uinfo":
-		if nargs < 2 {
-			stdutil.PrintErr("uinfo <user id> <property>", nil)
-			return
-		}
-		id := args[0]
-
-		if UserType != TypeBot && !strings.EqualFold(id, "@me") {
-			stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
-			return
-		}
-
-		user, err := session.User(id)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.user"), err)
-			return
-		}
-
-		switch strings.ToLower(args[1]) {
-		case "id":
-			returnVal = user.ID
-		case "email":
-			returnVal = user.Email
-		case "name":
-			returnVal = user.Username
-		case "avatar":
-			returnVal = user.Avatar
-		case "bot":
-			returnVal = strconv.FormatBool(user.Bot)
-		default:
-			stdutil.PrintErr(tl("invalid.value"), nil)
-		}
-
-		if returnVal != "" {
-			fmt.Println(returnVal)
-		}
-	case "avatar":
-		if nargs < 1 {
-			stdutil.PrintErr("avatar <file/link>", nil)
-			return
-		}
-
-		var reader io.Reader
-		resource := strings.Join(args, " ")
-
-		if strings.HasPrefix(resource, "https://") || strings.HasPrefix(resource, "http://") {
-			res, err := http.Get(resource)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.webrequest"), err)
-				return
-			}
-			defer res.Body.Close()
-
-			reader = res.Body
-		} else {
-			err := fixPath(&resource)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.fixpath"), err)
-				return
-			}
-
-			r, err := os.Open(resource)
-			defer r.Close()
-			if err != nil {
-				stdutil.PrintErr(tl("failed.file.open"), err)
-				return
-			}
-
-			reader = r
-		}
-
-		writer := bytes.NewBuffer([]byte{})
-		b64 := base64.NewEncoder(base64.StdEncoding, writer)
-
-		_, err := io.Copy(b64, reader)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.base64"), err)
-			return
-		}
-		b64.Close()
-
-		// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
-		str := "data:image/png;base64," + writer.String()
-
-		if UserType == TypeWebhook {
-			_, err = session.WebhookEditWithToken(UserId, UserToken, "", str)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.avatar"), err)
-				return
-			}
-			return
-		}
-
-		user, err := session.User("@me")
-		if err != nil {
-			stdutil.PrintErr(tl("failed.user"), err)
-			return
-		}
-
-		_, err = session.UserUpdate("", "", user.Username, str, "")
-		if err != nil {
-			stdutil.PrintErr(tl("failed.avatar"), err)
-			return
-		}
-		fmt.Println(tl("status.avatar"))
-	case "sayfile":
-		if nargs < 1 {
-			stdutil.PrintErr("sayfile <path>", nil)
-			return
-		}
-		if loc.channel == nil && UserType != TypeWebhook {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		path := args[0]
-		err := fixPath(&path)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.fixpath"), err)
-			return
-		}
-
-		reader, err := os.Open(path)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.file.open"), err)
-			return
-		}
-		defer reader.Close()
-
-		send := func(buffer string) (*discordgo.Message, bool) {
-			if UserType == TypeWebhook {
-				err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
-					Content: buffer,
-				})
-				if err != nil {
-					stdutil.PrintErr(tl("failed.msg.send"), err)
-					return nil, false
-				}
-				return nil, true
-			} else {
-				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-				if err != nil {
-					stdutil.PrintErr(tl("failed.msg.send"), err)
-					return nil, false
-				}
-				fmt.Println("Created message with ID " + msg.ID)
-
-				return msg, true
-			}
-		}
-
-		scanner := bufio.NewScanner(reader)
-		buffer := ""
-
-		for i := 1; scanner.Scan(); i++ {
-			text := scanner.Text()
-			if len(text) > MsgLimit {
-				stdutil.PrintErr("Line "+strconv.Itoa(i)+" exceeded "+strconv.Itoa(MsgLimit)+" characters.", nil)
-				return
-			} else if len(buffer)+len(text) > MsgLimit {
-				_, ok := send(buffer)
-				if !ok {
-					return
-				}
-
-				buffer = ""
-			}
-			buffer += text + "\n"
-		}
-
-		err = scanner.Err()
-		if err != nil {
-			stdutil.PrintErr(tl("failed.file.read"), err)
-		}
-		msg, _ := send(buffer)
-		if msg != nil {
-			returnVal = msg.ID
-			lastUsedMsg = msg.ID
-		}
-	case "name":
-		if nargs < 1 {
-			stdutil.PrintErr("name <handle>", nil)
-			return
-		}
-
-		if UserType == TypeWebhook {
-			_, err := session.WebhookEditWithToken(UserId, UserToken, strings.Join(args, " "), "")
-			if err != nil {
-				stdutil.PrintErr(tl("failed.user.edit"), err)
-			}
-			return
-		}
-
-		user, err := session.User("@me")
-		if err != nil {
-			stdutil.PrintErr(tl("failed.user"), err)
-			return
-		}
-
-		user, err = session.UserUpdate("", "", strings.Join(args, " "), user.Avatar, "")
-		if err != nil {
-			stdutil.PrintErr(tl("failed.user.edit"), err)
-			return
-		}
-		fmt.Println(tl("status.name"))
 	case "status":
 		if nargs < 1 {
 			stdutil.PrintErr("status <value>", nil)
@@ -1561,42 +832,30 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 			return
 		}
 		fmt.Println(tl("status.status"))
+	case "avatar":
+		fallthrough
+	case "name":
+		fallthrough
+	case "playing":
+		fallthrough
+	case "streaming":
+		fallthrough
+	case "typing":
+		fallthrough
+	case "nick":
+		returnVal = commands_usermod(session, cmd, args, nargs)
+	case "read":
+		fallthrough
+	case "cinfo":
+		fallthrough
+	case "ginfo":
+		fallthrough
+	case "uinfo":
+		returnVal = commands_query(session, cmd, args, nargs)
 	default:
 		stdutil.PrintErr(tl("invalid.command"), nil)
 	}
 	return
-}
-
-func channels(session *discordgo.Session, kind string) {
-	if loc.guild == nil {
-		stdutil.PrintErr(tl("invalid.guild"), nil)
-		return
-	}
-	channels, err := session.GuildChannels(loc.guild.ID)
-	if err != nil {
-		stdutil.PrintErr(tl("failed.channel"), nil)
-		return
-	}
-
-	cacheChannels = make(map[string]string)
-
-	sort.Slice(channels, func(i int, j int) bool {
-		return channels[i].Position < channels[j].Position
-	})
-
-	table := gtable.NewStringTable()
-	table.AddStrings("ID", "Name")
-
-	for _, channel := range channels {
-		if channel.Type != kind {
-			continue
-		}
-		table.AddRow()
-		table.AddStrings(channel.ID, channel.Name)
-		cacheChannels[strings.ToLower(channel.Name)] = channel.ID
-	}
-
-	printTable(table)
 }
 
 func parseBool(str string) (bool, error) {
