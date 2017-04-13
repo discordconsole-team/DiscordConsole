@@ -285,10 +285,6 @@ func main() {
 
 	if ar_lines != nil {
 		for _, cmd := range ar_lines {
-			cmd = strings.TrimSpace(cmd)
-			if cmd == "" {
-				continue
-			}
 			printPointer(session)
 			fmt.Println(cmd)
 
@@ -296,10 +292,6 @@ func main() {
 		}
 	}
 	for _, cmd := range commands {
-		cmd = strings.TrimSpace(cmd)
-		if cmd == "" {
-			continue
-		}
 		printPointer(session)
 		fmt.Println(cmd)
 
@@ -325,11 +317,6 @@ func main() {
 			}
 			exit(session)
 			return
-		}
-
-		cmd = strings.TrimSpace(cmd)
-		if cmd == "" {
-			continue
 		}
 
 		command(session, cmd)

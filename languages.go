@@ -145,6 +145,7 @@ invalid.music.playing=Already playing something
 invalid.bookmark=Bookmark doesn't exist
 invalid.status.offline=The offline status exists, but cannot be set through the API
 invalid.command=Unknown command. Do 'help' for help
+invalid.api.started=API already started
 invalid.api.notstarted=API not started
 
 login.detect=You are logged into Discord. Use that login? (y/n):

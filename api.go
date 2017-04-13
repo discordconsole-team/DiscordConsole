@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -24,6 +23,9 @@ var api_name = ""
 var api_last int64
 
 func api_start(session *discordgo.Session) (string, error) {
+	if api_name != "" {
+		return "", nil
+	}
 	f, err := ioutil.TempFile("", "DiscordConsole")
 	if err != nil {
 		return "", err
@@ -40,15 +42,20 @@ func api_start(session *discordgo.Session) (string, error) {
 	go func(session *discordgo.Session, name string) {
 		api_start_name(session, name)
 
+		fmt.Println("removing file")
 		err := os.Remove(name)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.file.delete")+" "+name, err)
 		}
+		fmt.Println("u woot")
 	}(session, name)
 	return name, nil
 }
 
 func api_start_name(session *discordgo.Session, name string) {
+	if api_name != "" {
+		return
+	}
 	api_name = name
 	api_ticker = time.NewTicker(time.Second * 2)
 	for {
@@ -75,7 +82,10 @@ func api_start_name(session *discordgo.Session, name string) {
 			}
 			api_last = data.SentAt
 
-			cmd := strings.TrimSpace(data.Command)
+			cmd := data.Command
+			if cmd == "" {
+				continue
+			}
 
 			ColorAutomated.Set()
 			fmt.Println(cmd)
@@ -95,6 +105,7 @@ func api_stop() {
 		return
 	}
 	api_ticker.Stop()
+	api_name = ""
 	api_done <- true
 }
 

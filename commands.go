@@ -84,6 +84,7 @@ var intercept = true
 var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run"}
 
 func command(session *discordgo.Session, cmd string) (returnVal string) {
+	cmd = strings.TrimSpace(cmd)
 	if cmd == "" {
 		return
 	}
@@ -339,7 +340,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 				return
 			}
 
-			invite, err := session.InviteAccept(args[0])
+			invite, err := session.InviteAccept(args[1])
 			if err != nil {
 				stdutil.PrintErr(tl("failed.invite.accept"), err)
 				return
@@ -750,6 +751,11 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 	case "roledelete":
 		returnVal = commands_roles(session, cmd, args, nargs)
 	case "api_start":
+		if api_name != "" {
+			stdutil.PrintErr(tl("invalid.api.started"), nil)
+			return
+		}
+
 		var name string
 		if nargs >= 1 {
 			name = strings.Join(args, " ")
