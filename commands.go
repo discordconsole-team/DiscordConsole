@@ -769,6 +769,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			}
 		}
 		fmt.Println(tl("status.api.start") + " " + name)
+		returnVal = name
 	case "broadcast":
 		if nargs < 1 {
 			stdutil.PrintErr("broadcast <command>", nil)
