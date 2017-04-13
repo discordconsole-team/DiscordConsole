@@ -42,12 +42,10 @@ func api_start(session *discordgo.Session) (string, error) {
 	go func(session *discordgo.Session, name string) {
 		api_start_name(session, name)
 
-		fmt.Println("removing file")
 		err := os.Remove(name)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.file.delete")+" "+name, err)
 		}
-		fmt.Println("u woot")
 	}(session, name)
 	return name, nil
 }
