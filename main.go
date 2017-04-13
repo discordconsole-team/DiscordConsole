@@ -337,11 +337,13 @@ func main() {
 }
 
 func exit(session *discordgo.Session) {
-	color.Unset()
+	api_stop()
 	playing = ""
+
 	if TypeUser != TypeWebhook {
 		session.Close()
 	}
+	color.Unset()
 }
 
 func execute(command string, args ...string) error {

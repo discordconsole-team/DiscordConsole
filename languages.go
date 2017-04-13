@@ -1,3 +1,5 @@
+// TRANSLATORS:
+// - Swedish, Mnpn03
 package main
 
 import (
@@ -68,6 +70,7 @@ update.none=No updates found.
 
 loading.bookmarks=Reading bookmarks...
 
+failed.generic=Failed
 failed.reading=Could not read
 failed.realine.start=Could not start readline library
 failed.realine.read=Could not read line
@@ -96,8 +99,9 @@ failed.fixpath=Could not 'fix' filepath
 failed.file.open=Couldn't open file
 failed.file.write=Could not write file
 failed.file.read=Could not read file
-failed.file.load=Could not load file.
-failed.file.save=Could not save file.
+failed.file.load=Could not load file
+failed.file.save=Could not save file
+failed.file.delete=Could not delete file
 failed.status=Couldn't update status
 failed.typing=Couldn't start typing
 failed.members=Could not list members
@@ -123,6 +127,7 @@ failed.react.used=Emoji used already, skipping
 failed.webrequest=Could not make web request
 failed.avatar=Couldn't set avatar
 failed.status=Could not set status
+failed.api.start=Couldn't start API
 
 invalid.yn=Please type either 'y' or 'n'.
 invalid.webhook=Webhook format invalid. Format: id/token
@@ -140,6 +145,7 @@ invalid.music.playing=Already playing something
 invalid.bookmark=Bookmark doesn't exist
 invalid.status.offline=The offline status exists, but cannot be set through the API
 invalid.command=Unknown command. Do 'help' for help
+invalid.api.notstarted=API not started
 
 login.detect=You are logged into Discord. Use that login? (y/n):
 login.token=Please paste your bot 'token' here, or leave blank for a username/password prompt.
@@ -166,14 +172,13 @@ status.loading=Loading...
 status.avatar=Avatar set!
 status.name=Name set!
 status.status=Status set!
+status.api.start=API started:
 
 restarting.session=Restarting session...
 restarting.cache.loc=Reloading location cache...
 restarting.cache.vars=Deleting cache variables...
 `
 
-// Translated by @Mnpn.
-// All credit goes to him.
 var LangSv = `
 update.checking=Letar efter uppdateringar...
 update.error=Ett fel inträffade under letandet efter nya uppdateringar.
