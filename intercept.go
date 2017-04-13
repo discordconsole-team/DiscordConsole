@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -130,12 +129,12 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 			return
 		}
 
-		inMS := first.Sub(timestamp).Nanoseconds() / time.Millisecond.Nanoseconds()
+		in := first.Sub(timestamp)
 
 		// Discord 'bug' makes us receive the message before the timestamp, sometimes.
 		text := ""
-		if inMS >= 0 {
-			text += "Incoming: `" + strconv.FormatInt(inMS, 10) + "ms`"
+		if in.Nanoseconds() >= 0 {
+			text += "Incoming: `" + in.String() + "ms`"
 		} else {
 			text += "Message was received earlier than timestamp. Discord bug."
 		}
@@ -150,8 +149,8 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, msg)
 
 		last := time.Now().UTC()
-		outMS := last.Sub(middle).Nanoseconds() / time.Millisecond.Nanoseconds()
-		text += "\nOutgoing: `" + strconv.FormatInt(outMS, 10) + "ms`"
+
+		text += "\nOutgoing: `" + last.Sub(middle).String() + "ms`"
 		text += "\n\n\nIncoming is the time it takes for the message to reach DiscordConsole."
 		text += "\nOutgoing is the time it takes for DiscordConsole to reach discord."
 
