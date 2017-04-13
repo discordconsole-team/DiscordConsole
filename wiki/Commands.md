@@ -88,7 +88,7 @@ Thanks a lot!
 
 **unban** *id* - Unban's the ID
 
-**nickall* *name* - Nickname's everyone (use no arguments to clear)
+**nickall** *name* - Nickname's everyone (use no arguments to clear)
 
 
 ## QuickMove + ConsoleLog
