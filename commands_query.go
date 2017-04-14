@@ -37,6 +37,8 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 				stdutil.PrintErr(tl("failed.msg.query"), err)
 				return
 			}
+
+			cacheRead = msg
 		}
 
 		property := ""
@@ -46,9 +48,6 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 		switch property {
 		case "":
 			printMessage(session, msg, false, loc.guild, loc.channel)
-		case "cache":
-			cacheRead = msg
-			fmt.Println(tl("status.cache"))
 		case "text":
 			returnVal = msg.Content
 		case "channel":
@@ -142,16 +141,29 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 			return
 		}
 		id := args[0]
+		var user *discordgo.User
 
-		if UserType != TypeBot && !strings.EqualFold(id, "@me") {
-			stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
-			return
-		}
+		if strings.EqualFold(id, "cache") {
+			if cacheUser == nil {
+				stdutil.PrintErr(tl("invalid.cache"), nil)
+				return
+			}
 
-		user, err := session.User(id)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.user"), err)
-			return
+			user = cacheUser
+		} else {
+			if UserType != TypeBot && !strings.EqualFold(id, "@me") {
+				stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
+				return
+			}
+
+			var err error
+			user, err = session.User(id)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.user"), err)
+				return
+			}
+
+			cacheUser = user
 		}
 
 		switch strings.ToLower(args[1]) {

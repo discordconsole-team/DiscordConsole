@@ -69,6 +69,7 @@ var lastUsedRole string
 var cacheGuilds = make(map[string]string)
 var cacheChannels = make(map[string]string)
 var cacheRead *discordgo.Message
+var cacheUser *discordgo.User
 
 const (
 	MessagesNone = iota
