@@ -45,18 +45,23 @@ type location struct {
 }
 
 func (loc *location) push(guild *discordgo.Guild, channel *discordgo.Channel) {
-	if loc.guild == guild && loc.channel == channel {
+	sameGuild := guild == loc.guild || (loc.guild != nil && guild != nil && loc.guild.ID == guild.ID)
+	sameChannel := channel == loc.channel || (loc.channel != nil && channel != nil && loc.channel.ID == channel.ID)
+
+	if sameGuild && sameChannel {
 		return
 	}
-	if guild != nil && channel != nil && loc.guild != nil && loc.channel != nil &&
-		loc.guild.ID == guild.ID && loc.channel.ID == channel.ID {
-		return
-	}
+
 	lastLoc = *loc
 
 	loc.guild = guild
 	loc.channel = channel
 	pointerCache = ""
+
+	if !sameGuild {
+		cacheGuilds = nil
+		cacheChannels = nil
+	}
 }
 
 var loc location
@@ -66,8 +71,10 @@ var lastMsg location
 var lastUsedMsg string
 var lastUsedRole string
 
-var cacheGuilds = make(map[string]string)
-var cacheChannels = make(map[string]string)
+var cacheGuilds []*discordgo.UserGuild
+var cacheChannels []*discordgo.Channel
+var cachedChannelType string
+
 var cacheRead *discordgo.Message
 var cacheUser *discordgo.User
 
@@ -412,8 +419,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 	case "reply":
 		loc.push(lastMsg.guild, lastMsg.channel)
 	case "back":
-		loc, lastLoc = lastLoc, loc
-		pointerCache = ""
+		loc.push(lastLoc.guild, lastLoc.channel)
 	case "ban":
 		if nargs < 1 {
 			stdutil.PrintErr("ban <user id>", nil)
@@ -687,8 +693,8 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 		pointerCache = ""
 
 		fmt.Println(tl("rl.cache.vars"))
-		cacheGuilds = make(map[string]string)
-		cacheChannels = make(map[string]string)
+		cacheGuilds = nil
+		cacheChannels = nil
 		cacheAudio = make(map[string][][]byte)
 
 		lastLoc = location{}

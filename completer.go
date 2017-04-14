@@ -6,8 +6,20 @@ import (
 
 func setCompleter(rl *readline.Instance) {
 	rl.Config.AutoComplete = readline.NewPrefixCompleter(
-		readline.PcItem("guild", readline.PcItemDynamic(searchMap(&cacheGuilds))),
-		readline.PcItem("channel", readline.PcItemDynamic(searchMap(&cacheChannels))),
+		readline.PcItem("guild", readline.PcItemDynamic(func(name string) []string {
+			names := make([]string, len(cacheGuilds))
+			for i, g := range cacheGuilds {
+				names[i] = g.Name
+			}
+			return names
+		})),
+		readline.PcItem("channel", readline.PcItemDynamic(func(name string) []string {
+			names := make([]string, len(cacheChannels))
+			for i, c := range cacheChannels {
+				names[i] = c.Name
+			}
+			return names
+		})),
 
 		readline.PcItem("edit", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
 		readline.PcItem("del", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
@@ -51,18 +63,6 @@ func setCompleter(rl *readline.Instance) {
 			readline.PcItem("current"),
 		),
 	)
-}
-func searchMap(theMap *map[string]string) func(string) []string {
-	return func(line string) []string {
-		items := make([]string, len(*theMap))
-
-		i := 0
-		for key := range *theMap {
-			items[i] = key
-			i++
-		}
-		return items
-	}
 }
 func bookmarkTab(line string) []string {
 	items := make([]string, len(bookmarks))

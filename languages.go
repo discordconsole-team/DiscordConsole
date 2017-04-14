@@ -82,6 +82,7 @@ failed.user=Couldn't query user
 failed.user.edit=Couldn't edit user data
 failed.channel=Could not query channel
 failed.guild=Could not query guild
+failed.settings=Could not query user settings
 failed.timestamp=Couldn't parse timestamp
 failed.channel.create=Could not create channel
 failed.msg.query=Could not get message

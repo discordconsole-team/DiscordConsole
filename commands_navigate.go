@@ -13,13 +13,45 @@ import (
 func commands_navigate(session *discordgo.Session, cmd string, args []string, nargs int) (returnVal string) {
 	switch cmd {
 	case "guilds":
-		guilds, err := session.UserGuilds(100, "", "")
-		if err != nil {
-			stdutil.PrintErr(tl("failed.guild"), err)
-			return
-		}
+		var guilds []*discordgo.UserGuild
+		if cacheGuilds != nil {
+			guilds = cacheGuilds
+		} else {
+			var err error
+			guilds, err = session.UserGuilds(100, "", "")
+			if err != nil {
+				stdutil.PrintErr(tl("failed.guild"), err)
+				return
+			}
 
-		cacheGuilds = make(map[string]string)
+			if UserType == TypeUser {
+				settings, err := session.UserSettings()
+				if err != nil {
+					stdutil.PrintErr(tl("failed.settings"), err)
+				} else {
+					guilds2 := guilds
+
+					guilds = make([]*discordgo.UserGuild, len(settings.GuildPositions))
+					for i, g := range settings.GuildPositions {
+						for _, g2 := range guilds2 {
+							if g == g2.ID {
+								guilds[i] = g2
+							}
+						}
+					}
+
+					// Should never happen, if the two endpoints are in sync.
+					// But we want to avoid any crash at all costs.
+					for i, g := range guilds {
+						if g == nil {
+							guilds[i] = &discordgo.UserGuild{Name: "Error"}
+						}
+					}
+				}
+			}
+
+			cacheGuilds = guilds
+		}
 
 		table := gtable.NewStringTable()
 		table.AddStrings("ID", "Name")
@@ -27,7 +59,6 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 		for _, guild := range guilds {
 			table.AddRow()
 			table.AddStrings(guild.ID, guild.Name)
-			cacheGuilds[strings.ToLower(guild.Name)] = guild.ID
 		}
 
 		printTable(table)
@@ -37,9 +68,12 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			return
 		}
 
-		guildID, ok := cacheGuilds[strings.ToLower(strings.Join(args, " "))]
-		if !ok {
-			guildID = args[0]
+		guildID := args[0]
+		for _, g := range cacheGuilds {
+			if strings.EqualFold(args[0], g.Name) {
+				guildID = g.ID
+				break
+			}
 		}
 
 		guild, err := session.Guild(guildID)
@@ -62,16 +96,21 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			return
 		}
 
-		channelID, ok := cacheChannels[strings.ToLower(strings.Join(args, " "))]
-		if !ok {
-			channelID = args[0]
+		var channel *discordgo.Channel
+		for _, c := range cacheChannels {
+			if strings.EqualFold(args[0], c.Name) {
+				channel = c
+			}
+		}
+		if channel == nil {
+			var err error
+			channel, err = session.Channel(args[0])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.channel"), err)
+				return
+			}
 		}
 
-		channel, err := session.Channel(channelID)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.channel"), err)
-			return
-		}
 		if channel.IsPrivate {
 			loc.push(nil, channel)
 		} else {
@@ -178,32 +217,45 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 }
 
 func channels(session *discordgo.Session, kind string) {
-	if loc.guild == nil {
-		stdutil.PrintErr(tl("invalid.guild"), nil)
-		return
-	}
-	channels, err := session.GuildChannels(loc.guild.ID)
-	if err != nil {
-		stdutil.PrintErr(tl("failed.channel"), nil)
-		return
-	}
+	var channels []*discordgo.Channel
+	if cacheChannels != nil && cachedChannelType == kind {
+		channels = cacheChannels
+	} else {
+		if loc.guild == nil {
+			stdutil.PrintErr(tl("invalid.guild"), nil)
+			return
+		}
+		channels2, err := session.GuildChannels(loc.guild.ID)
+		if err != nil {
+			stdutil.PrintErr(tl("failed.channel"), nil)
+			return
+		}
 
-	cacheChannels = make(map[string]string)
+		cacheChannels = channels
+		cachedChannelType = kind
 
-	sort.Slice(channels, func(i int, j int) bool {
-		return channels[i].Position < channels[j].Position
-	})
+		channels = make([]*discordgo.Channel, 0)
+		for _, c := range channels2 {
+			if c.Type != kind {
+				continue
+			}
+			channels = append(channels, c)
+		}
+
+		sort.Slice(channels, func(i int, j int) bool {
+			return channels[i].Position < channels[j].Position
+		})
+
+		cacheChannels = channels
+		cachedChannelType = kind
+	}
 
 	table := gtable.NewStringTable()
 	table.AddStrings("ID", "Name")
 
 	for _, channel := range channels {
-		if channel.Type != kind {
-			continue
-		}
 		table.AddRow()
 		table.AddStrings(channel.ID, channel.Name)
-		cacheChannels[strings.ToLower(channel.Name)] = channel.ID
 	}
 
 	printTable(table)
