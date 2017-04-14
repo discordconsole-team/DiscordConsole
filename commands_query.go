@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"strconv"
 	"strings"
 
@@ -9,7 +9,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_query(session *discordgo.Session, cmd string, args []string, nargs int) (returnVal string) {
+func commands_query(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "read":
 		if nargs < 1 {
@@ -47,7 +47,7 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 		}
 		switch property {
 		case "":
-			printMessage(session, msg, false, loc.guild, loc.channel)
+			printMessage(session, msg, false, loc.guild, loc.channel, w)
 		case "text":
 			returnVal = msg.Content
 		case "channel":
@@ -75,7 +75,7 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 
 		lastUsedMsg = msg.ID
 		if returnVal != "" {
-			fmt.Println(returnVal)
+			writeln(w, returnVal)
 		}
 	case "cinfo":
 		if nargs < 1 {
@@ -101,7 +101,7 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 		}
 
 		if returnVal != "" {
-			fmt.Println(returnVal)
+			writeln(w, returnVal)
 		}
 	case "ginfo":
 		if nargs < 1 {
@@ -133,7 +133,7 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 		}
 
 		if returnVal != "" {
-			fmt.Println(returnVal)
+			writeln(w, returnVal)
 		}
 	case "uinfo":
 		if nargs < 2 {
@@ -182,7 +182,7 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 		}
 
 		if returnVal != "" {
-			fmt.Println(returnVal)
+			writeln(w, returnVal)
 		}
 	}
 	return

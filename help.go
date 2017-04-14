@@ -21,6 +21,8 @@ func printHelp(search string) {
 		help = append(help, "vchannels\tList voice channels in your selected guild.")
 		help = append(help, "dm <user id>\tCreate a DM with specific user.")
 		help = append(help, "")
+		help = append(help, "region list OR region set <region>\tSet current guild region.")
+		help = append(help, "")
 		help = append(help, "cinfo <property>\tGet information about channel. Properties: guild, name, topic, type")
 		help = append(help, "ginfo <property>\tGet information about guild. Properties: name, icon, region, owner, splash, members, level")
 		help = append(help, "uinfo <id> <property>\tGet information about user. Properties: id, email, name, avatar, bot; 'cache' may be used as message ID")

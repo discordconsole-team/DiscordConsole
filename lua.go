@@ -1,13 +1,14 @@
 package main
 
 import (
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/Shopify/go-lua"
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
 	"github.com/legolord208/stdutil"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type luaEventData struct {
@@ -44,7 +45,7 @@ func RunLua(session *discordgo.Session, file string, args ...string) error {
 
 func luaExec(l *lua.State) int {
 	ColorAutomated.Set()
-	returnVal := command(luaSessionCopy, lua.CheckString(l, 1))
+	returnVal := command(luaSessionCopy, lua.CheckString(l, 1), color.Output)
 	color.Unset()
 
 	l.PushString(returnVal)

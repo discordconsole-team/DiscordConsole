@@ -35,6 +35,7 @@ var UserType int
 var rl *readline.Instance
 var ColorDefault = color.New(color.Bold)
 var ColorAutomated = color.New(color.Italic)
+var ColorMsg = color.New(color.FgYellow)
 var ColorError = color.New(color.FgRed, color.Bold)
 
 const MsgLimit = 2000
@@ -288,14 +289,14 @@ func main() {
 			printPointer(session)
 			fmt.Println(cmd)
 
-			command(session, cmd)
+			command(session, cmd, color.Output)
 		}
 	}
 	for _, cmd := range commands {
 		printPointer(session)
 		fmt.Println(cmd)
 
-		command(session, cmd)
+		command(session, cmd, color.Output)
 	}
 
 	color.Unset()
@@ -319,7 +320,7 @@ func main() {
 			return
 		}
 
-		command(session, cmd)
+		command(session, cmd, color.Output)
 	}
 }
 
@@ -341,7 +342,7 @@ func execute(command string, args ...string) error {
 	return cmd.Run()
 }
 
-func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool, guild *discordgo.Guild, channel *discordgo.Channel) {
+func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bool, guild *discordgo.Guild, channel *discordgo.Channel, w io.Writer) {
 	var s string
 	if prefixR {
 		s += "\r"
@@ -358,8 +359,16 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 	s += strings.Repeat(" ", 5)
 
 	color.Unset()
-	color.Yellow(s)
+	io.WriteString(w, s)
 	ColorDefault.Set()
+}
+
+func writeln(w io.Writer, line string) error {
+	// No error catching for now.
+	// Because... if printing out fails,
+	// chances are printing the error also fails
+	_, err := w.Write([]byte(line + "\n"))
+	return err
 }
 
 const EMPTY_POINTER = "> "

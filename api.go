@@ -87,7 +87,7 @@ func api_start_name(session *discordgo.Session, name string) {
 
 			ColorAutomated.Set()
 			fmt.Println(cmd)
-			command(session, cmd)
+			command(session, cmd, color.Output)
 
 			color.Unset()
 			ColorDefault.Set()

@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
-	"io/ioutil"
+	"io"
+	"os"
 	"strconv"
 	"strings"
 	"unicode"
@@ -91,7 +91,7 @@ var intercept = true
 
 var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run"}
 
-func command(session *discordgo.Session, cmd string) (returnVal string) {
+func command(session *discordgo.Session, cmd string, w io.Writer) (returnVal string) {
 	cmd = strings.TrimSpace(cmd)
 	if cmd == "" {
 		return
@@ -103,11 +103,11 @@ func command(session *discordgo.Session, cmd string) (returnVal string) {
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 
-	returnVal = command_raw(session, cmd, args)
+	returnVal = command_raw(session, cmd, args, w)
 	return
 }
 
-func command_raw(session *discordgo.Session, cmd string, args []string) (returnVal string) {
+func command_raw(session *discordgo.Session, cmd string, args []string, w io.Writer) (returnVal string) {
 	nargs := len(args)
 
 	if UserType == TypeWebhook {
@@ -192,7 +192,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 	case "bookmark":
 		fallthrough
 	case "go":
-		returnVal = commands_navigate(session, cmd, args, nargs)
+		returnVal = commands_navigate(session, cmd, args, nargs, w)
 	case "say":
 		fallthrough
 	case "tts":
@@ -204,7 +204,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 	case "file":
 		fallthrough
 	case "sayfile":
-		returnVal = commands_say(session, cmd, args, nargs)
+		returnVal = commands_say(session, cmd, args, nargs, w)
 	case "edit":
 		if nargs < 2 {
 			stdutil.PrintErr("edit <message id> <stuff>", nil)
@@ -244,6 +244,27 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 
 		directly := nargs < 1
 
+		var file io.Writer
+
+		if directly {
+			file = w
+		} else {
+			name := strings.Join(args, " ")
+			err := fixPath(&name)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.fixpath"), err)
+			}
+
+			file2, err := os.Create(name)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.file.open"), err)
+				return
+			}
+			defer file2.Close()
+
+			file = file2
+		}
+
 		limit := 100
 		if directly {
 			limit = 10
@@ -254,37 +275,22 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			stdutil.PrintErr(tl("failed.msg.query"), err)
 			return
 		}
-		s := ""
 
 		for i := len(msgs) - 1; i >= 0; i-- {
 			msg := msgs[i]
 			if msg.Author == nil {
 				return
 			}
+			s := ""
 			if directly {
-				s += "(ID " + msg.ID + ") "
+				s = "(ID " + msg.ID + ") "
 			}
-			s += msg.Author.Username + ": " + msg.Content + "\n"
+			err = writeln(file, s+msg.Author.Username+": "+msg.Content)
+			if err != nil && !directly {
+				stdutil.PrintErr(tl("failed.msg.write"), err)
+				return
+			}
 		}
-
-		if directly {
-			fmt.Print(s)
-			returnVal = s
-			return
-		}
-
-		name := strings.Join(args, " ")
-		err = fixPath(&name)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.fixpath"), err)
-		}
-
-		err = ioutil.WriteFile(name, []byte(s), 0666)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.file.write"), err)
-			return
-		}
-		fmt.Println("Wrote chat log to '" + name + "'.")
 	case "delall":
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
@@ -311,7 +317,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			return
 		}
 		returnVal := strconv.Itoa(len(ids))
-		fmt.Println("Deleted " + returnVal + " messages!")
+		writeln(w, strings.Replace(tl("status.msg.delall"), "#", returnVal, -1))
 	case "members":
 		if loc.guild == nil {
 			stdutil.PrintErr(tl("invalid.guild"), nil)
@@ -331,7 +337,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			table.AddRow()
 			table.AddStrings(member.User.ID, member.User.Username, member.Nick)
 		}
-		printTable(table)
+		writeln(w, table.String())
 	case "invite":
 		if nargs < 1 {
 			stdutil.PrintErr("invite accept <code> OR invite create [expire] [max uses] ['temp']", nil)
@@ -353,7 +359,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 				stdutil.PrintErr(tl("failed.invite.accept"), err)
 				return
 			}
-			fmt.Println(tl("status.invite.accept"))
+			writeln(w, tl("status.invite.accept"))
 
 			loc.push(invite.Guild, invite.Channel)
 		case "create":
@@ -389,7 +395,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 				stdutil.PrintErr(tl("failed.invite.create"), err)
 				return
 			}
-			fmt.Println(tl("status.invite.create") + " " + invite.Code)
+			writeln(w, tl("status.invite.create")+" "+invite.Code)
 			returnVal = invite.Code
 		default:
 			stdutil.PrintErr(tl("invalid.value"), nil)
@@ -406,16 +412,16 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			return
 		}
 		messages = val
-		fmt.Println(tl("status.msg.intercept"))
+		writeln(w, tl("status.msg.intercept"))
 	case "disablemessages":
 		messages = MessagesNone
-		fmt.Println(tl("status.msg.nointercept"))
+		writeln(w, tl("status.msg.nointercept"))
 	case "enableintercept":
 		intercept = true
-		fmt.Println(tl("status.cmd.intercept"))
+		writeln(w, tl("status.cmd.intercept"))
 	case "disableintercept":
 		intercept = false
-		fmt.Println(tl("status.cmd.nointercept"))
+		writeln(w, tl("status.cmd.nointercept"))
 	case "reply":
 		loc.push(lastMsg.guild, lastMsg.channel)
 	case "back":
@@ -495,7 +501,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			table.AddStrings(ban.User.ID, ban.User.Username, ban.Reason)
 		}
 
-		printTable(table)
+		writeln(w, table.String())
 	case "nickall":
 		if loc.guild == nil {
 			stdutil.PrintErr(tl("invalid.guild"), nil)
@@ -517,7 +523,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			}
 		}
 	case "vchannels":
-		channels(session, "voice")
+		channels(session, "voice", w)
 	case "play":
 		if UserType != TypeBot {
 			stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
@@ -548,7 +554,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 
 		playing = file
 
-		fmt.Println(tl("status.loading"))
+		writeln(w, tl("status.loading"))
 
 		var buffer [][]byte
 		err = loadAudio(file, &buffer)
@@ -558,8 +564,8 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			return
 		}
 
-		fmt.Println("Loaded!")
-		fmt.Println("Playing!")
+		writeln(w, "Loaded!")
+		writeln(w, "Playing!")
 
 		go func(buffer [][]byte, session *discordgo.Session, guild, channel string) {
 			play(buffer, session, guild, channel)
@@ -626,7 +632,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			table.AddStrings(relation.ID, TypeRelationships[relation.Type], relation.User.Username)
 		}
 
-		printTable(table)
+		writeln(w, table.String())
 	case "reactbig":
 		if nargs < 2 {
 			stdutil.PrintErr("reactbig <message id> <text>", nil)
@@ -643,7 +649,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			str := string(toEmoji(c))
 
 			if strings.Contains(used, str) {
-				fmt.Println(tl("failed.react.used"))
+				writeln(w, tl("failed.react.used"))
 				continue
 			}
 			used += str
@@ -658,7 +664,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 
 		var err error
 		if full {
-			fmt.Println(tl("rl.session"))
+			writeln(w, tl("rl.session"))
 			session.Close()
 			err = session.Open()
 			if err != nil {
@@ -666,7 +672,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			}
 		}
 
-		fmt.Println(tl("rl.cache.loc"))
+		writeln(w, tl("rl.cache.loc"))
 		var guild *discordgo.Guild
 		var channel *discordgo.Channel
 
@@ -692,7 +698,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 		loc.channel = channel
 		pointerCache = ""
 
-		fmt.Println(tl("rl.cache.vars"))
+		writeln(w, tl("rl.cache.vars"))
 		cacheGuilds = nil
 		cacheChannels = nil
 		cacheAudio = make(map[string][][]byte)
@@ -725,7 +731,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			stdutil.PrintErr(tl("failed.status"), err)
 			return
 		}
-		fmt.Println(tl("status.status"))
+		writeln(w, tl("status.status"))
 	case "avatar":
 		fallthrough
 	case "name":
@@ -737,7 +743,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 	case "typing":
 		fallthrough
 	case "nick":
-		returnVal = commands_usermod(session, cmd, args, nargs)
+		returnVal = commands_usermod(session, cmd, args, nargs, w)
 	case "read":
 		fallthrough
 	case "cinfo":
@@ -745,7 +751,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 	case "ginfo":
 		fallthrough
 	case "uinfo":
-		returnVal = commands_query(session, cmd, args, nargs)
+		returnVal = commands_query(session, cmd, args, nargs, w)
 	case "roles":
 		fallthrough
 	case "roleadd":
@@ -757,7 +763,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 	case "roleedit":
 		fallthrough
 	case "roledelete":
-		returnVal = commands_roles(session, cmd, args, nargs)
+		returnVal = commands_roles(session, cmd, args, nargs, w)
 	case "api_start":
 		if api_name != "" {
 			stdutil.PrintErr(tl("invalid.api.started"), nil)
@@ -776,7 +782,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 				return
 			}
 		}
-		fmt.Println(tl("status.api.start") + " " + name)
+		writeln(w, tl("status.api.start")+" "+name)
 		returnVal = name
 	case "broadcast":
 		if nargs < 1 {
@@ -793,9 +799,48 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			stdutil.PrintErr(tl("failed.generic"), err)
 			return
 		}
-		command_raw(session, args[0], args[1:])
+		command_raw(session, args[0], args[1:], w)
 	case "api_stop":
 		api_stop()
+	case "region":
+		if nargs < 1 {
+			stdutil.PrintErr("region list OR region set <region>", nil)
+			return
+		}
+		switch strings.ToLower(args[0]) {
+		case "list":
+			regions, err := session.VoiceRegions()
+			if err != nil {
+				stdutil.PrintErr(tl("failed.voice.regions"), err)
+				return
+			}
+
+			table := gtable.NewStringTable()
+			table.AddStrings("ID", "Name", "Port")
+
+			for _, region := range regions {
+				table.AddRow()
+				table.AddStrings(region.ID, region.Name, strconv.Itoa(region.Port))
+			}
+
+			writeln(w, table.String())
+		case "set":
+			if nargs < 2 {
+				stdutil.PrintErr("region set <region>", nil)
+				return
+			}
+			if loc.guild == nil {
+				stdutil.PrintErr(tl("invalid.guild"), nil)
+				return
+			}
+
+			_, err := session.GuildEdit(loc.guild.ID, discordgo.GuildParams{
+				Region: args[1],
+			})
+			if err != nil {
+				stdutil.PrintErr(tl("failed.guild.edit"), err)
+			}
+		}
 	default:
 		stdutil.PrintErr(tl("invalid.command"), nil)
 	}
@@ -809,11 +854,4 @@ func parseBool(str string) (bool, error) {
 		return false, nil
 	}
 	return false, errors.New(tl("invalid.yn"))
-}
-
-func printTable(table gtable.StringTable) {
-	table.Each(func(ti *gtable.TableItem) {
-		ti.Padding(1)
-	})
-	fmt.Println(table.String())
 }

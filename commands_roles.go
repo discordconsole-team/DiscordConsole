@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,7 +11,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_roles(session *discordgo.Session, cmd string, args []string, nargs int) (returnVal string) {
+func commands_roles(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "roles":
 		if loc.guild == nil {
@@ -36,7 +36,7 @@ func commands_roles(session *discordgo.Session, cmd string, args []string, nargs
 			table.AddStrings(role.ID, role.Name, strconv.Itoa(role.Permissions))
 		}
 
-		printTable(table)
+		writeln(w, table.String())
 	case "roleadd":
 		fallthrough
 	case "roledel":
@@ -70,7 +70,7 @@ func commands_roles(session *discordgo.Session, cmd string, args []string, nargs
 			stdutil.PrintErr(tl("failed.role.create"), err)
 			return
 		}
-		fmt.Println("Created role with ID " + role.ID)
+		writeln(w, "Created role with ID "+role.ID)
 		lastUsedRole = role.ID
 		returnVal = role.ID
 	case "roleedit":
@@ -148,7 +148,7 @@ func commands_roles(session *discordgo.Session, cmd string, args []string, nargs
 			return
 		}
 		lastUsedRole = role.ID
-		fmt.Println("Edited role " + role.ID)
+		writeln(w, "Edited role "+role.ID)
 	case "roledelete":
 		if nargs < 1 {
 			stdutil.PrintErr("roledelete <roleid>", nil)
@@ -161,7 +161,7 @@ func commands_roles(session *discordgo.Session, cmd string, args []string, nargs
 
 		err := session.GuildRoleDelete(loc.guild.ID, args[0])
 		if err != nil {
-			fmt.Println(tl("failed.role.delete"), err)
+			stdutil.PrintErr(tl("failed.role.delete"), err)
 		}
 	}
 	return

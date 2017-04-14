@@ -3,7 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -13,7 +13,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_say(session *discordgo.Session, cmd string, args []string, nargs int) (returnVal string) {
+func commands_say(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "tts":
 		fallthrough
@@ -52,7 +52,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			stdutil.PrintErr(tl("failed.msg.send"), err)
 			return
 		}
-		fmt.Println(tl("status.msg.create") + " " + msg.ID)
+		writeln(w, tl("status.msg.create")+" "+msg.ID)
 		lastUsedMsg = msg.ID
 		returnVal = msg.ID
 	case "embed":
@@ -88,7 +88,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 				stdutil.PrintErr(tl("failed.msg.send"), err)
 				return
 			}
-			fmt.Println(tl("status.msg.create") + " " + msg.ID)
+			writeln(w, tl("status.msg.create")+" "+msg.ID)
 			lastUsedMsg = msg.ID
 			returnVal = msg.ID
 		}
@@ -118,7 +118,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 					stdutil.PrintErr(tl("failed.msg.send"), err)
 					return nil, false
 				}
-				fmt.Println(tl("status.msg.create") + msg.ID)
+				writeln(w, tl("status.msg.create")+msg.ID)
 
 				return msg, true
 			}
@@ -183,7 +183,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 					stdutil.PrintErr(tl("failed.msg.send"), err)
 					return nil, false
 				}
-				fmt.Println("Created message with ID " + msg.ID)
+				writeln(w, "Created message with ID "+msg.ID)
 
 				return msg, true
 			}
@@ -245,7 +245,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			stdutil.PrintErr(tl("failed.msg.send"), err)
 			return
 		}
-		fmt.Println(tl("status.msg.created") + " " + msg.ID)
+		writeln(w, tl("status.msg.created")+" "+msg.ID)
 		returnVal = msg.ID
 	case "quote":
 		if nargs < 1 {
@@ -283,7 +283,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			stdutil.PrintErr(tl("failed.msg.send"), err)
 			return
 		}
-		fmt.Println(tl("status.msg.create") + " " + msg.ID)
+		writeln(w, tl("status.msg.create")+" "+msg.ID)
 		lastUsedMsg = msg.ID
 		returnVal = msg.ID
 	}

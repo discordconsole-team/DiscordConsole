@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/base64"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -13,7 +12,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_usermod(session *discordgo.Session, cmd string, args []string, nargs int) (returnVal string) {
+func commands_usermod(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "avatar":
 		if nargs < 1 {
@@ -83,7 +82,7 @@ func commands_usermod(session *discordgo.Session, cmd string, args []string, nar
 			stdutil.PrintErr(tl("failed.avatar"), err)
 			return
 		}
-		fmt.Println(tl("status.avatar"))
+		writeln(w, tl("status.avatar"))
 	case "name":
 		if nargs < 1 {
 			stdutil.PrintErr("name <handle>", nil)
@@ -109,7 +108,7 @@ func commands_usermod(session *discordgo.Session, cmd string, args []string, nar
 			stdutil.PrintErr(tl("failed.user.edit"), err)
 			return
 		}
-		fmt.Println(tl("status.name"))
+		writeln(w, tl("status.name"))
 	case "playing":
 		err := session.UpdateStatus(0, strings.Join(args, " "))
 		if err != nil {

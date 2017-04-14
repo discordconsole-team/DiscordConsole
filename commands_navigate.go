@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"sort"
 	"strings"
 
@@ -10,7 +10,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_navigate(session *discordgo.Session, cmd string, args []string, nargs int) (returnVal string) {
+func commands_navigate(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "guilds":
 		var guilds []*discordgo.UserGuild
@@ -61,7 +61,7 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			table.AddStrings(guild.ID, guild.Name)
 		}
 
-		printTable(table)
+		writeln(w, table.String())
 	case "guild":
 		if nargs < 1 {
 			stdutil.PrintErr("guild <id>", nil)
@@ -89,7 +89,7 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 		}
 		loc.push(guild, channel)
 	case "channels":
-		channels(session, "text")
+		channels(session, "text", w)
 	case "channel":
 		if nargs < 1 {
 			stdutil.PrintErr("channel <id>", nil)
@@ -145,7 +145,7 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			}
 			table.AddStrings(channel.ID, recipient)
 		}
-		printTable(table)
+		writeln(w, table.String())
 	case "dm":
 		if nargs < 1 {
 			stdutil.PrintErr("dm <user id>", nil)
@@ -158,10 +158,10 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 		}
 		loc.push(nil, channel)
 
-		fmt.Println(tl("channel.select") + " " + channel.ID)
+		writeln(w, tl("channel.select")+" "+channel.ID)
 	case "bookmarks":
 		for key, _ := range bookmarks {
-			fmt.Println(key)
+			writeln(w, key)
 		}
 	case "bookmark":
 		if nargs < 1 {
@@ -216,7 +216,7 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 	return
 }
 
-func channels(session *discordgo.Session, kind string) {
+func channels(session *discordgo.Session, kind string, w io.Writer) {
 	var channels []*discordgo.Channel
 	if cacheChannels != nil && cachedChannelType == kind {
 		channels = cacheChannels
@@ -258,5 +258,5 @@ func channels(session *discordgo.Session, kind string) {
 		table.AddStrings(channel.ID, channel.Name)
 	}
 
-	printTable(table)
+	writeln(w, table.String())
 }

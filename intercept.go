@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"time"
@@ -84,7 +85,7 @@ Switch:
 		print = true
 	}
 	if print {
-		printMessage(session, e.Message, true, guild, channel)
+		printMessage(session, e.Message, true, guild, channel, color.Output)
 		hasOutput = true
 	}
 
@@ -166,11 +167,6 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		return
 	}
 
-	err := session.ChannelMessageDelete(e.ChannelID, e.ID)
-	if err != nil {
-		stdutil.PrintErr(tl("failed.msg.delete"), err)
-	}
-
 	lastLoc = loc
 	loc = location{
 		guild:   guild,
@@ -181,12 +177,15 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	color.Unset()
 	ColorAutomated.Set()
 
-	fmt.Println(cmd)
-	command(session, cmd)
+	str := bytes.NewBuffer(nil)
+	command(session, cmd, str)
+
+	_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, "```\n"+str.String()+"```\n")
+	if err != nil {
+		stdutil.PrintErr(tl("failed.msg.edit"), err)
+	}
 
 	color.Unset()
 	ColorDefault.Set()
-
-	printPointer(session)
 	return
 }
