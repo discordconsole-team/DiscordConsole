@@ -23,9 +23,9 @@ func printHelp(search string) {
 		help = append(help, "")
 		help = append(help, "cinfo <property>\tGet information about channel. Properties: guild, name, topic, type")
 		help = append(help, "ginfo <property>\tGet information about guild. Properties: name, icon, region, owner, splash, members, level")
-		help = append(help, "uinfo <id> <property>\tGet information about user. Properties: id, email, name, avatar, bot")
+		help = append(help, "uinfo <id> <property>\tGet information about user. Properties: id, email, name, avatar, bot; 'cache' may be used as message ID")
 		help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, channel, timestamp, author, "+
-			"author_email, author_name, author_avatar, author_bot; 'cache' may be used as property to save, and used later as message ID.")
+			"author_email, author_name, author_avatar, author_bot; 'cache' may be used as message ID.")
 		help = append(help, "")
 	}
 	help = append(help, "say <stuff>\tSend a message in your selected channel.")

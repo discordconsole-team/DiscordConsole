@@ -652,7 +652,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 
 		var err error
 		if full {
-			fmt.Println(tl("restarting.session"))
+			fmt.Println(tl("rl.session"))
 			session.Close()
 			err = session.Open()
 			if err != nil {
@@ -660,7 +660,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 			}
 		}
 
-		fmt.Println(tl("restarting.cache.loc"))
+		fmt.Println(tl("rl.cache.loc"))
 		var guild *discordgo.Guild
 		var channel *discordgo.Channel
 
@@ -686,7 +686,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 		loc.channel = channel
 		pointerCache = ""
 
-		fmt.Println(tl("restarting.cache.vars"))
+		fmt.Println(tl("rl.cache.vars"))
 		cacheGuilds = make(map[string]string)
 		cacheChannels = make(map[string]string)
 		cacheAudio = make(map[string][][]byte)
@@ -697,6 +697,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string) (returnV
 		lastUsedRole = ""
 
 		cacheRead = nil
+		cacheUser = nil
 	case "status":
 		if nargs < 1 {
 			stdutil.PrintErr("status <value>", nil)
