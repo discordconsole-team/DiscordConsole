@@ -180,10 +180,40 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	str := bytes.NewBuffer(nil)
 	command(session, cmd, str)
 
-	_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, "```\n"+str.String()+"```\n")
-	if err != nil {
-		stdutil.PrintErr(tl("failed.msg.edit"), err)
+	first := true
+	send := func(buf string) {
+		buf = "```\n" + buf + "\n```"
+		if first {
+			first = false
+			_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, buf)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.msg.edit"), err)
+				return
+			}
+		} else {
+			_, err := session.ChannelMessageSend(e.ChannelID, buf)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.msg.send"), err)
+				return
+			}
+		}
 	}
+
+	buf := ""
+	for {
+		line, err := str.ReadString('\n')
+		if err != nil {
+			break
+		}
+
+		if len(line)+len(buf)+8 < MsgLimit {
+			buf += line
+		} else {
+			send(buf)
+			buf = ""
+		}
+	}
+	send(buf)
 
 	color.Unset()
 	ColorDefault.Set()
