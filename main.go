@@ -366,7 +366,9 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 	s += strings.Repeat(" ", 5)
 
 	color.Unset()
-	io.WriteString(w, s)
+	ColorMsg.Set()
+	writeln(w, s)
+	color.Unset()
 	ColorDefault.Set()
 }
 
