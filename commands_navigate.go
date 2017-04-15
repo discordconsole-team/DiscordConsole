@@ -68,9 +68,9 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			return
 		}
 
-		guildID := args[0]
+		guildID := strings.Join(args, " ")
 		for _, g := range cacheGuilds {
-			if strings.EqualFold(args[0], g.Name) {
+			if strings.EqualFold(guildID, g.Name) {
 				guildID = g.ID
 				break
 			}
@@ -96,15 +96,17 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			return
 		}
 
+		arg := strings.Join(args, " ")
+
 		var channel *discordgo.Channel
 		for _, c := range cacheChannels {
-			if strings.EqualFold(args[0], c.Name) {
+			if strings.EqualFold(arg, c.Name) {
 				channel = c
 			}
 		}
 		if channel == nil {
 			var err error
-			channel, err = session.Channel(args[0])
+			channel, err = session.Channel(arg)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.channel"), err)
 				return
