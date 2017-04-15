@@ -107,6 +107,7 @@ failed.file.delete=Could not delete file
 failed.status=Couldn't update status
 failed.typing=Couldn't start typing
 failed.members=Could not list members
+failed.invite=Could not query invite
 failed.invite.accept=Could not accept invite
 failed.invite.create=Invite could not be created
 failed.roles=Could not get roles

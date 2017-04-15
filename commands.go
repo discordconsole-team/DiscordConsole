@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"github.com/bwmarrin/discordgo"
@@ -345,6 +346,30 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			return
 		}
 		switch args[0] {
+		case "see":
+			if nargs < 2 {
+				stdutil.PrintErr("invite see <code>", nil)
+				return
+			}
+			if UserType != TypeUser {
+				stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
+				return
+			}
+
+			invite, err := session.Invite(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.invite"), err)
+				return
+			}
+			writeln(w, "Guild: "+invite.Guild.ID+", "+invite.Guild.Name)
+			writeln(w, "Channel: "+invite.Channel.ID+", "+invite.Channel.Name)
+			writeln(w, "Created At: "+string(invite.CreatedAt))
+			writeln(w, "Inviter: "+invite.Inviter.ID+", "+invite.Inviter.String())
+			writeln(w, "Max age: "+(time.Duration(invite.MaxAge)*time.Second).String())
+			writeln(w, "Max uses: "+strconv.Itoa(invite.MaxUses))
+			writeln(w, "Uses: "+strconv.Itoa(invite.Uses))
+			writeln(w, "Revoked: "+strconv.FormatBool(invite.Revoked))
+			writeln(w, "Temporary: "+strconv.FormatBool(invite.Temporary))
 		case "accept":
 			if nargs < 2 {
 				stdutil.PrintErr("invite accept <code>", nil)
