@@ -118,7 +118,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 					stdutil.PrintErr(tl("failed.msg.send"), err)
 					return nil, false
 				}
-				writeln(w, tl("status.msg.create")+msg.ID)
+				writeln(w, tl("status.msg.create")+" "+msg.ID)
 
 				return msg, true
 			}
