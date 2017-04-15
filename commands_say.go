@@ -286,6 +286,55 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 		writeln(w, tl("status.msg.create")+" "+msg.ID)
 		lastUsedMsg = msg.ID
 		returnVal = msg.ID
+	case "editembed":
+		fallthrough
+	case "edit":
+		if nargs < 2 {
+			stdutil.PrintErr("edit <message id> <stuff>", nil)
+			return
+		}
+		if loc.channel == nil {
+			stdutil.PrintErr(tl("invalid.channel"), nil)
+			return
+		}
+
+		id := args[0]
+		contents := strings.Join(args[1:], " ")
+
+		var msg *discordgo.Message
+		var err error
+		if cmd == "editembed" {
+			var embed = &discordgo.MessageEmbed{}
+			err := json.Unmarshal([]byte(contents), embed)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.json"), err)
+				return
+			}
+
+			msg, err = session.ChannelMessageEditEmbed(loc.channel.ID, id, embed)
+		} else {
+			msg, err = session.ChannelMessageEdit(loc.channel.ID, id, contents)
+		}
+		if err != nil {
+			stdutil.PrintErr(tl("failed.msg.edit"), err)
+			return
+		}
+		lastUsedMsg = msg.ID
+	case "del":
+		if nargs < 1 {
+			stdutil.PrintErr("del <message id>", nil)
+			return
+		}
+		if loc.channel == nil {
+			stdutil.PrintErr(tl("invalid.channel"), nil)
+			return
+		}
+
+		err := session.ChannelMessageDelete(loc.channel.ID, args[0])
+		if err != nil {
+			stdutil.PrintErr(tl("failed.msg.delete"), err)
+			return
+		}
 	}
 	return
 }

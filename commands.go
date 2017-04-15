@@ -205,39 +205,12 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 		fallthrough
 	case "file":
 		fallthrough
+	case "edit":
+		fallthrough
+	case "editembed":
+		fallthrough
 	case "sayfile":
 		returnVal = commands_say(session, cmd, args, nargs, w)
-	case "edit":
-		if nargs < 2 {
-			stdutil.PrintErr("edit <message id> <stuff>", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		msg, err := session.ChannelMessageEdit(loc.channel.ID, args[0], strings.Join(args[1:], " "))
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.edit"), err)
-			return
-		}
-		lastUsedMsg = msg.ID
-	case "del":
-		if nargs < 1 {
-			stdutil.PrintErr("del <message id>", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		err := session.ChannelMessageDelete(loc.channel.ID, args[0])
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.delete"), err)
-			return
-		}
 	case "log":
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
@@ -337,7 +310,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 
 		for _, member := range members {
 			table.AddRow()
-			table.AddStrings(member.User.ID, member.User.Username, member.Nick)
+			table.AddStrings(member.User.ID, member.User.String(), member.Nick)
 		}
 		writeln(w, table.String())
 	case "invite":

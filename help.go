@@ -39,6 +39,7 @@ func printHelp(search string) {
 		help = append(help, "file <file>\tUpload file to selected channel.")
 		help = append(help, "")
 		help = append(help, "edit <message id> <stuff>\tEdit a message in your selected channel.")
+		help = append(help, "editembed <message id> <json>\tEdit a message embed in your selected channel.")
 		help = append(help, "del <message id>\tDelete a message in the selected channel.")
 		help = append(help, "delall [since message id]\tBulk delete messages since a specific message")
 		help = append(help, "log [output file]\tLog the last few messages in console or to a file.")
