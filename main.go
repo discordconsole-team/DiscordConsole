@@ -28,6 +28,8 @@ const (
 	TypeWebhook
 )
 
+var closed bool
+
 var UserId string
 var UserToken string
 var UserType int
@@ -321,10 +323,15 @@ func main() {
 		}
 
 		command(session, cmd, color.Output)
+		if closed {
+			break
+		}
 	}
 }
 
 func exit(session *discordgo.Session) {
+	closed = true
+
 	api_stop()
 	playing = ""
 
