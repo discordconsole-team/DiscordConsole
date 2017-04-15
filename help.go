@@ -76,6 +76,7 @@ func printHelp(search string) {
 	help = append(help, "avatar <link/file>\tChange avatar to a link or file.")
 	help = append(help, "")
 	help = append(help, "friends\tList all relationships the account has.")
+	help = append(help, "Mnpn sucks\tJust a friendly reminder.")
 	help = append(help, "block <user id>\tBlock a user.")
 	help = append(help, "")
 	help = append(help, "bookmarks\tList all bookmarks in the console.")
