@@ -30,13 +30,13 @@ var TypeMessages = map[string]int{
 	"mentions": MessagesMentions,
 	"private":  MessagesPrivate,
 	"current":  MessagesCurrent,
+	"none":     MessagesNone,
 }
 var TypeStatuses = map[string]discordgo.Status{
 	"online":    discordgo.StatusOnline,
 	"idle":      discordgo.StatusIdle,
 	"dnd":       discordgo.StatusDoNotDisturb,
 	"invisible": discordgo.StatusInvisible,
-	"offline":   discordgo.StatusOffline,
 }
 
 type location struct {
@@ -88,6 +88,7 @@ const (
 
 var messages = MessagesNone
 var intercept = true
+var output = false
 
 var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run"}
 
@@ -400,7 +401,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 		default:
 			stdutil.PrintErr(tl("invalid.value"), nil)
 		}
-	case "enablemessages":
+	case "messages":
 		if len(args) < 1 {
 			messages = MessagesCurrent
 			return
@@ -412,16 +413,32 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			return
 		}
 		messages = val
-		writeln(w, tl("status.msg.intercept"))
-	case "disablemessages":
-		messages = MessagesNone
-		writeln(w, tl("status.msg.nointercept"))
-	case "enableintercept":
-		intercept = true
-		writeln(w, tl("status.cmd.intercept"))
-	case "disableintercept":
-		intercept = false
-		writeln(w, tl("status.cmd.nointercept"))
+	case "intercept":
+		if len(args) < 1 {
+			intercept = !intercept
+			writeln(w, strconv.FormatBool(intercept))
+			return
+		}
+
+		state, err := parseBool(args[0])
+		if err != nil {
+			stdutil.PrintErr("", err)
+			return
+		}
+		intercept = state
+	case "output":
+		if len(args) < 1 {
+			output = !output
+			writeln(w, strconv.FormatBool(output))
+			return
+		}
+
+		state, err := parseBool(args[0])
+		if err != nil {
+			stdutil.PrintErr("", err)
+			return
+		}
+		output = state
 	case "reply":
 		loc.push(lastMsg.guild, lastMsg.channel)
 	case "back":

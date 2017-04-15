@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -167,53 +168,72 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		return
 	}
 
-	lastLoc = loc
-	loc = location{
-		guild:   guild,
-		channel: channel,
-	}
-	pointerCache = ""
+	loc.push(guild, channel)
 
-	color.Unset()
-	ColorAutomated.Set()
-
-	str := bytes.NewBuffer(nil)
-	command(session, cmd, str)
-
-	first := true
-	send := func(buf string) {
-		buf = "```\n" + buf + "\n```"
-		if first {
-			first = false
-			_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, buf)
+	var w io.Writer
+	var str *bytes.Buffer
+	if output {
+		str = bytes.NewBuffer(nil)
+		w = str
+	} else {
+		go func() {
+			err := session.ChannelMessageDelete(e.ChannelID, e.ID)
 			if err != nil {
-				stdutil.PrintErr(tl("failed.msg.edit"), err)
+				stdutil.PrintErr(tl("failed.msg.delete"), err)
+			}
+		}()
+		color.Unset()
+		ColorAutomated.Set()
+
+		fmt.Println(cmd)
+		w = color.Output
+	}
+	command(session, cmd, w)
+
+	if !output {
+		color.Unset()
+		ColorDefault.Set()
+		printPointer(session)
+	} else {
+		first := true
+		send := func(buf string) {
+			if buf == "" {
 				return
 			}
-		} else {
-			_, err := session.ChannelMessageSend(e.ChannelID, buf)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.msg.send"), err)
-				return
+
+			buf = "```\n" + buf + "\n```"
+			if first {
+				first = false
+				_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, buf)
+				if err != nil {
+					stdutil.PrintErr(tl("failed.msg.edit"), err)
+					return
+				}
+			} else {
+				_, err := session.ChannelMessageSend(e.ChannelID, buf)
+				if err != nil {
+					stdutil.PrintErr(tl("failed.msg.send"), err)
+					return
+				}
 			}
 		}
-	}
 
-	buf := ""
-	for {
-		line, err := str.ReadString('\n')
-		if err != nil {
-			break
-		}
+		buf := ""
+		for {
+			line, err := str.ReadString('\n')
+			if err != nil {
+				break
+			}
 
-		if len(line)+len(buf)+8 < MsgLimit {
-			buf += line
-		} else {
-			send(buf)
-			buf = ""
+			if len(line)+len(buf)+8 < MsgLimit {
+				buf += line
+			} else {
+				send(buf)
+				buf = ""
+			}
 		}
+		send(buf)
 	}
-	send(buf)
 
 	color.Unset()
 	ColorDefault.Set()

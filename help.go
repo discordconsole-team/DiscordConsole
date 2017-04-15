@@ -62,11 +62,10 @@ func printHelp(search string) {
 		help = append(help, "nick <id/'me'> [nickname]\tChange somebody's nickname")
 		help = append(help, "nickall [nickname]\tChange ALL nicknames!")
 		help = append(help, "")
-		help = append(help, "enablemessages [scope]\tEnable intercepting messages. Optionally, scope can have a filter on it: all, mentions, private, "+
-			"current (default)")
-		help = append(help, "disablemessages\tReverts the above. Sets it to none. Finito. Dead.")
-		help = append(help, "enableintercept\tEnable intercepting 'console.' commands in Discord.")
-		help = append(help, "disableintercept\tReverts the above.")
+		help = append(help, "messages [scope]\tIntercepting messages. Optionally, scope can have a filter on it: all, mentions, private, "+
+			"current (default), none")
+		help = append(help, "intercept [yes/no]\tToggle intercepting 'console.' commands in Discord.")
+		help = append(help, "output [yes/no]\tToggle showing 'console.' outputs directly in Discord.")
 		help = append(help, "reply\tJump to the channel of the last received message.")
 		help = append(help, "back\tJump to previous guild and/or channel.")
 		help = append(help, "")
