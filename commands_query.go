@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"strconv"
 	"strings"
@@ -69,6 +70,17 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 			returnVal = msg.Author.Avatar
 		case "author_bot":
 			returnVal = strconv.FormatBool(msg.Author.Bot)
+		case "embed":
+			embed := "{}"
+			if len(msg.Embeds) >= 1 {
+				embedBytes, err := json.Marshal(msg.Embeds[0])
+				if err != nil {
+					stdutil.PrintErr("Failed to make embed into JSON", err)
+					return
+				}
+				embed = string(embedBytes)
+			}
+			returnVal = embed
 		default:
 			stdutil.PrintErr(tl("invalid.value"), nil)
 		}

@@ -414,7 +414,8 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "intercept":
 		if len(args) < 1 {
 			intercept = !intercept
-			writeln(w, strconv.FormatBool(intercept))
+			returnVal = strconv.FormatBool(intercept)
+			writeln(w, returnVal)
 			return
 		}
 
@@ -427,7 +428,8 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "output":
 		if len(args) < 1 {
 			output = !output
-			writeln(w, strconv.FormatBool(output))
+			returnVal = strconv.FormatBool(output)
+			writeln(w, returnVal)
 			return
 		}
 
