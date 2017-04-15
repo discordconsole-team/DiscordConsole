@@ -324,10 +324,6 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 				stdutil.PrintErr("invite see <code>", nil)
 				return
 			}
-			if UserType != TypeUser {
-				stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
-				return
-			}
 
 			invite, err := session.Invite(args[1])
 			if err != nil {
