@@ -5,14 +5,10 @@ import (
 	"os"
 )
 
-type bookmark struct {
-	GuildID   string
-	ChannelID string
-}
-
 const FileBookmarks = ".bookmarks"
 
 var bookmarks = make(map[string]string)
+var bookmarksCache = make(map[string]location)
 
 func loadBookmarks() error {
 	reader, err := os.Open(FileBookmarks)
@@ -29,7 +25,7 @@ func loadBookmarks() error {
 }
 
 func saveBookmarks() error {
-	writer, err := os.Open(FileBookmarks)
+	writer, err := os.Create(FileBookmarks)
 	if err != nil {
 		return err
 	}

@@ -171,12 +171,14 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			return
 		}
 
-		key := strings.Join(args, " ")
-		if strings.HasPrefix(key, "-") {
-			key = key[1:]
-			delete(bookmarks, key)
+		name := strings.ToLower(strings.Join(args, " "))
+		if strings.HasPrefix(name, "-") {
+			name = name[1:]
+			delete(bookmarks, name)
+			delete(bookmarksCache, name)
 		} else {
-			bookmarks[key] = loc.channel.ID
+			bookmarks[name] = loc.channel.ID
+			bookmarksCache[name] = loc
 		}
 		err := saveBookmarks()
 		if err != nil {
@@ -187,7 +189,13 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 			stdutil.PrintErr("go <bookmark>", nil)
 			return
 		}
-		bookmark, ok := bookmarks[args[0]]
+		name := strings.ToLower(strings.Join(args, " "))
+		if cache, ok := bookmarksCache[name]; ok {
+			loc.push(cache.guild, cache.channel)
+			return
+		}
+
+		bookmark, ok := bookmarks[name]
 		if !ok {
 			stdutil.PrintErr(tl("invalid.bookmark"), nil)
 			return
@@ -211,6 +219,11 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 				stdutil.PrintErr(tl("failed.guild"), err)
 				return
 			}
+		}
+
+		bookmarksCache[name] = location{
+			guild:   guild,
+			channel: channel,
 		}
 
 		loc.push(guild, channel)
