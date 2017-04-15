@@ -170,9 +170,11 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 
 	loc.push(guild, channel)
 
+	capture := output
+
 	var w io.Writer
 	var str *bytes.Buffer
-	if output {
+	if capture {
 		str = bytes.NewBuffer(nil)
 		w = str
 	} else {
@@ -190,7 +192,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	}
 	command(session, cmd, w)
 
-	if !output {
+	if !capture {
 		color.Unset()
 		ColorDefault.Set()
 		printPointer(session)
