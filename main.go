@@ -18,7 +18,7 @@ import (
 )
 
 const AutoRunFile = ".autorun"
-const Version = "2.0.1"
+const Version = "2.1dev"
 
 var DevVersion = strings.Contains(Version, "dev")
 
@@ -54,6 +54,8 @@ func (arr *stringArr) String() string {
 }
 
 func main() {
+	defer handleCrash()
+
 	var token string
 	var email string
 	var pass string
@@ -378,6 +380,16 @@ func writeln(w io.Writer, line string) error {
 	// chances are printing the error also fails
 	_, err := w.Write([]byte(line + "\n"))
 	return err
+}
+
+func handleCrash() {
+	if val := recover(); val != nil {
+		// No translations here. We wanna be as safe as possible
+		stdutil.PrintErr("DiscordConsole has crashed.", nil)
+		stdutil.PrintErr("Please tell LEGOlord208 what you did to cause this.", nil)
+		stdutil.PrintErr("https://legolord208.github.io/contact", nil)
+		stdutil.PrintErr("Error Details: "+fmt.Sprint(val), nil)
+	}
 }
 
 const EMPTY_POINTER = "> "

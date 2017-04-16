@@ -13,6 +13,8 @@ import (
 )
 
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
+	defer handleCrash()
+
 	channel, err := session.Channel(e.ChannelID)
 	if err != nil {
 		stdutil.PrintErr(tl("failed.channel"), err)

@@ -110,6 +110,7 @@ func command(session *discordgo.Session, cmd string, w io.Writer) (returnVal str
 }
 
 func command_raw(session *discordgo.Session, cmd string, args []string, w io.Writer) (returnVal string) {
+	defer handleCrash()
 	nargs := len(args)
 
 	if UserType == TypeWebhook {
