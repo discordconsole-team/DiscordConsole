@@ -202,6 +202,8 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 		fallthrough
 	case "embed":
 		fallthrough
+	case "quote":
+		fallthrough
 	case "big":
 		fallthrough
 	case "file":
