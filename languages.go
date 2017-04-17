@@ -151,7 +151,6 @@ invalid.command=Unknown command. Do 'help' for help
 invalid.api.started=API already started
 invalid.api.notstarted=API not started
 
-login.detect=You are logged into Discord. Use that login? (y/n):
 login.token=Please paste your bot 'token' here, or leave blank for a username/password prompt.
 login.token.user=User tokens are prefixed with 'user '
 login.token.webhook=Webhook tokens are prefixed with 'webhook ', and their URL or id/token
@@ -258,7 +257,6 @@ invalid.music.playing=Spelar redan något
 invalid.bookmark=Bokmärket finns inte
 invalid.status.offline=Offline-statusen finns men kan inte ställas in via API:n
 invalid.command=Okänt kommando. Körhelp 'hjälp' för att få hjälp
-login.detect=Du är inloggad i Discord. Använd den inloggningen? (y/n):
 login.token=Vänligen klistra in en bot-'token' här, eller lämna tomt för användarnamn/lösenord-prompt.
 login.token.user=Användar-'tokens' har prefixet 'user '
 login.token.webhook=Webhook-'tokens' har prefixet 'webhook ', och deras URL eller id/token

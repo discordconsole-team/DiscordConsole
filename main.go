@@ -145,28 +145,7 @@ func main() {
 		return
 	}
 
-	if token == "" && email == "" && pass == "" {
-		foundtoken, err := findToken()
-		if err == nil {
-			for {
-				color.Set(color.FgYellow)
-				fmt.Print(tl("login.detect") + " ")
-				response := stdutil.MustScanTrim()
-				color.Unset()
-
-				if strings.EqualFold(response, "y") {
-					foundtoken = strings.TrimPrefix(foundtoken, "\"")
-					foundtoken = strings.TrimSuffix(foundtoken, "\"")
-					token = "user " + foundtoken
-				} else if !strings.EqualFold(response, "n") {
-					stdutil.PrintErr(tl("invalid.yn"), nil)
-					continue
-				}
-				break
-			}
-		}
-	}
-
+	fmt.Println()
 	fmt.Println(tl("login.token"))
 	fmt.Println(tl("login.token.user"))
 	fmt.Println(tl("login.token.webhook"))
