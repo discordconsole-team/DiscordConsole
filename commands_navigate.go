@@ -31,20 +31,13 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 				} else {
 					guilds2 := guilds
 
-					guilds = make([]*discordgo.UserGuild, len(settings.GuildPositions))
-					for i, g := range settings.GuildPositions {
+					// Endpoints aren't always synced when deleted
+					guilds = make([]*discordgo.UserGuild, 0)
+					for _, g := range settings.GuildPositions {
 						for _, g2 := range guilds2 {
 							if g == g2.ID {
-								guilds[i] = g2
+								guilds = append(guilds, g2)
 							}
-						}
-					}
-
-					// Should never happen, if the two endpoints are in sync.
-					// But we want to avoid any crash at all costs.
-					for i, g := range guilds {
-						if g == nil {
-							guilds[i] = &discordgo.UserGuild{Name: "Error"}
 						}
 					}
 				}
