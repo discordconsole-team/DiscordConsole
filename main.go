@@ -225,7 +225,7 @@ func main() {
 		}
 	}
 
-	if UserType == TypeUser {
+	if UserType != TypeWebhook {
 		if err != nil {
 			stdutil.PrintErr(tl("failed.auth"), err)
 			return
