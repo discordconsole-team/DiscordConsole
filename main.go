@@ -100,7 +100,7 @@ func main() {
 	}
 
 	if !noupdate {
-		fmt.Print(tl("update.checking"))
+		fmt.Print(tl("update.checking") + " ")
 		update, err := checkUpdate()
 		if err != nil {
 			stdutil.PrintErr(tl("update.error"), err)
