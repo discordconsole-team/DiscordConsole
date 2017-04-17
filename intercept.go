@@ -205,7 +205,8 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 				return
 			}
 
-			buf = "```\n" + buf + "\n```"
+			// Zero width space
+			buf = "```\n" + strings.Replace(buf, "`", "​`", -1) + "\n```"
 			if first {
 				first = false
 				_, err := session.ChannelMessageEdit(e.ChannelID, e.ID, buf)
