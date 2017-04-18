@@ -60,6 +60,7 @@ func main() {
 	var email string
 	var pass string
 	var langfile string
+	var help string
 	var commands stringArr
 
 	var noupdate bool
@@ -69,11 +70,17 @@ func main() {
 	flag.StringVar(&email, "e", "", "Set email.")
 	flag.StringVar(&pass, "p", "", "Set password.")
 	flag.StringVar(&langfile, "lang", "en", "Set language. Either a file path, or any of the following: en")
+	flag.StringVar(&help, "lookup", "", "Search in `help` without starting the console")
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.")
 
 	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking.")
 	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in "+AutoRunFile+" file.")
 	flag.Parse()
+
+	if help != "" {
+		printHelp(help)
+		return
+	}
 
 	doErrorHook()
 	fmt.Println("DiscordConsole " + Version)
