@@ -10,7 +10,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_navigate(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
+func commandsNavigate(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "guilds":
 		var guilds []*discordgo.UserGuild
@@ -24,7 +24,7 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 				return
 			}
 
-			if UserType == TypeUser {
+			if userType == typeUser {
 				settings, err := session.UserSettings()
 				if err != nil {
 					stdutil.PrintErr(tl("failed.settings"), err)
@@ -155,7 +155,7 @@ func commands_navigate(session *discordgo.Session, cmd string, args []string, na
 
 		writeln(w, tl("channel.select")+" "+channel.ID)
 	case "bookmarks":
-		for key, _ := range bookmarks {
+		for key := range bookmarks {
 			writeln(w, key)
 		}
 	case "bookmark":

@@ -2,5 +2,5 @@
 
 package main
 
-const SH = "sh"
-const C = "-c"
+const sh = "sh"
+const c = "-c"

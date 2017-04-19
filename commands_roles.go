@@ -11,7 +11,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_roles(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
+func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "roles":
 		if loc.guild == nil {

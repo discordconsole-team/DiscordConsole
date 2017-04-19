@@ -10,7 +10,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_query(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
+func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "read":
 		if nargs < 1 {
@@ -139,7 +139,7 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 		case "members":
 			returnVal = strconv.Itoa(loc.guild.MemberCount)
 		case "level":
-			returnVal = TypeVerifications[loc.guild.VerificationLevel]
+			returnVal = typeVerifications[loc.guild.VerificationLevel]
 		default:
 			stdutil.PrintErr(tl("invalid.value"), nil)
 		}
@@ -163,7 +163,7 @@ func commands_query(session *discordgo.Session, cmd string, args []string, nargs
 
 			user = cacheUser
 		} else {
-			if UserType != TypeBot && !strings.EqualFold(id, "@me") {
+			if userType != typeBot && !strings.EqualFold(id, "@me") {
 				stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
 				return
 			}

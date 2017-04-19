@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var ErrLangCorrupt = errors.New("Corrupt language file")
+var errLangCorrupt = errors.New("corrupt language file")
 var lang map[string]string
 
 // TL stands for TransLate kek
@@ -17,9 +17,9 @@ func tl(name string) string {
 	str, ok := lang[name]
 	if ok {
 		return str
-	} else {
-		return name
 	}
+
+	return name
 }
 
 func loadLang(reader io.Reader) error {
@@ -33,12 +33,12 @@ func loadLang(reader io.Reader) error {
 		}
 		parts := strings.SplitN(text, "=", 2)
 		if len(parts) != 2 {
-			return ErrLangCorrupt
+			return errLangCorrupt
 		}
 		key := parts[0]
 		val := parts[1]
 
-		if strings.HasSuffix(key, ".dev") && DevVersion {
+		if strings.HasSuffix(key, ".dev") && devVersion {
 			key = key[:len(key)-len(".dev")]
 		}
 
@@ -54,13 +54,13 @@ func loadLangString(lang string) error {
 	return loadLang(strings.NewReader(lang))
 }
 func loadLangDefault() {
-	loadLangString(LangEn)
+	loadLangString(langEn)
 }
 
 // Here is just some long data.
 // This comment is a separator, btw.
 
-var LangEn = `
+var langEn = `
 update.checking=Checking for updates...
 update.error=Error checking for updates
 update.available=Update available! Version
@@ -179,7 +179,7 @@ rl.cache.loc=Reloading location cache...
 rl.cache.vars=Deleting cache variables...
 `
 
-var LangSv = `
+var langSv = `
 update.checking=Letar efter uppdateringar...
 update.error=Ett fel inträffade under letandet efter nya uppdateringar.
 update.available=En uppdatering finns tillgänglig! Version

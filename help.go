@@ -10,7 +10,7 @@ func printHelp(search string) {
 
 	help = append(help, "help [search]\tShow help menu. Optionally search.")
 	help = append(help, "exit\tExit DiscordConsole")
-	if UserType != TypeWebhook {
+	if userType != typeWebhook {
 		help = append(help, "exec\tExecute a shell command")
 		help = append(help, "")
 		help = append(help, "guilds\tList guilds/servers this bot is added to.")
@@ -34,7 +34,7 @@ func printHelp(search string) {
 	help = append(help, "sayfile <path>\tSend the contents of a file (auto-splitted).")
 	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!")
 	help = append(help, "embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object")
-	if UserType != TypeWebhook {
+	if userType != typeWebhook {
 		help = append(help, "tts <stuff>\tSend a TTS message in your selected channel.")
 		help = append(help, "file <file>\tUpload file to selected channel.")
 		help = append(help, "")
@@ -82,7 +82,7 @@ func printHelp(search string) {
 	}
 	help = append(help, "name <name>\tChange username completely.")
 	help = append(help, "avatar <link/file>\tChange avatar to a link or file.")
-	if UserType != TypeWebhook {
+	if userType != typeWebhook {
 		help = append(help, "status <value>\tSet the user status. Possible values are: online, idle, dnd and invisible.")
 		help = append(help, "")
 		help = append(help, "friends\tList all relationships the account has.")

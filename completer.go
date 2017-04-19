@@ -30,10 +30,10 @@ func setCompleter(rl *readline.Instance) {
 		readline.PcItem("roleedit", readline.PcItemDynamic(singleValue(&lastUsedRole))),
 		readline.PcItem("roledelete", readline.PcItemDynamic(singleValue(&lastUsedRole))),
 
-		readline.PcItem("roleadd", readline.PcItem(UserId,
+		readline.PcItem("roleadd", readline.PcItem(userID,
 			readline.PcItemDynamic(singleValue(&lastUsedRole)),
 		)),
-		readline.PcItem("roledel", readline.PcItem(UserId,
+		readline.PcItem("roledel", readline.PcItem(userID,
 			readline.PcItemDynamic(singleValue(&lastUsedRole)),
 		)),
 

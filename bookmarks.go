@@ -5,19 +5,18 @@ import (
 	"os"
 )
 
-const FileBookmarks = ".bookmarks"
+const fileBookmarks = ".bookmarks"
 
 var bookmarks = make(map[string]string)
 var bookmarksCache = make(map[string]location)
 
 func loadBookmarks() error {
-	reader, err := os.Open(FileBookmarks)
+	reader, err := os.Open(fileBookmarks)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 	defer reader.Close()
 
@@ -25,7 +24,7 @@ func loadBookmarks() error {
 }
 
 func saveBookmarks() error {
-	writer, err := os.Create(FileBookmarks)
+	writer, err := os.Create(fileBookmarks)
 	if err != nil {
 		return err
 	}

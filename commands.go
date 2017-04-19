@@ -14,26 +14,26 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-var TypeRelationships = map[int]string{
+var typeRelationships = map[int]string{
 	1: "Friend",
 	2: "Blocked",
 	3: "Incoming request",
 	4: "Sent request",
 }
-var TypeVerifications = map[discordgo.VerificationLevel]string{
+var typeVerifications = map[discordgo.VerificationLevel]string{
 	discordgo.VerificationLevelNone:   "None",
 	discordgo.VerificationLevelLow:    "Low",
 	discordgo.VerificationLevelMedium: "Medium",
 	discordgo.VerificationLevelHigh:   "High",
 }
-var TypeMessages = map[string]int{
-	"all":      MessagesAll,
-	"mentions": MessagesMentions,
-	"private":  MessagesPrivate,
-	"current":  MessagesCurrent,
-	"none":     MessagesNone,
+var typeMessages = map[string]int{
+	"all":      messagesAll,
+	"mentions": messagesMentions,
+	"private":  messagesPrivate,
+	"current":  messagesCurrent,
+	"none":     messagesNone,
 }
-var TypeStatuses = map[string]discordgo.Status{
+var typeStatuses = map[string]discordgo.Status{
 	"online":    discordgo.StatusOnline,
 	"idle":      discordgo.StatusIdle,
 	"dnd":       discordgo.StatusDoNotDisturb,
@@ -80,14 +80,14 @@ var cacheRead *discordgo.Message
 var cacheUser *discordgo.User
 
 const (
-	MessagesNone = iota
-	MessagesCurrent
-	MessagesPrivate
-	MessagesMentions
-	MessagesAll
+	messagesNone = iota
+	messagesCurrent
+	messagesPrivate
+	messagesMentions
+	messagesAll
 )
 
-var messages = MessagesNone
+var messages = messagesNone
 var intercept = true
 var output = false
 
@@ -105,15 +105,15 @@ func command(session *discordgo.Session, cmd string, w io.Writer) (returnVal str
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 
-	returnVal = command_raw(session, cmd, args, w)
+	returnVal = commandRaw(session, cmd, args, w)
 	return
 }
 
-func command_raw(session *discordgo.Session, cmd string, args []string, w io.Writer) (returnVal string) {
+func commandRaw(session *discordgo.Session, cmd string, args []string, w io.Writer) (returnVal string) {
 	defer handleCrash()
 	nargs := len(args)
 
-	if UserType == TypeWebhook {
+	if userType == typeWebhook {
 		allowed := false
 		for _, allow := range webhookCommands {
 			if cmd == allow {
@@ -141,7 +141,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 
 		cmd := strings.Join(args, " ")
 
-		err := execute(SH, C, cmd)
+		err := execute(sh, c, cmd)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.exec"), err)
 		}
@@ -174,7 +174,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			stdutil.PrintErr(tl("failed.fixpath"), err)
 		}
 
-		err = RunLua(session, script, scriptArgs...)
+		err = runLua(session, script, scriptArgs...)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.lua.run"), err)
 		}
@@ -195,7 +195,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "bookmark":
 		fallthrough
 	case "go":
-		returnVal = commands_navigate(session, cmd, args, nargs, w)
+		returnVal = commandsNavigate(session, cmd, args, nargs, w)
 	case "say":
 		fallthrough
 	case "tts":
@@ -213,7 +213,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "editembed":
 		fallthrough
 	case "sayfile":
-		returnVal = commands_say(session, cmd, args, nargs, w)
+		returnVal = commandsSay(session, cmd, args, nargs, w)
 	case "log":
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
@@ -347,7 +347,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 				stdutil.PrintErr("invite accept <code>", nil)
 				return
 			}
-			if UserType != TypeUser {
+			if userType != typeUser {
 				stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
 				return
 			}
@@ -400,11 +400,11 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 		}
 	case "messages":
 		if len(args) < 1 {
-			messages = MessagesCurrent
+			messages = messagesCurrent
 			return
 		}
 
-		val, ok := TypeMessages[strings.ToLower(args[0])]
+		val, ok := typeMessages[strings.ToLower(args[0])]
 		if !ok {
 			stdutil.PrintErr(tl("invalid.value"), nil)
 			return
@@ -541,7 +541,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "vchannels":
 		channels(session, "voice", w)
 	case "play":
-		if UserType != TypeBot {
+		if userType != typeBot {
 			stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
 			return
 		}
@@ -588,7 +588,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			playing = ""
 		}(buffer, session, loc.guild.ID, loc.channel.ID)
 	case "stop":
-		if UserType != TypeBot {
+		if userType != typeBot {
 			stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
 			return
 		}
@@ -620,7 +620,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			stdutil.PrintErr("block <user id>", nil)
 			return
 		}
-		if UserType != TypeUser {
+		if userType != typeUser {
 			stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
 			return
 		}
@@ -630,7 +630,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			return
 		}
 	case "friends":
-		if UserType != TypeUser {
+		if userType != typeUser {
 			stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
 			return
 		}
@@ -645,7 +645,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 
 		for _, relation := range relations {
 			table.AddRow()
-			table.AddStrings(relation.ID, TypeRelationships[relation.Type], relation.User.Username)
+			table.AddStrings(relation.ID, typeRelationships[relation.Type], relation.User.Username)
 		}
 
 		writeln(w, table.String())
@@ -731,7 +731,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			stdutil.PrintErr("status <value>", nil)
 			return
 		}
-		status, ok := TypeStatuses[strings.ToLower(args[0])]
+		status, ok := typeStatuses[strings.ToLower(args[0])]
 		if !ok {
 			stdutil.PrintErr(tl("invalid.value"), nil)
 			return
@@ -759,7 +759,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "typing":
 		fallthrough
 	case "nick":
-		returnVal = commands_usermod(session, cmd, args, nargs, w)
+		returnVal = commandsUserMod(session, cmd, args, nargs, w)
 	case "read":
 		fallthrough
 	case "cinfo":
@@ -767,7 +767,7 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "ginfo":
 		fallthrough
 	case "uinfo":
-		returnVal = commands_query(session, cmd, args, nargs, w)
+		returnVal = commandsQuery(session, cmd, args, nargs, w)
 	case "roles":
 		fallthrough
 	case "roleadd":
@@ -779,9 +779,9 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 	case "roleedit":
 		fallthrough
 	case "roledelete":
-		returnVal = commands_roles(session, cmd, args, nargs, w)
+		returnVal = commandsRoles(session, cmd, args, nargs, w)
 	case "api_start":
-		if api_name != "" {
+		if apiName != "" {
 			stdutil.PrintErr(tl("invalid.api.started"), nil)
 			return
 		}
@@ -789,10 +789,10 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 		var name string
 		if nargs >= 1 {
 			name = strings.Join(args, " ")
-			go api_start_name(session, name)
+			go apiStartName(session, name)
 		} else {
 			var err error
-			name, err = api_start(session)
+			name, err = apiStart(session)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.api.start"), err)
 				return
@@ -805,19 +805,19 @@ func command_raw(session *discordgo.Session, cmd string, args []string, w io.Wri
 			stdutil.PrintErr("broadcast <command>", nil)
 			return
 		}
-		if api_name == "" {
+		if apiName == "" {
 			stdutil.PrintErr(tl("invalid.api.notstarted"), nil)
 			return
 		}
 
-		err := api_send(strings.Join(args, " "))
+		err := apiSend(strings.Join(args, " "))
 		if err != nil {
 			stdutil.PrintErr(tl("failed.generic"), err)
 			return
 		}
-		command_raw(session, args[0], args[1:], w)
+		commandRaw(session, args[0], args[1:], w)
 	case "api_stop":
-		api_stop()
+		apiStop()
 	case "region":
 		if nargs < 1 {
 			stdutil.PrintErr("region list OR region set <region>", nil)

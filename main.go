@@ -17,30 +17,30 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-const AutoRunFile = ".autorun"
-const Version = "2.1"
+const autoRunFile = ".autorun"
+const version = "2.1"
 
-var DevVersion = strings.Contains(Version, "dev")
+var devVersion = strings.Contains(version, "dev")
 
 const (
-	TypeUser = iota
-	TypeBot
-	TypeWebhook
+	typeUser = iota
+	typeBot
+	typeWebhook
 )
 
 var closed bool
 
-var UserId string
-var UserToken string
-var UserType int
+var userID string
+var userToken string
+var userType int
 
 var rl *readline.Instance
-var ColorDefault = color.New(color.Bold)
-var ColorAutomated = color.New(color.Italic)
-var ColorMsg = color.New(color.FgYellow)
-var ColorError = color.New(color.FgRed, color.Bold)
+var colorDefault = color.New(color.Bold)
+var colorAutomated = color.New(color.Italic)
+var colorMsg = color.New(color.FgYellow)
+var colorError = color.New(color.FgRed, color.Bold)
 
-const MsgLimit = 2000
+const msgLimit = 2000
 
 type stringArr []string
 
@@ -74,7 +74,7 @@ func main() {
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.")
 
 	flag.BoolVar(&noupdate, "noupdate", false, "Disable update checking.")
-	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in "+AutoRunFile+" file.")
+	flag.BoolVar(&noautorun, "noautorun", false, "Disable running commands in "+autoRunFile+" file.")
 	flag.Parse()
 
 	if help != "" {
@@ -83,14 +83,14 @@ func main() {
 	}
 
 	doErrorHook()
-	fmt.Println("DiscordConsole " + Version)
+	fmt.Println("DiscordConsole " + version)
 
 	fmt.Println("Loading language...")
 	switch langfile {
 	case "en":
 		loadLangDefault()
 	case "sv":
-		loadLangString(LangSv)
+		loadLangString(langSv)
 	default:
 		reader, err := os.Open(langfile)
 		if err != nil {
@@ -115,7 +115,7 @@ func main() {
 			if update.UpdateAvailable {
 				fmt.Println()
 				color.Cyan(tl("update.available") + " " + update.Version + ".")
-				color.Cyan(tl("update.download") + " " + update.Url + ".")
+				color.Cyan(tl("update.download") + " " + update.URL + ".")
 			} else {
 				fmt.Println(tl("update.none"))
 			}
@@ -128,25 +128,25 @@ func main() {
 		stdutil.PrintErr(tl("failed.reading"), err)
 	}
 
-	var ar_lines []string
+	var arLines []string
 	if !noautorun {
-		ar, err := ioutil.ReadFile(AutoRunFile)
+		ar, err := ioutil.ReadFile(autoRunFile)
 		if err != nil && os.IsExist(err) {
-			stdutil.PrintErr(tl("failed.reading")+AutoRunFile, err)
+			stdutil.PrintErr(tl("failed.reading")+autoRunFile, err)
 		} else if err == nil {
-			ar_lines = strings.Split(string(ar), "\n")
+			arLines = strings.Split(string(ar), "\n")
 
-			if len(ar_lines) > 0 {
-				first_line := ar_lines[0]
-				if strings.HasPrefix(first_line, ":") {
-					token = first_line[1:]
-					ar_lines = ar_lines[1:]
+			if len(arLines) > 0 {
+				firstLine := arLines[0]
+				if strings.HasPrefix(firstLine, ":") {
+					token = firstLine[1:]
+					arLines = arLines[1:]
 				}
 			}
 		}
 	}
 
-	rl, err = readline.New(EMPTY_POINTER)
+	rl, err = readline.New(pointerEmpty)
 	if err != nil {
 		stdutil.PrintErr(tl("failed.realine.start"), err)
 		return
@@ -174,7 +174,7 @@ func main() {
 
 	var session *discordgo.Session
 	if token == "" {
-		UserType = TypeUser
+		userType = typeUser
 
 		rl.SetPrompt("Email: ")
 		if email == "" {
@@ -210,35 +210,35 @@ func main() {
 
 			len := len(parts)
 			if len >= 2 {
-				UserId = parts[len-2]
-				UserToken = parts[len-1]
+				userID = parts[len-2]
+				userToken = parts[len-1]
 			} else {
 				stdutil.PrintErr(tl("invalid.webhook"), nil)
 				return
 			}
 
-			UserType = TypeWebhook
-			session, _ = discordgo.New(UserToken)
+			userType = typeWebhook
+			session, _ = discordgo.New(userToken)
 		} else {
 			if strings.HasPrefix(lower, "user ") {
 				token = token[len("user "):]
-				UserType = TypeUser
+				userType = typeUser
 			} else {
 				token = "Bot " + token
-				UserType = TypeBot
+				userType = typeBot
 				intercept = false
 			}
 			session, _ = discordgo.New(token)
 		}
 	}
 
-	if UserType != TypeWebhook {
+	if userType != typeWebhook {
 		if err != nil {
 			stdutil.PrintErr(tl("failed.auth"), err)
 			return
 		}
 
-		UserToken = session.Token
+		userToken = session.Token
 
 		user, err := session.User("@me")
 		if err != nil {
@@ -246,7 +246,7 @@ func main() {
 			return
 		}
 
-		UserId = user.ID
+		userID = user.ID
 
 		session.AddHandler(messageCreate)
 		err = session.Open()
@@ -255,7 +255,7 @@ func main() {
 			return
 		}
 
-		fmt.Println(tl("login.finish") + " " + UserId)
+		fmt.Println(tl("login.finish") + " " + userID)
 	}
 	fmt.Println(tl("intro.help"))
 	fmt.Println(tl("intro.exit"))
@@ -272,10 +272,10 @@ func main() {
 		exit(session)
 	}()
 
-	ColorAutomated.Set()
+	colorAutomated.Set()
 
-	if ar_lines != nil {
-		for _, cmd := range ar_lines {
+	if arLines != nil {
+		for _, cmd := range arLines {
 			printPointer(session)
 			fmt.Println(cmd)
 
@@ -293,7 +293,7 @@ func main() {
 	setCompleter(rl)
 
 	for {
-		ColorDefault.Set()
+		colorDefault.Set()
 
 		rl.SetPrompt(pointer(session))
 		cmd, err := rl.Readline()
@@ -320,10 +320,10 @@ func main() {
 func exit(session *discordgo.Session) {
 	closed = true
 
-	api_stop()
+	apiStop()
 	playing = ""
 
-	if TypeUser != TypeWebhook {
+	if typeUser != typeWebhook {
 		session.Close()
 	}
 	color.Unset()
@@ -354,10 +354,10 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 	s += strings.Repeat(" ", 5)
 
 	color.Unset()
-	ColorMsg.Set()
+	colorMsg.Set()
 	writeln(w, s)
 	color.Unset()
-	ColorDefault.Set()
+	colorDefault.Set()
 }
 
 func writeln(w io.Writer, line string) error {
@@ -378,7 +378,7 @@ func handleCrash() {
 	}
 }
 
-const EMPTY_POINTER = "> "
+const pointerEmpty = "> "
 
 var pointerCache string
 
@@ -391,7 +391,7 @@ func pointer(session *discordgo.Session) string {
 	}
 
 	if loc.channel == nil {
-		return EMPTY_POINTER
+		return pointerEmpty
 	}
 
 	s := ""
@@ -410,7 +410,7 @@ func pointer(session *discordgo.Session) string {
 		s += guild + " (#" + loc.channel.Name + ")"
 	}
 
-	s += EMPTY_POINTER
+	s += pointerEmpty
 	pointerCache = s
 	return s
 }

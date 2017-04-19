@@ -2,11 +2,12 @@ package main
 
 import (
 	"errors"
-	"github.com/bwmarrin/discordgo"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
 )
 
-var ErrMsgNotFound = errors.New("Message not found!")
+var errMsgNotFound = errors.New("message not found")
 
 func timestamp(e *discordgo.Message) (string, error) {
 	t, err := e.Timestamp.Parse()
@@ -23,7 +24,7 @@ func timestamp(e *discordgo.Message) (string, error) {
 	return s, nil
 }
 func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.Message, error) {
-	if UserType == TypeUser {
+	if userType == typeUser {
 		msgs, err := session.ChannelMessages(channel, 3, "", "", msgID)
 		if err != nil {
 			return nil, err
@@ -39,8 +40,7 @@ func getMessage(session *discordgo.Session, channel, msgID string) (*discordgo.M
 				return m, nil
 			}
 		}
-		return nil, ErrMsgNotFound
-	} else {
-		return session.ChannelMessage(channel, msgID)
+		return nil, errMsgNotFound
 	}
+	return session.ChannelMessage(channel, msgID)
 }

@@ -3,16 +3,17 @@ package main
 import (
 	"encoding/binary"
 	"errors"
-	"github.com/bwmarrin/discordgo"
-	"github.com/legolord208/stdutil"
 	"io"
 	"os"
+
+	"github.com/bwmarrin/discordgo"
+	"github.com/legolord208/stdutil"
 )
 
 var playing string
 var cacheAudio = make(map[string][][]byte, 0)
 
-var ErrDcaNegaitve = errors.New("Negative number in DCA file")
+var errDcaNegaitve = errors.New("negative number in DCA file")
 
 func loadAudio(file string, buffer *[][]byte) error {
 	cache, ok := cacheAudio[file]
@@ -37,7 +38,7 @@ func loadAudio(file string, buffer *[][]byte) error {
 		}
 
 		if length <= 0 {
-			return ErrDcaNegaitve
+			return errDcaNegaitve
 		}
 
 		buf := make([]byte, length)

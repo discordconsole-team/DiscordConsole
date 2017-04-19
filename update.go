@@ -7,18 +7,18 @@ import (
 	"net/http"
 )
 
-const UPDATE_URL = "https://api.github.com/repos/LEGOlord208/DiscordConsole/releases"
+const updateURL = "https://api.github.com/repos/LEGOlord208/DiscordConsole/releases"
 
-var ErrNoRelease = errors.New("No release available.")
+var errNoRelease = errors.New("no release available")
 
 type updateObj struct {
 	Version         string `json:"tag_name"`
-	Url             string `json:"html_url"`
+	URL             string `json:"html_url"`
 	UpdateAvailable bool
 }
 
 func checkUpdate() (*updateObj, error) {
-	res, err := http.Get(UPDATE_URL)
+	res, err := http.Get(updateURL)
 	if err != nil {
 		return nil, err
 	}
@@ -36,11 +36,11 @@ func checkUpdate() (*updateObj, error) {
 	}
 
 	if len(updates) < 1 {
-		return nil, ErrNoRelease
+		return nil, errNoRelease
 	}
 
 	update := updates[0]
 
-	update.UpdateAvailable = update.Version != Version
+	update.UpdateAvailable = update.Version != version
 	return &update, nil
 }

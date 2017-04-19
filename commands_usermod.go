@@ -12,7 +12,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_usermod(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
+func commandsUserMod(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "avatar":
 		if nargs < 1 {
@@ -62,8 +62,8 @@ func commands_usermod(session *discordgo.Session, cmd string, args []string, nar
 		// Too lazy to detect image type. Seems to work anyway ¯\_(ツ)_/¯
 		str := "data:image/png;base64," + writer.String()
 
-		if UserType == TypeWebhook {
-			_, err = session.WebhookEditWithToken(UserId, UserToken, "", str)
+		if userType == typeWebhook {
+			_, err = session.WebhookEditWithToken(userID, userToken, "", str)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.avatar"), err)
 				return
@@ -89,8 +89,8 @@ func commands_usermod(session *discordgo.Session, cmd string, args []string, nar
 			return
 		}
 
-		if UserType == TypeWebhook {
-			_, err := session.WebhookEditWithToken(UserId, UserToken, strings.Join(args, " "), "")
+		if userType == typeWebhook {
+			_, err := session.WebhookEditWithToken(userID, userToken, strings.Join(args, " "), "")
 			if err != nil {
 				stdutil.PrintErr(tl("failed.user.edit"), err)
 			}

@@ -13,7 +13,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commands_say(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
+func commandsSay(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "tts":
 		fallthrough
@@ -22,19 +22,19 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			stdutil.PrintErr("say/tts <stuff>", nil)
 			return
 		}
-		if loc.channel == nil && UserType != TypeWebhook {
+		if loc.channel == nil && userType != typeWebhook {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
 		msgStr := strings.Join(args, " ")
 
-		if len(msgStr) > MsgLimit {
+		if len(msgStr) > msgLimit {
 			stdutil.PrintErr(tl("invalid.limit.message"), nil)
 			return
 		}
 
-		if UserType == TypeWebhook {
-			err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+		if userType == typeWebhook {
+			err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
 				Content: msgStr,
 			})
 			if err != nil {
@@ -60,7 +60,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			stdutil.PrintErr("embed <embed json>", nil)
 			return
 		}
-		if loc.channel == nil && UserType != TypeWebhook {
+		if loc.channel == nil && userType != typeWebhook {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
@@ -74,8 +74,8 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			return
 		}
 
-		if UserType == TypeWebhook {
-			err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+		if userType == typeWebhook {
+			err = session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
 				Embeds: []*discordgo.MessageEmbed{embed},
 			})
 			if err != nil {
@@ -97,14 +97,14 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			stdutil.PrintErr("big <stuff>", nil)
 			return
 		}
-		if loc.channel == nil && UserType != TypeWebhook {
+		if loc.channel == nil && userType != typeWebhook {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
 
 		send := func(buffer string) (*discordgo.Message, bool) {
-			if UserType == TypeWebhook {
-				err := session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+			if userType == typeWebhook {
+				err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
 					Content: buffer,
 				})
 				if err != nil {
@@ -112,22 +112,22 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 					return nil, false
 				}
 				return nil, true
-			} else {
-				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-				if err != nil {
-					stdutil.PrintErr(tl("failed.msg.send"), err)
-					return nil, false
-				}
-				writeln(w, tl("status.msg.create")+" "+msg.ID)
-
-				return msg, true
 			}
+
+			msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.msg.send"), err)
+				return nil, false
+			}
+			writeln(w, tl("status.msg.create")+" "+msg.ID)
+
+			return msg, true
 		}
 
 		buffer := ""
 		for _, c := range strings.Join(args, " ") {
 			str := toEmojiString(c)
-			if len(buffer)+len(str) > MsgLimit {
+			if len(buffer)+len(str) > msgLimit {
 				_, ok := send(buffer)
 				if !ok {
 					return
@@ -148,7 +148,7 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 			stdutil.PrintErr("sayfile <path>", nil)
 			return
 		}
-		if loc.channel == nil && UserType != TypeWebhook {
+		if loc.channel == nil && userType != typeWebhook {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
@@ -168,8 +168,8 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 		defer reader.Close()
 
 		send := func(buffer string) (*discordgo.Message, bool) {
-			if UserType == TypeWebhook {
-				err = session.WebhookExecute(UserId, UserToken, false, &discordgo.WebhookParams{
+			if userType == typeWebhook {
+				err = session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
 					Content: buffer,
 				})
 				if err != nil {
@@ -177,16 +177,16 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 					return nil, false
 				}
 				return nil, true
-			} else {
-				msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
-				if err != nil {
-					stdutil.PrintErr(tl("failed.msg.send"), err)
-					return nil, false
-				}
-				writeln(w, "Created message with ID "+msg.ID)
-
-				return msg, true
 			}
+
+			msg, err := session.ChannelMessageSend(loc.channel.ID, buffer)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.msg.send"), err)
+				return nil, false
+			}
+			writeln(w, "Created message with ID "+msg.ID)
+
+			return msg, true
 		}
 
 		scanner := bufio.NewScanner(reader)
@@ -194,10 +194,10 @@ func commands_say(session *discordgo.Session, cmd string, args []string, nargs i
 
 		for i := 1; scanner.Scan(); i++ {
 			text := scanner.Text()
-			if len(text) > MsgLimit {
-				stdutil.PrintErr("Line "+strconv.Itoa(i)+" exceeded "+strconv.Itoa(MsgLimit)+" characters.", nil)
+			if len(text) > msgLimit {
+				stdutil.PrintErr("Line "+strconv.Itoa(i)+" exceeded "+strconv.Itoa(msgLimit)+" characters.", nil)
 				return
-			} else if len(buffer)+len(text) > MsgLimit {
+			} else if len(buffer)+len(text) > msgLimit {
 				_, ok := send(buffer)
 				if !ok {
 					return

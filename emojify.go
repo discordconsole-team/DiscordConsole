@@ -4,9 +4,9 @@ import "unicode"
 
 func toEmojiString(c rune) string {
 	if c >= 'a' && c <= 'z' {
-		return regional_indicator(c)
+		return regionalIndicator(c)
 	} else if c >= 'A' && c <= 'Z' {
-		return regional_indicator(unicode.ToLower(c))
+		return regionalIndicator(unicode.ToLower(c))
 	} else {
 		switch c {
 		case '-':
@@ -75,6 +75,6 @@ func toEmoji(c rune) rune {
 	}
 }
 
-func regional_indicator(c rune) string {
+func regionalIndicator(c rune) string {
 	return ":regional_indicator_" + string(c) + ":"
 }

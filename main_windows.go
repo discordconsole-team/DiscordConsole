@@ -1,4 +1,4 @@
 package main
 
-const SH = "cmd"
-const C = "/c"
+const sh = "cmd"
+const c = "/c"

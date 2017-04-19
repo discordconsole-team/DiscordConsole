@@ -19,7 +19,7 @@ type luaEventData struct {
 var luaSessionCopy *discordgo.Session
 var luaMessageEvents = make(map[string]*luaEventData)
 
-func RunLua(session *discordgo.Session, file string, args ...string) error {
+func runLua(session *discordgo.Session, file string, args ...string) error {
 	l := lua.NewState()
 
 	l.Register("exec", luaExec)
@@ -44,7 +44,7 @@ func RunLua(session *discordgo.Session, file string, args ...string) error {
 }
 
 func luaExec(l *lua.State) int {
-	ColorAutomated.Set()
+	colorAutomated.Set()
 	returnVal := command(luaSessionCopy, lua.CheckString(l, 1), color.Output)
 	color.Unset()
 

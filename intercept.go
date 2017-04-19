@@ -44,26 +44,26 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	print := false
 Switch:
 	switch messages {
-	case MessagesAll:
+	case messagesAll:
 		print = true
-	case MessagesPrivate:
+	case messagesPrivate:
 		if channel.IsPrivate {
 			print = true
 		}
-	case MessagesMentions:
+	case messagesMentions:
 		if channel.IsPrivate || e.MentionEveryone {
 			print = true
 			break
 		}
 
 		for _, u := range e.Mentions {
-			if u.ID == UserId {
+			if u.ID == userID {
 				print = true
 				break Switch
 			}
 		}
 
-		user, err := session.GuildMember(guild.ID, UserId)
+		user, err := session.GuildMember(guild.ID, userID)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.user"), err)
 			break
@@ -77,7 +77,7 @@ Switch:
 				}
 			}
 		}
-	case MessagesCurrent:
+	case messagesCurrent:
 		if (guild == nil || loc.guild == nil) && loc.channel != nil && channel.ID != loc.channel.ID {
 			break
 		}
@@ -96,13 +96,13 @@ Switch:
 		hasOutput = true
 
 		color.Unset()
-		ColorAutomated.Set()
+		colorAutomated.Set()
 
 		fmt.Print("\r" + strings.Repeat(" ", 20) + "\r")
 		luaMessageEvent(session, e.Message)
 
 		color.Unset()
-		ColorDefault.Set()
+		colorDefault.Set()
 	}
 	if hasOutput {
 		printPointer(session)
@@ -110,7 +110,7 @@ Switch:
 }
 
 func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *discordgo.Guild, channel *discordgo.Channel) (isCmd bool) {
-	if e.Author.ID != UserId {
+	if e.Author.ID != userID {
 		return
 	} else if !intercept {
 		return
@@ -187,7 +187,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 			}
 		}()
 		color.Unset()
-		ColorAutomated.Set()
+		colorAutomated.Set()
 
 		fmt.Println(cmd)
 		w = color.Output
@@ -196,7 +196,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 
 	if !capture {
 		color.Unset()
-		ColorDefault.Set()
+		colorDefault.Set()
 		printPointer(session)
 	} else {
 		first := true
@@ -230,7 +230,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 				break
 			}
 
-			if len(line)+len(buf)+8 < MsgLimit {
+			if len(line)+len(buf)+8 < msgLimit {
 				buf += line
 			} else {
 				send(buf)
@@ -241,6 +241,6 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 	}
 
 	color.Unset()
-	ColorDefault.Set()
+	colorDefault.Set()
 	return
 }
