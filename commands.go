@@ -213,6 +213,10 @@ func commandRaw(session *discordgo.Session, cmd string, args []string, w io.Writ
 	case "editembed":
 		fallthrough
 	case "sayfile":
+		fallthrough
+	case "del":
+		fallthrough
+	case "delall":
 		returnVal = commandsSay(session, cmd, args, nargs, w)
 	case "log":
 		if loc.channel == nil {
@@ -269,33 +273,6 @@ func commandRaw(session *discordgo.Session, cmd string, args []string, w io.Writ
 				return
 			}
 		}
-	case "delall":
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-		since := ""
-		if nargs >= 1 {
-			since = args[0]
-		}
-		messages, err := session.ChannelMessages(loc.channel.ID, 100, "", since, "")
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.query"), err)
-			return
-		}
-
-		ids := make([]string, len(messages))
-		for i, msg := range messages {
-			ids[i] = msg.ID
-		}
-
-		err = session.ChannelMessagesBulkDelete(loc.channel.ID, ids)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.msg.query"), err)
-			return
-		}
-		returnVal := strconv.Itoa(len(ids))
-		writeln(w, strings.Replace(tl("status.msg.delall"), "#", returnVal, -1))
 	case "members":
 		if loc.guild == nil {
 			stdutil.PrintErr(tl("invalid.guild"), nil)
