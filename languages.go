@@ -131,6 +131,7 @@ failed.webrequest=Could not make web request
 failed.avatar=Couldn't set avatar
 failed.status=Could not set status
 failed.api.start=Couldn't start API
+failed.mfa=The account has 2FA enabled. Consider using a user token instead.
 
 invalid.yn=Please type either 'y' or 'n'.
 invalid.webhook=Webhook format invalid. Format: id/token

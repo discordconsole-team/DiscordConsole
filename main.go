@@ -18,7 +18,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.1"
+const version = "2.1.1dev"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -198,6 +198,10 @@ func main() {
 
 		fmt.Println(tl("login.starting"))
 		session, err = discordgo.New(email, pass)
+		if err == discordgo.ErrMFA {
+			stdutil.PrintErr(tl("failed.mfa"), nil)
+			return
+		}
 	} else {
 		fmt.Println(tl("login.starting"))
 
