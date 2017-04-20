@@ -38,6 +38,7 @@ var rl *readline.Instance
 var colorDefault = color.New(color.Bold)
 var colorAutomated = color.New(color.Italic)
 var colorMsg = color.New(color.FgYellow)
+var colorChatMode = color.New(color.FgBlue)
 var colorError = color.New(color.FgRed, color.Bold)
 
 const msgLimit = 2000
@@ -283,14 +284,14 @@ func main() {
 			printPointer(session)
 			fmt.Println(cmd)
 
-			command(session, cmd, color.Output)
+			command(session, true, cmd, color.Output)
 		}
 	}
 	for _, cmd := range commands {
 		printPointer(session)
 		fmt.Println(cmd)
 
-		command(session, cmd, color.Output)
+		command(session, true, cmd, color.Output)
 	}
 
 	color.Unset()
@@ -314,7 +315,7 @@ func main() {
 			return
 		}
 
-		command(session, cmd, color.Output)
+		command(session, true, cmd, color.Output)
 		if closed {
 			break
 		}
@@ -417,4 +418,26 @@ func pointer(session *discordgo.Session) string {
 	s += pointerEmpty
 	pointerCache = s
 	return s
+}
+
+func say(session *discordgo.Session, w io.Writer, channel, str string) (*discordgo.Message, bool) {
+	if userType == typeWebhook {
+		err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
+			Content: str,
+		})
+		if err != nil {
+			stdutil.PrintErr(tl("failed.msg.send"), err)
+			return nil, false
+		}
+		return nil, true
+	}
+
+	msg, err := session.ChannelMessageSend(loc.channel.ID, str)
+	if err != nil {
+		stdutil.PrintErr(tl("failed.msg.send"), err)
+		return nil, false
+	}
+	writeln(w, tl("status.msg.create")+" "+msg.ID)
+
+	return msg, true
 }

@@ -93,7 +93,7 @@ var output = false
 
 var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run"}
 
-func command(session *discordgo.Session, cmd string, w io.Writer) (returnVal string) {
+func command(session *discordgo.Session, terminal bool, cmd string, w io.Writer) (returnVal string) {
 	cmd = strings.TrimSpace(cmd)
 	if cmd == "" {
 		return
@@ -105,11 +105,11 @@ func command(session *discordgo.Session, cmd string, w io.Writer) (returnVal str
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 
-	returnVal = commandRaw(session, cmd, args, w)
+	returnVal = commandRaw(session, terminal, cmd, args, w)
 	return
 }
 
-func commandRaw(session *discordgo.Session, cmd string, args []string, w io.Writer) (returnVal string) {
+func commandRaw(session *discordgo.Session, terminal bool, cmd string, args []string, w io.Writer) (returnVal string) {
 	defer handleCrash()
 	nargs := len(args)
 
@@ -217,7 +217,7 @@ func commandRaw(session *discordgo.Session, cmd string, args []string, w io.Writ
 	case "del":
 		fallthrough
 	case "delall":
-		returnVal = commandsSay(session, cmd, args, nargs, w)
+		returnVal = commandsSay(session, terminal, cmd, args, nargs, w)
 	case "log":
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
@@ -792,7 +792,7 @@ func commandRaw(session *discordgo.Session, cmd string, args []string, w io.Writ
 			stdutil.PrintErr(tl("failed.generic"), err)
 			return
 		}
-		commandRaw(session, args[0], args[1:], w)
+		commandRaw(session, terminal, args[0], args[1:], w)
 	case "api_stop":
 		apiStop()
 	case "region":
