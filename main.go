@@ -149,7 +149,7 @@ func main() {
 
 	rl, err = readline.New(pointerEmpty)
 	if err != nil {
-		stdutil.PrintErr(tl("failed.realine.start"), err)
+		stdutil.PrintErr(tl("failed.readline.start"), err)
 		return
 	}
 
@@ -162,7 +162,7 @@ func main() {
 		token, err = rl.Readline()
 		if err != nil {
 			if err != io.EOF && err != readline.ErrInterrupt {
-				stdutil.PrintErr(tl("failed.realine.read"), err)
+				stdutil.PrintErr(tl("failed.readline.read"), err)
 			}
 			return
 		}
@@ -190,7 +190,7 @@ func main() {
 
 			if err != nil {
 				if err != io.EOF && err != readline.ErrInterrupt {
-					stdutil.PrintErr(tl("failed.realine.read"), err)
+					stdutil.PrintErr(tl("failed.readline.read"), err)
 				}
 				return
 			}
@@ -307,7 +307,7 @@ func main() {
 
 		if err != nil {
 			if err != io.EOF && err != readline.ErrInterrupt {
-				stdutil.PrintErr(tl("failed.realine.read"), err)
+				stdutil.PrintErr(tl("failed.readline.read"), err)
 			} else {
 				fmt.Println("exit")
 			}
