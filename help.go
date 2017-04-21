@@ -6,6 +6,7 @@ import (
 )
 
 func printHelp(search string) {
+	search = strings.ToLower(search)
 	help := make([]string, 0)
 
 	help = append(help, "help [search]\tShow help menu. Optionally search.")
@@ -98,7 +99,7 @@ func printHelp(search string) {
 	if search != "" {
 		help2 := make([]string, 0)
 		for _, line := range help {
-			if strings.Contains(line, search) {
+			if strings.Contains(strings.ToLower(line), search) {
 				help2 = append(help2, line)
 			}
 		}
