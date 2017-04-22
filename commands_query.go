@@ -73,7 +73,7 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 		case "embed":
 			embed := "{}"
 			if len(msg.Embeds) >= 1 {
-				embedBytes, err := json.Marshal(msg.Embeds[0])
+				embedBytes, err := json.MarshalIndent(msg.Embeds[0], "", "\t")
 				if err != nil {
 					stdutil.PrintErr("Failed to make embed into JSON", err)
 					return
