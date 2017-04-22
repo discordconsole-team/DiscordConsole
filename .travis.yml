@@ -1,0 +1,18 @@
+language: go
+
+go:
+  - master
+
+install:
+  - go get github.com/bwmarrin/discordgo
+  - cd $GOPATH/src/github.com/bwmarrin/discordgo
+  - git checkout develop
+  - go install
+  - cd -
+  - go get .
+  - go get -u github.com/golang/lint/golint
+
+script:
+  - golint
+  - go vet
+  - go install
