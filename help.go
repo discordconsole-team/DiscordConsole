@@ -31,7 +31,7 @@ func printHelp(search string) {
 			"author_email, author_name, author_avatar, author_bot, embed; 'cache' may be used as message ID.")
 		help = append(help, "")
 	}
-	help = append(help, "say <stuff>\tSend a message in your selected channel.")
+	help = append(help, "say <stuff>\tSend a message in your selected channel. `say toggle` starts chat-mode, and `toggle` ends it.")
 	help = append(help, "sayfile <path>\tSend the contents of a file (auto-splitted).")
 	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!")
 	help = append(help, "embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object")
