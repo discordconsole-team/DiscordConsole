@@ -42,7 +42,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	hasOutput := false
 
 	print := false
-Switch:
+outer:
 	switch messages {
 	case messagesAll:
 		print = true
@@ -59,7 +59,7 @@ Switch:
 		for _, u := range e.Mentions {
 			if u.ID == userID {
 				print = true
-				break Switch
+				break outer
 			}
 		}
 
@@ -73,7 +73,7 @@ Switch:
 			for _, role2 := range e.MentionRoles {
 				if role == role2 {
 					print = true
-					break Switch
+					break outer
 				}
 			}
 		}
