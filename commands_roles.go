@@ -29,11 +29,11 @@ func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs 
 		})
 
 		table := gtable.NewStringTable()
-		table.AddStrings("ID", "Name", "Permissions")
+		table.AddStrings("ID", "Name", "Permissions", "Color")
 
 		for _, role := range roles {
 			table.AddRow()
-			table.AddStrings(role.ID, role.Name, strconv.Itoa(role.Permissions))
+			table.AddStrings(role.ID, role.Name, strconv.Itoa(role.Permissions), strconv.Itoa(role.Color))
 		}
 
 		writeln(w, table.String())
