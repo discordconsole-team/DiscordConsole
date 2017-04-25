@@ -24,5 +24,5 @@ func doErrorHook() {
 }
 
 func isPermission(err error) bool {
-	return strings.Contains(err.Error(), "permission")
+	return strings.Contains(strings.ToLower(err.Error()), "permission")
 }
