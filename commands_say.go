@@ -232,14 +232,13 @@ func commandsSay(session *discordgo.Session, terminal bool, cmd string, args []s
 			stdutil.PrintErr(tl("failed.file.open"), nil)
 			return
 		}
-		defer file.Close()
-
 		msg, err := session.ChannelFileSend(loc.channel.ID, filepath.Base(name), file)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.msg.send"), err)
 			return
 		}
-		writeln(w, tl("status.msg.created")+" "+msg.ID)
+		file.Close()
+		writeln(w, tl("status.msg.create")+" "+msg.ID)
 		returnVal = msg.ID
 	case "quote":
 		if nargs < 1 {
