@@ -708,6 +708,11 @@ func commandRaw(session *discordgo.Session, terminal bool, cmd string, args []st
 			stdutil.PrintErr("status <value>", nil)
 			return
 		}
+		if userType != typeUser {
+			stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
+			return
+		}
+
 		status, ok := typeStatuses[strings.ToLower(args[0])]
 		if !ok {
 			stdutil.PrintErr(tl("invalid.value"), nil)
