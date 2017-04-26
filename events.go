@@ -17,7 +17,10 @@ func ready(session *discordgo.Session, e *discordgo.Ready) {
 
 	cacheGuilds = guilds
 
-	chanReady <- guilds
+	select {
+	case chanReady <- guilds:
+	default:
+	}
 	close(chanReady)
 }
 
