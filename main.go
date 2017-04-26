@@ -18,7 +18,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.2.1dev"
+const version = "2.3dev"
 
 var devVersion = strings.Contains(version, "dev")
 
