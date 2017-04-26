@@ -32,41 +32,57 @@ func commandsSay(session *discordgo.Session, terminal bool, cmd string, args []s
 		tts := cmd == "tts"
 		parts := args
 
+		sendbuf := func(buffer string) (ok bool) {
+			if userType == typeWebhook {
+				err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
+					Content: buffer,
+					TTS:     tts,
+				})
+				if err != nil {
+					stdutil.PrintErr(tl("failed.msg.send"), err)
+					return
+				}
+				ok = true
+				return
+			}
+
+			msgObj := &discordgo.MessageSend{}
+			msgObj.SetContent(buffer)
+			msgObj.Tts = tts
+			msg, err := session.ChannelMessageSendComplex(loc.channel.ID, msgObj)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.msg.send"), err)
+				return
+			}
+			writeln(w, tl("status.msg.create")+" "+msg.ID)
+			lastUsedMsg = msg.ID
+			returnVal = msg.ID
+			ok = true
+			return
+		}
+
 	outer:
 		for {
 			msgStr := strings.Join(parts, " ")
 			if terminal && msgStr == "toggle" {
 				toggle = !toggle
 			} else {
-
-				if len(msgStr) > msgLimit {
-					stdutil.PrintErr(tl("invalid.limit.message"), nil)
-					return
-				}
-
-				if userType == typeWebhook {
-					err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
-						Content: msgStr,
-						TTS:     tts,
-					})
-					if err != nil {
-						stdutil.PrintErr(tl("failed.msg.send"), err)
+				/*
+					if len(msgStr) > msgLimit {
+						stdutil.PrintErr(tl("invalid.limit.message"), nil)
 						return
 					}
-					return
-				}
+				*/
 
-				msgObj := &discordgo.MessageSend{}
-				msgObj.SetContent(msgStr)
-				msgObj.Tts = tts
-				msg, err := session.ChannelMessageSendComplex(loc.channel.ID, msgObj)
-				if err != nil {
-					stdutil.PrintErr(tl("failed.msg.send"), err)
-					return
+				for len(msgStr) > msgLimit {
+					buffer := msgStr[:msgLimit]
+					msgStr = msgStr[msgLimit:]
+
+					if !sendbuf(buffer) {
+						return
+					}
 				}
-				writeln(w, tl("status.msg.create")+" "+msg.ID)
-				lastUsedMsg = msg.ID
-				returnVal = msg.ID
+				sendbuf(msgStr)
 			}
 
 			if !toggle {
@@ -144,20 +160,26 @@ func commandsSay(session *discordgo.Session, terminal bool, cmd string, args []s
 		for _, c := range strings.Join(args, " ") {
 			str := toEmojiString(c)
 			if len(buffer)+len(str) > msgLimit {
-				_, ok := say(session, w, loc.channel.ID, buffer)
+				msg, ok := say(session, w, loc.channel.ID, buffer)
 				if !ok {
 					return
+				}
+				if msg != nil {
+					lastUsedMsg = msg.ID
+					returnVal = msg.ID
 				}
 
 				buffer = ""
 			}
 			buffer += str
 		}
-		msg, _ := say(session, w, loc.channel.ID, buffer)
+		if buffer != "" {
+			msg, _ := say(session, w, loc.channel.ID, buffer)
 
-		if msg != nil {
-			lastUsedMsg = msg.ID
-			returnVal = msg.ID
+			if msg != nil {
+				lastUsedMsg = msg.ID
+				returnVal = msg.ID
+			}
 		}
 	case "sayfile":
 		if nargs < 1 {
@@ -192,9 +214,13 @@ func commandsSay(session *discordgo.Session, terminal bool, cmd string, args []s
 				stdutil.PrintErr("Line "+strconv.Itoa(i)+" exceeded "+strconv.Itoa(msgLimit)+" characters.", nil)
 				return
 			} else if len(buffer)+len(text) > msgLimit {
-				_, ok := say(session, w, loc.channel.ID, buffer)
+				msg, ok := say(session, w, loc.channel.ID, buffer)
 				if !ok {
 					return
+				}
+				if msg != nil {
+					returnVal = msg.ID
+					lastUsedMsg = msg.ID
 				}
 
 				buffer = ""
@@ -207,10 +233,12 @@ func commandsSay(session *discordgo.Session, terminal bool, cmd string, args []s
 			stdutil.PrintErr(tl("failed.file.read"), err)
 			return
 		}
-		msg, _ := say(session, w, loc.channel.ID, buffer)
-		if msg != nil {
-			returnVal = msg.ID
-			lastUsedMsg = msg.ID
+		if buffer != "" {
+			msg, _ := say(session, w, loc.channel.ID, buffer)
+			if msg != nil {
+				returnVal = msg.ID
+				lastUsedMsg = msg.ID
+			}
 		}
 	case "file":
 		if nargs < 1 {
