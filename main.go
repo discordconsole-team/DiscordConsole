@@ -86,26 +86,7 @@ func main() {
 	doErrorHook()
 	fmt.Println("DiscordConsole " + version)
 
-	fmt.Println("Loading language...")
-	switch langfile {
-	case "en":
-		loadLangDefault()
-	case "sv":
-		loadLangString(langSv)
-	default:
-		reader, err := os.Open(langfile)
-		if err != nil {
-			stdutil.PrintErr("Could not read language file", err)
-			return
-		}
-		defer reader.Close()
-
-		err = loadLang(reader)
-		if err != nil {
-			stdutil.PrintErr("Could not load language file", err)
-			loadLangDefault()
-		}
-	}
+	loadLangAuto(langfile)
 
 	if !noupdate {
 		fmt.Print(tl("update.checking") + " ")

@@ -116,11 +116,13 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		return
 	}
 
+	prefix := tl("console.")
+
 	contents := strings.TrimSpace(e.Content)
-	if !strings.HasPrefix(contents, "console.") {
+	if !strings.HasPrefix(contents, prefix) {
 		return
 	}
-	cmd := contents[len("console."):]
+	cmd := contents[len(prefix):]
 
 	isCmd = true
 

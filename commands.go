@@ -58,7 +58,7 @@ var messages = messagesNone
 var intercept = true
 var output = false
 
-var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run"}
+var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run", "lang"}
 
 func command(session *discordgo.Session, terminal bool, cmd string, w io.Writer) (returnVal string) {
 	cmd = strings.TrimSpace(cmd)
@@ -145,6 +145,13 @@ func commandRaw(session *discordgo.Session, terminal bool, cmd string, args []st
 		if err != nil {
 			stdutil.PrintErr(tl("failed.lua.run"), err)
 		}
+	case "lang":
+		if nargs < 1 {
+			stdutil.PrintErr("lang <language>", nil)
+			return
+		}
+
+		loadLangAuto(args[0])
 	case "guilds":
 		fallthrough
 	case "guild":

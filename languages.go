@@ -5,8 +5,12 @@ package main
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"strings"
+
+	"github.com/legolord208/stdutil"
 )
 
 var errLangCorrupt = errors.New("corrupt language file")
@@ -22,6 +26,28 @@ func tl(name string) string {
 	return name
 }
 
+func loadLangAuto(langfile string) {
+	fmt.Println("Loading language...")
+	switch langfile {
+	case "en":
+		loadLangDefault()
+	case "sv":
+		loadLangString(langSv)
+	default:
+		reader, err := os.Open(langfile)
+		if err != nil {
+			stdutil.PrintErr("Could not read language file", err)
+			return
+		}
+		defer reader.Close()
+
+		err = loadLang(reader)
+		if err != nil {
+			stdutil.PrintErr("Could not load language file", err)
+			loadLangDefault()
+		}
+	}
+}
 func loadLang(reader io.Reader) error {
 	lang = make(map[string]string)
 	scanner := bufio.NewScanner(reader)
@@ -279,4 +305,6 @@ status.status=Status satt!
 rl.session=Startar om session...
 rl.cache.loc=Laddar om plats-cache...
 rl.cache.vars=Tar boft cache-variablar...
+
+console.=konsoll.
 `

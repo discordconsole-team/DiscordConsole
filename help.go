@@ -11,9 +11,11 @@ func printHelp(search string) {
 
 	help = append(help, "help [search]\tShow help menu. Optionally search.")
 	help = append(help, "exit\tExit DiscordConsole")
+	help = append(help, "exec\tExecute a shell command")
+	help = append(help, "run\tRun a LUA file with DiscordConsole's special functions")
+	help = append(help, "lang <language>\tSame as starting with --lang")
+	help = append(help, "")
 	if userType != typeWebhook {
-		help = append(help, "exec\tExecute a shell command")
-		help = append(help, "")
 		help = append(help, "guilds\tList guilds/servers this bot is added to.")
 		help = append(help, "guild <id>\tSelect a guild to use for further commands.")
 		help = append(help, "channels\tList channels in your selected guild.")
