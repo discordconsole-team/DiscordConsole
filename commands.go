@@ -40,41 +40,8 @@ var typeStatuses = map[string]discordgo.Status{
 	"invisible": discordgo.StatusInvisible,
 }
 
-type location struct {
-	guild   *discordgo.Guild
-	channel *discordgo.Channel
-}
-
-func (loc *location) push(guild *discordgo.Guild, channel *discordgo.Channel) {
-	sameGuild := guild == loc.guild || (loc.guild != nil && guild != nil && loc.guild.ID == guild.ID)
-	sameChannel := channel == loc.channel || (loc.channel != nil && channel != nil && loc.channel.ID == channel.ID)
-
-	if sameGuild && sameChannel {
-		return
-	}
-
-	lastLoc = *loc
-
-	loc.guild = guild
-	loc.channel = channel
-	pointerCache = ""
-
-	if !sameGuild {
-		cacheGuilds = nil
-		cacheChannels = nil
-	}
-}
-
-var loc location
-var lastLoc location
-var lastMsg location
-
 var lastUsedMsg string
 var lastUsedRole string
-
-var cacheGuilds []*discordgo.UserGuild
-var cacheChannels []*discordgo.Channel
-var cachedChannelType string
 
 var cacheRead *discordgo.Message
 var cacheUser *discordgo.User

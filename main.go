@@ -253,6 +253,9 @@ func main() {
 
 		userID = user.ID
 
+		session.AddHandler(ready)
+		session.AddHandler(guildCreate)
+		session.AddHandler(guildDelete)
 		session.AddHandler(messageCreate)
 		err = session.Open()
 		if err != nil {
