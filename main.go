@@ -268,14 +268,14 @@ func main() {
 			printPointer(session)
 			fmt.Println(cmd)
 
-			command(session, true, cmd, color.Output)
+			command(session, commandSource{Terminal: true}, cmd, color.Output)
 		}
 	}
 	for _, cmd := range commands {
 		printPointer(session)
 		fmt.Println(cmd)
 
-		command(session, true, cmd, color.Output)
+		command(session, commandSource{Terminal: true}, cmd, color.Output)
 	}
 
 	color.Unset()
@@ -299,7 +299,7 @@ func main() {
 			return
 		}
 
-		command(session, true, cmd, color.Output)
+		command(session, commandSource{Terminal: true}, cmd, color.Output)
 		if closed {
 			break
 		}

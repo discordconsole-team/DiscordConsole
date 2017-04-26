@@ -13,6 +13,7 @@ func printHelp(search string) {
 	help = append(help, "exit\tExit DiscordConsole")
 	help = append(help, "exec\tExecute a shell command")
 	help = append(help, "run\tRun a LUA file with DiscordConsole's special functions")
+	help = append(help, "alias <command> <new command>\tAdd a new alias for a command.")
 	help = append(help, "lang <language>\tSame as starting with --lang")
 	help = append(help, "")
 	if userType != typeWebhook {

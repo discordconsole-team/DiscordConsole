@@ -15,7 +15,7 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-func commandsSay(session *discordgo.Session, terminal bool, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
+func commandsSay(session *discordgo.Session, source commandSource, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "tts":
 		fallthrough
@@ -64,7 +64,7 @@ func commandsSay(session *discordgo.Session, terminal bool, cmd string, args []s
 	outer:
 		for {
 			msgStr := strings.Join(parts, " ")
-			if terminal && msgStr == "toggle" {
+			if source.Terminal && msgStr == "toggle" {
 				toggle = !toggle
 			} else {
 				/*

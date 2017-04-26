@@ -10,6 +10,7 @@ import (
 	"unicode"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/fatih/color"
 	"github.com/legolord208/gtable"
 	"github.com/legolord208/stdutil"
 )
@@ -54,13 +55,20 @@ const (
 	messagesAll
 )
 
+type commandSource struct {
+	Terminal bool
+	Alias    bool
+}
+
 var messages = messagesNone
 var intercept = true
 var output = false
 
+var aliases map[string]string
+
 var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run", "lang"}
 
-func command(session *discordgo.Session, terminal bool, cmd string, w io.Writer) (returnVal string) {
+func command(session *discordgo.Session, source commandSource, cmd string, w io.Writer) (returnVal string) {
 	cmd = strings.TrimSpace(cmd)
 	if cmd == "" {
 		return
@@ -72,13 +80,32 @@ func command(session *discordgo.Session, terminal bool, cmd string, w io.Writer)
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 
-	returnVal = commandRaw(session, terminal, cmd, args, w)
+	returnVal = commandRaw(session, source, cmd, args, w)
 	return
 }
 
-func commandRaw(session *discordgo.Session, terminal bool, cmd string, args []string, w io.Writer) (returnVal string) {
+func commandRaw(session *discordgo.Session, source commandSource, cmd string, args []string, w io.Writer) (returnVal string) {
 	defer handleCrash()
 	nargs := len(args)
+
+	if aliascmd, ok := aliases[cmd]; ok && !source.Alias && cmd != "alias" {
+		if nargs >= 1 {
+			aliascmd += " " + strings.Join(args, " ")
+		}
+		colors := w == color.Output
+		if colors {
+			colorAutomated.Set()
+		}
+		writeln(w, aliascmd)
+		if colors {
+			color.Unset()
+		}
+
+		// Won't use source anywhere else.
+		// No reason to copy the variable.
+		source.Alias = true
+		return command(session, source, aliascmd, w)
+	}
 
 	if userType == typeWebhook {
 		allowed := false
@@ -191,7 +218,7 @@ func commandRaw(session *discordgo.Session, terminal bool, cmd string, args []st
 	case "del":
 		fallthrough
 	case "delall":
-		returnVal = commandsSay(session, terminal, cmd, args, nargs, w)
+		returnVal = commandsSay(session, source, cmd, args, nargs, w)
 	case "log":
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
@@ -771,7 +798,7 @@ func commandRaw(session *discordgo.Session, terminal bool, cmd string, args []st
 			stdutil.PrintErr(tl("failed.generic"), err)
 			return
 		}
-		commandRaw(session, terminal, args[0], args[1:], w)
+		commandRaw(session, source, args[0], args[1:], w)
 	case "api_stop":
 		apiStop()
 	case "region":
@@ -812,6 +839,20 @@ func commandRaw(session *discordgo.Session, terminal bool, cmd string, args []st
 			if err != nil {
 				stdutil.PrintErr(tl("failed.guild.edit"), err)
 			}
+		}
+	case "alias":
+		if nargs <= 0 {
+			for alias, aliascmd := range aliases {
+				writeln(w, alias+"=`"+aliascmd+"`")
+			}
+		} else if nargs == 1 {
+			delete(aliases, strings.ToLower(args[0]))
+		} else {
+			if aliases == nil {
+				aliases = make(map[string]string)
+			}
+
+			aliases[strings.ToLower(args[0])] = strings.Join(args[1:], " ")
 		}
 	default:
 		stdutil.PrintErr(tl("invalid.command"), nil)

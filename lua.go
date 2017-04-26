@@ -45,7 +45,7 @@ func runLua(session *discordgo.Session, file string, args ...string) error {
 
 func luaExec(l *lua.State) int {
 	colorAutomated.Set()
-	returnVal := command(luaSessionCopy, false, lua.CheckString(l, 1), color.Output)
+	returnVal := command(luaSessionCopy, commandSource{}, lua.CheckString(l, 1), color.Output)
 	color.Unset()
 
 	l.PushString(returnVal)

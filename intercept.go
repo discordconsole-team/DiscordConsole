@@ -194,7 +194,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		fmt.Println(cmd)
 		w = color.Output
 	}
-	command(session, false, cmd, w)
+	command(session, commandSource{}, cmd, w)
 
 	if !capture {
 		color.Unset()
