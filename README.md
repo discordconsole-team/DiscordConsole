@@ -14,6 +14,20 @@ Type "help" at the prompt for a full list of commands.
 
 I would be thrilled if you [joined the semi-official discord server](https://discord.gg/xvQV8bT)!
 
+## Getting Started
+To get started, simply
+[Download Win/Mac/Linux 64-bit binaries](https://github.com/LEGOlord208/DiscordConsole/releases).
+
+**If** you want to get the absolutely latest development update, you'll have to compile it yourself.  
+Do that using
+```
+go get github.com/legolord208/DiscordConsole
+```
+.
+
+You'll also need the DiscordGo development version. To get that, type `make dgo`.  
+Then just type `make`, or `go install`. You choose.
+
 ## Special features
 Set playing status, simulate typing, bulk delete and more.
 
