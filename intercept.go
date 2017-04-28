@@ -151,12 +151,11 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 
 		middle := time.Now().UTC()
 
-		msg := &discordgo.MessageEdit{}
-		msg.SetContent("Pong! 1/2")
-		msg.Embed = &discordgo.MessageEmbed{
-			Description: text + "\nCalculating outgoing..",
-		}
-		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, msg)
+		_, err = session.ChannelMessageEditComplex(discordgo.NewMessageEdit(e.ChannelID, e.ID).
+			SetContent("Pong! 1/2").
+			SetEmbed(&discordgo.MessageEmbed{
+				Description: text + "\nCalculating outgoing..",
+			}))
 
 		last := time.Now().UTC()
 
@@ -164,12 +163,11 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		text += "\n\n\nIncoming is the time it takes for the message to reach DiscordConsole."
 		text += "\nOutgoing is the time it takes for DiscordConsole to reach discord."
 
-		msg = &discordgo.MessageEdit{}
-		msg.SetContent("Pong! 2/2")
-		msg.Embed = &discordgo.MessageEmbed{
-			Description: text,
-		}
-		_, err = session.ChannelMessageEditComplex(e.ChannelID, e.ID, msg)
+		_, err = session.ChannelMessageEditComplex(discordgo.NewMessageEdit(e.ChannelID, e.ID).
+			SetContent("Pong! 2/2").
+			SetEmbed(&discordgo.MessageEmbed{
+				Description: text,
+			}))
 		if err != nil {
 			stdutil.PrintErr(tl("failed.msg.edit"), err)
 		}
