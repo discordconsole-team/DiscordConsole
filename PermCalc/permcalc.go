@@ -30,11 +30,11 @@ type PermCalc struct {
 // Show shows the permission calculator
 // according to the PermCalc object.
 func (pm *PermCalc) Show() error {
-	if data.running {
+	if d.running {
 		return ErrAlreadyRunning
 	}
 
-	data = gamedata{
+	d = data{
 		running:  true,
 		x:        optionX1 + 1,
 		y:        optionY1,
@@ -48,7 +48,7 @@ func (pm *PermCalc) Show() error {
 	}
 	defer termbox.Close()
 
-	for data.running {
+	for d.running {
 		err := drawScreen()
 		if err != nil {
 			return err
@@ -58,6 +58,6 @@ func (pm *PermCalc) Show() error {
 		handleKey(event.Key, event.Ch)
 	}
 
-	pm.Perm = data.perm
+	pm.Perm = d.perm
 	return nil
 }

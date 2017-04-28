@@ -2,14 +2,14 @@ package permcalc
 
 import "github.com/nsf/termbox-go"
 
-type gamedata struct {
+type data struct {
 	running  bool
 	x, y     int
 	perm     int
 	readonly bool
 }
 
-var data gamedata
+var d data
 
 func handleKey(key termbox.Key, char rune) {
 	switch key {
@@ -23,61 +23,61 @@ func handleKey(key termbox.Key, char rune) {
 		moveY(false)
 
 	case termbox.KeySpace:
-		if data.readonly {
+		if d.readonly {
 			break
 		}
-		data.perm = data.perm ^ PermOrder[pos2perm(data.x, data.y)]
+		d.perm = d.perm ^ PermOrder[pos2perm(d.x, d.y)]
 	case termbox.KeyEsc:
-		data.running = false
+		d.running = false
 	}
 
 	switch char {
 	case 'q':
-		data.running = false
+		d.running = false
 	}
 }
 
 func moveX(right bool) {
-	if right && data.y == optionY1+optionH1-1 {
-		data.y--
+	if right && d.y == optionY1+optionH1-1 {
+		d.y--
 	}
 
 	if right {
-		if data.x == optionX1+1 {
-			data.x = optionX2 + 1
+		if d.x == optionX1+1 {
+			d.x = optionX2 + 1
 		}
 	} else {
-		if data.x == optionX2+1 {
-			data.x = optionX1 + 1
+		if d.x == optionX2+1 {
+			d.x = optionX1 + 1
 		}
 	}
 }
 func moveY(up bool) {
-	y := data.y
+	y := d.y
 	switch {
 	case up && y == optionY1:
 	case !up && y == optionY3+optionH3-1:
 
-	case y == optionY1+optionH1-1 && data.x == optionX1+1 && !up:
+	case y == optionY1+optionH1-1 && d.x == optionX1+1 && !up:
 		fallthrough
-	case !up && y == optionY1+optionH1-2 && data.x == optionX2+1:
-		data.y = optionY2
+	case !up && y == optionY1+optionH1-2 && d.x == optionX2+1:
+		d.y = optionY2
 	case up && y == optionY2:
-		data.y = optionY1 + optionH1 - 1
-		if data.x == optionX2+1 {
-			data.y--
+		d.y = optionY1 + optionH1 - 1
+		if d.x == optionX2+1 {
+			d.y--
 		}
 
 	case !up && y == optionY2+optionH2-1:
-		data.y = optionY3
+		d.y = optionY3
 	case up && y == optionY3:
-		data.y = optionY2 + optionH2 - 1
+		d.y = optionY2 + optionH2 - 1
 
 	default:
 		if up {
-			data.y--
+			d.y--
 		} else {
-			data.y++
+			d.y++
 		}
 	}
 }
@@ -116,7 +116,7 @@ func drawScreen() error {
 	drawOptions(optionX2, optionY3, optionH3, &total)
 
 	y := optionY4
-	if !data.readonly {
+	if !d.readonly {
 		drawString(optionX1-1, y, "Press space to toggle permissions.")
 		y++
 	}
@@ -159,7 +159,7 @@ func drawOption(x int, y int, index int) {
 	perm := PermOrder[index]
 
 	char := " "
-	if data.perm|perm == data.perm {
+	if d.perm|perm == d.perm {
 		char = "*"
 	}
 	drawString(x, y, "["+char+"] "+PermStrings[perm])
@@ -172,7 +172,7 @@ func drawString(x int, y int, str string) {
 
 func drawCell(x int, y int, c rune, fg termbox.Attribute) {
 	bg := termbox.ColorDefault
-	if x == data.x && y == data.y {
+	if x == d.x && y == d.y {
 		bg = termbox.ColorWhite
 	}
 	termbox.SetCell(x, y, c, fg, bg)
