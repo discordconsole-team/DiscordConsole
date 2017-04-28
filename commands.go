@@ -11,6 +11,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/fatih/color"
+	"github.com/legolord208/DiscordConsole/PermCalc"
 	"github.com/legolord208/gtable"
 	"github.com/legolord208/stdutil"
 )
@@ -854,6 +855,29 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 
 			aliases[strings.ToLower(args[0])] = strings.Join(args[1:], " ")
 		}
+	case "permcalc":
+		if !source.Terminal {
+			stdutil.PrintErr(tl("invalid.source.terminal"), nil)
+			return
+		}
+		pm := permcalc.PermCalc{}
+
+		if nargs >= 1 {
+			i, err := strconv.Atoi(args[0])
+			if err != nil {
+				stdutil.PrintErr(tl("invalid.number"), nil)
+				return
+			}
+
+			pm.Perm = i
+		}
+
+		err := pm.Show()
+		if err != nil {
+			stdutil.PrintErr("failed.permcalc", err)
+			return
+		}
+		writeln(w, strconv.Itoa(pm.Perm))
 	default:
 		stdutil.PrintErr(tl("invalid.command"), nil)
 	}

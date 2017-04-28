@@ -15,6 +15,7 @@ func printHelp(search string) {
 	help = append(help, "run\tRun a LUA file with DiscordConsole's special functions")
 	help = append(help, "alias <command> <new command>\tAdd a new alias for a command.")
 	help = append(help, "lang <language>\tSame as starting with --lang")
+	help = append(help, "permcalc [preset]\tOpen the permission calculator, and optionally with pre-set values.")
 	help = append(help, "")
 	if userType != typeWebhook {
 		help = append(help, "guilds\tList guilds/servers this bot is added to.")

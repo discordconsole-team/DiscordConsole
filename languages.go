@@ -158,6 +158,7 @@ failed.avatar=Couldn't set avatar
 failed.status=Could not set status
 failed.api.start=Couldn't start API
 failed.mfa=The account has 2FA enabled. Consider using a user token instead.
+failed.permcalc=Could not open permission calculator
 
 invalid.yn=Please type either 'y' or 'n'.
 invalid.webhook=Webhook format invalid. Format: id/token
@@ -177,6 +178,7 @@ invalid.status.offline=The offline status exists, but cannot be set through the 
 invalid.command=Unknown command. Do 'help' for help
 invalid.api.started=API already started
 invalid.api.notstarted=API not started
+invalid.source.terminal=You must be in terminal to do this.
 
 login.token=Please paste your bot 'token' here, or leave blank for a username/password prompt.
 login.token.user=User tokens are prefixed with 'user '
