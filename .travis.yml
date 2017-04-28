@@ -9,7 +9,11 @@ install:
   - git checkout develop
   - go install
   - cd -
-  - go get .
+  - cd PermCalc
+  - go get
+  - go install
+  - cd -
+  - go get
   - go get -u github.com/golang/lint/golint
 
 script:
