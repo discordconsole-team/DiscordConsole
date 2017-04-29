@@ -26,6 +26,10 @@ go get github.com/legolord208/DiscordConsole
 .
 
 You'll also need the DiscordGo development version. To get that, type `make dgo`.  
+Then, actually make the switch to develop:
+```
+git checkout develop
+```
 Then just type `make`, or `go install`. You choose.
 
 ## Special features
@@ -40,7 +44,7 @@ You can bypass the black background in an avatar when setting the bot avatar.
 ![Imgur](http://i.imgur.com/Q0GQR8d.png)
 
 ### Bulk delete
-DiscordConsole lets you BULK DELETE messages. This allows you to delete a bunch of messages at once, without needing to write any code!  
+DiscordConsole lets you bulk delete messages. This allows you to delete a bunch of messages at once, without needing to write any code!  
 Unfortunately, discord still requires you to have a bot account for this. Shame on you, discord!  
 
 ### Log
