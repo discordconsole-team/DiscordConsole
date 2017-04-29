@@ -1,6 +1,6 @@
-# DiscordConsole
-The console that allows you to control both your user and bot account in interesting ways.
+# DiscordConsole ![License](https://img.shields.io/badge/license-AGPL-blue.svg?style=flat-square) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
 
+The console that allows you to control both your user and bot account in interesting ways. 
 [Download Win/Mac/Linux 64-bit binaries](https://github.com/LEGOlord208/DiscordConsole/releases)
 
 Or compile it yourself:
@@ -12,7 +12,7 @@ go get github.com/legolord208/DiscordConsole
 
 Type "help" at the prompt for a full list of commands.
 
-I would be thrilled if you [joined the semi-official discord server](https://discord.gg/xvQV8bT)!
+Need help? Join our [support guild](https://discord.gg/xvQV8bT)!
 
 ## Getting Started
 To get started, simply
@@ -44,8 +44,7 @@ You can bypass the black background in an avatar when setting the bot avatar.
 ![Imgur](http://i.imgur.com/Q0GQR8d.png)
 
 ### Bulk delete
-DiscordConsole lets you bulk delete messages. This allows you to delete a bunch of messages at once, without needing to write any code!  
-Unfortunately, discord still requires you to have a bot account for this. Shame on you, discord!  
+DiscordConsole lets you bulk delete messages. This allows you to delete a bunch of messages at once, without needing to write any code!
 
 ### Log
 Log the last 100 messages to a file, or just view the last 10 directly in the console!
@@ -55,7 +54,3 @@ DiscordConsole has full command line support. You can supply a bot/user token or
 
 Having it start with a specific server automatically selected? Making a cron job to automatically message how many days until Trump leaves? Easy!  
 ![Imgur](http://i.imgur.com/2mst4pH.png)  
-*This could also be done with webhooks, but hush now :P*
-
-# Have fun!
-That is the most important of all.
