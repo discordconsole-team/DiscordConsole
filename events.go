@@ -25,6 +25,14 @@ func ready(session *discordgo.Session, e *discordgo.Ready) {
 }
 
 func guildCreate(session *discordgo.Session, e *discordgo.GuildCreate) {
+	// Fot bots, the guildcreate event triggers on startup.
+	for _, guild := range cacheGuilds {
+		if guild.ID == e.ID {
+			guild.Name = e.Name // For bots, the ready event does not send it's name
+			return
+		}
+	}
+
 	cacheGuilds = append(cacheGuilds, toUserGuild(e.Guild))
 }
 func guildDelete(session *discordgo.Session, e *discordgo.GuildDelete) {
