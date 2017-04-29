@@ -1,11 +1,12 @@
 # DiscordConsole ![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
 
-> DiscordConsole is a software authored by LEGOlord208 aiming to give you full control over accounts, bots and weebhooks!
+> DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
 
 ### Table of Contents
 
 - [Install](#install)
 - [Usage](#usage)
+- [Credits](#credits)
 - [Contribute](#contribute)
 - [License](#license)
 
@@ -28,6 +29,10 @@ Once you got your token, just type `user TOKEN` in the terminal. You'll get the 
 ![Picture](https://i.imgur.com/KPCVmlH.png)
 
 Try to type something like `help` and let the magic happens! For a detail review of each commands, check this wiki page *Soon™* or type `help command`.
+
+### Credits
+
+DiscordConsole authored by [Legolord208](https://github.com/legolord208) with help from [Tdbot](https://github.com/tbodt), [Mnpn](https://github.com/Mnpn03) and [Parallax](https://github.com/Doyouwanttomakeacake).
 
 ### Contribute
 
