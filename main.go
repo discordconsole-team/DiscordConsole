@@ -18,7 +18,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.3"
+const version = "2.3.1dev"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -96,8 +96,8 @@ func main() {
 		} else {
 			if update.UpdateAvailable {
 				fmt.Println()
-				color.Cyan(tl("update.available") + " " + update.Version + ".")
-				color.Cyan(tl("update.download") + " " + update.URL + ".")
+				color.Cyan(tl("update.available") + " " + update.Version)
+				color.Cyan(tl("update.download") + " " + update.URL)
 			} else {
 				fmt.Println(tl("update.none"))
 			}
