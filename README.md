@@ -1,56 +1,43 @@
 # DiscordConsole ![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
 
-The console that allows you to control both your user and bot account in interesting ways. 
-[Download Win/Mac/Linux 64-bit binaries](https://github.com/LEGOlord208/DiscordConsole/releases)
+> DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
 
-Or compile it yourself:
-```
-go get github.com/legolord208/DiscordConsole
-```
+### Table of Contents
 
-![Imgur](http://i.imgur.com/ilOhYGb.png)
+- [Install](#install)
+- [Usage](#usage)
+- [Credits](#credits)
+- [Contribute](#contribute)
+- [License](#license)
 
-Type "help" at the prompt for a full list of commands.
+### Install
 
-Need help? Join our [support guild](https://discord.gg/xvQV8bT)!
+To get started, simply [download the console from releases](https://github.com/LEGOlord208/DiscordConsole/releases).
 
-## Getting Started
-To get started, simply
-[Download Win/Mac/Linux 64-bit binaries](https://github.com/LEGOlord208/DiscordConsole/releases).
+Or compile it yourself: `go get github.com/legolord208/DiscordConsole`, you'll also need the DiscordGo development version; to get that type `make dgo`. Then, actually make the switch to develop: `git checkout develop`. Finally, just type `go install`.
 
-**If** you want to get the absolutely latest development update, you'll have to compile it yourself.  
-Do that using
-```
-go get github.com/legolord208/DiscordConsole
-```
-.
+### Usage
 
-You'll also need the DiscordGo development version. To get that, type `make dgo`.  
-Then, actually make the switch to develop:
-```
-git checkout develop
-```
-Then just type `make`, or `go install`. You choose.
+It is recommended to run DiscordConsole in a Terminal. To do that, just `cd` to the folder you extracted it and run it by typing `DiscordConsole`. There are a few launch options covered in the wiki. *Soon™*
 
-## Special features
-Set playing status, simulate typing, bulk delete and more.
+When starting the DiscordConsole from Windows, you might get a screen saying that Windows SmartScreen prevented an unrecognized app from starting. Just click the **More Info** then **Run anyway**.
 
-In addition, you are even able to delete bot defined roles.  
-If you try to do this in discord, it just says:  
-![Imgur](http://i.imgur.com/Ubr2OMZ.png)
+Once started, you'll get asked to fill in your token. If you don't know how to get it, check this wiki page. *Soon™*
+For the first setup, we will use an user account. Setups with bot accounts and webhook are explained on the wiki as well. *Soon™*
 
-This was also discovered recently, by a friend of mine:  
-You can bypass the black background in an avatar when setting the bot avatar.  
-![Imgur](http://i.imgur.com/Q0GQR8d.png)
+Once you got your token, just type `user TOKEN` in the terminal. You'll get the following screen:
+![Picture](https://i.imgur.com/KPCVmlH.png)
 
-### Bulk delete
-DiscordConsole lets you bulk delete messages. This allows you to delete a bunch of messages at once, without needing to write any code!
+Try to type something like `help` and let the magic happens! For a detail review of each commands, check this wiki page *Soon™* or type `help command`.
 
-### Log
-Log the last 100 messages to a file, or just view the last 10 directly in the console!
+### Credits
 
-## Command line
-DiscordConsole has full command line support. You can supply a bot/user token or email/password on the command line, and even specify commands to run, so you can use DiscordConsole for scripting.
+DiscordConsole written by [LEGOlord208](https://github.com/LEGOlord208), with documentation improvments by [Parallaχ](https://github.com/Doyouwanttomakeacake).
 
-Having it start with a specific server automatically selected? Making a cron job to automatically message how many days until Trump leaves? Easy!  
-![Imgur](http://i.imgur.com/2mst4pH.png)  
+### Contribute
+
+Feels free to submit a Pull Request! Not a coder, but want to be involved in the project? Send us some suggestions through isssues.
+
+### License
+
+GNU G.P.L. © LEGOlord208 - [Click here for more information.](https://github.com/LEGOlord208/DiscordConsole/blob/master/LICENSE)
