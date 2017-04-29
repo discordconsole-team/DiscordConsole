@@ -18,7 +18,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.3dev"
+const version = "2.3"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -210,7 +210,9 @@ func main() {
 				token = token[len("user "):]
 				userType = typeUser
 			} else {
-				token = "Bot " + token
+				if !strings.HasPrefix(token, "Bot ") {
+					token = "Bot " + token
+				}
 				userType = typeBot
 				intercept = false
 			}
