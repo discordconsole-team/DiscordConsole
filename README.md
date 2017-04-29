@@ -1,4 +1,4 @@
-# DiscordConsole   ![License](https://img.shields.io/badge/license-AGPL-blue.svg?style=flat-square) ![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
+# DiscordConsole ![License](https://img.shields.io/badge/license-AGPL-blue.svg?style=flat-square) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
 
 The console that allows you to control both your user and bot account in interesting ways. 
 [Download Win/Mac/Linux 64-bit binaries](https://github.com/LEGOlord208/DiscordConsole/releases)
