@@ -32,12 +32,12 @@ Try to type something like `help` and let the magic happens! For a detail review
 
 ### Credits
 
-DiscordConsole wrote by [LEGOlord208](https://github.com/LEGOlord208), with documentation improvments by [Parallaχ](https://github.com/Doyouwanttomakeacake).
+DiscordConsole written by [LEGOlord208](https://github.com/LEGOlord208), with documentation improvments by [Parallaχ](https://github.com/Doyouwanttomakeacake).
 
 ### Contribute
 
-Feels free to submit a Pull Request! Not a coder, but want to be involved in the project? Send us some suggestions trough isssues.
+Feels free to submit a Pull Request! Not a coder, but want to be involved in the project? Send us some suggestions through isssues.
 
 ### License
 
-GNU G.P.L. © Legolord208 - [Click here for more information.](https://github.com/LEGOlord208/DiscordConsole/blob/master/LICENSE)
+GNU G.P.L. © LEGOlord208 - [Click here for more information.](https://github.com/LEGOlord208/DiscordConsole/blob/master/LICENSE)
