@@ -30,6 +30,8 @@ Once you got your token, just type `user TOKEN` in the terminal. You'll get the 
 
 Try to type something like `help` and let the magic happens! For a detail review of each commands, check this wiki page *Soon™* or type `help command`.
 
+**Don't want to go through all of this? Check our [Beta Launcher](https://github.com/legolord208/DConsoleLauncher)!**
+
 ### Credits
 
 DiscordConsole written by [LEGOlord208](https://github.com/LEGOlord208), with documentation improvments by [Parallaχ](https://github.com/Doyouwanttomakeacake).
