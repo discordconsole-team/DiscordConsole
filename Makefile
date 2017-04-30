@@ -7,8 +7,7 @@ dgo:
 		go install
 
 build:
-	# This requires a script
-	# only I have.
+	# This requires a script only I have.
 	# This will not work for you.
 	cd $(GOPATH)/bin; \
 		./Cross\ Compile.sh DiscordConsole
