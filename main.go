@@ -103,6 +103,13 @@ func main() {
 	doErrorHook()
 	fmt.Println("DiscordConsole " + version)
 
+	fmt.Println(`
+DiscordConsole  Copyright (C) 2017  LEGOlord208
+This program comes with ABSOLUTELY NO WARRANTY
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+`)
+
 	loadLangAuto(langfile)
 
 	if !noupdate {
