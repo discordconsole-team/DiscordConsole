@@ -65,7 +65,7 @@ func printHelp(search string) {
 		help = append(help, "roleedit <role id> <flag> <value>\tEdit a role. Flags are: name, color, separate, perms, mention")
 		help = append(help, "roledelete <role id>\tDelete a role.")
 		help = append(help, "")
-		help = append(help, "nick <id/'me'> [nickname]\tChange somebody's nickname")
+		help = append(help, "nick <id> [nickname]\tChange somebody's nickname")
 		help = append(help, "nickall [nickname]\tChange ALL nicknames!")
 		help = append(help, "")
 		help = append(help, "messages [scope]\tIntercepting messages. Optionally, scope can have a filter on it: all, mentions, private, "+
