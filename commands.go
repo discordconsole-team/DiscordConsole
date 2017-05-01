@@ -23,7 +23,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 	"unicode"
 
 	"github.com/bwmarrin/discordgo"
@@ -33,37 +32,12 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
-var typeRelationships = map[int]string{
-	1: "Friend",
-	2: "Blocked",
-	3: "Incoming request",
-	4: "Sent request",
-}
-var typeVerifications = map[discordgo.VerificationLevel]string{
-	discordgo.VerificationLevelNone:   "None",
-	discordgo.VerificationLevelLow:    "Low",
-	discordgo.VerificationLevelMedium: "Medium",
-	discordgo.VerificationLevelHigh:   "High",
-}
-var typeMessages = map[string]int{
-	"all":      messagesAll,
-	"mentions": messagesMentions,
-	"private":  messagesPrivate,
-	"current":  messagesCurrent,
-	"none":     messagesNone,
-}
-var typeStatuses = map[string]discordgo.Status{
-	"online":    discordgo.StatusOnline,
-	"idle":      discordgo.StatusIdle,
-	"dnd":       discordgo.StatusDoNotDisturb,
-	"invisible": discordgo.StatusInvisible,
-}
-
 var lastUsedMsg string
 var lastUsedRole string
 
 var cacheRead *discordgo.Message
-var cacheUser *discordgo.User
+var cacheUser []*keyval
+var cacheInvite []*keyval
 
 const (
 	messagesNone = iota
@@ -72,11 +46,6 @@ const (
 	messagesMentions
 	messagesAll
 )
-
-type commandSource struct {
-	Terminal bool
-	Alias    bool
-}
 
 var messages = messagesNone
 var intercept = true
@@ -320,24 +289,43 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		switch args[0] {
 		case "see":
 			if nargs < 2 {
-				stdutil.PrintErr("invite see <code>", nil)
+				stdutil.PrintErr("invite see <code> [property]", nil)
 				return
 			}
 
-			invite, err := session.Invite(args[1])
-			if err != nil {
-				stdutil.PrintErr(tl("failed.invite"), err)
-				return
+			var keyvals []*keyval
+			if strings.EqualFold(args[1], "cache") {
+				if cacheInvite == nil {
+					stdutil.PrintErr(tl("invalid.cache"), nil)
+					return
+				}
+
+				keyvals = cacheInvite
+			} else {
+				invite, err := session.Invite(args[1])
+				if err != nil {
+					stdutil.PrintErr(tl("failed.invite"), err)
+					return
+				}
+
+				keyvals = invite2array(invite)
+				cacheInvite = keyvals
 			}
-			writeln(w, "Guild: "+invite.Guild.ID+", "+invite.Guild.Name)
-			writeln(w, "Channel: "+invite.Channel.ID+", "+invite.Channel.Name)
-			writeln(w, "Created At: "+string(invite.CreatedAt))
-			writeln(w, "Inviter: "+invite.Inviter.ID+", "+invite.Inviter.String())
-			writeln(w, "Max age: "+(time.Duration(invite.MaxAge)*time.Second).String())
-			writeln(w, "Max uses: "+strconv.Itoa(invite.MaxUses))
-			writeln(w, "Uses: "+strconv.Itoa(invite.Uses))
-			writeln(w, "Revoked: "+strconv.FormatBool(invite.Revoked))
-			writeln(w, "Temporary: "+strconv.FormatBool(invite.Temporary))
+
+			if nargs < 3 {
+				for _, keyval := range keyvals {
+					writeln(w, keyval.String())
+				}
+			} else {
+				var ok bool
+				returnVal, ok = findValByKey(keyvals, args[2])
+				if !ok {
+					stdutil.PrintErr(tl("invalid.value"), nil)
+					return
+				}
+
+				writeln(w, returnVal)
+			}
 		case "accept":
 			if nargs < 2 {
 				stdutil.PrintErr("invite accept <code>", nil)

@@ -60,17 +60,6 @@ var colorError = color.New(color.FgRed, color.Bold)
 
 const msgLimit = 2000
 
-type stringArr []string
-
-func (arr *stringArr) Set(val string) error {
-	*arr = append(*arr, val)
-	return nil
-}
-
-func (arr *stringArr) String() string {
-	return "[" + strings.Join(*arr, " ") + "]"
-}
-
 func main() {
 	defer handleCrash()
 

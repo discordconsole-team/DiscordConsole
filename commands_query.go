@@ -22,6 +22,7 @@ import (
 	"io"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/legolord208/stdutil"
@@ -107,70 +108,52 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 			writeln(w, returnVal)
 		}
 	case "cinfo":
-		if nargs < 1 {
-			stdutil.PrintErr("cinfo <property>", nil)
-			return
-		}
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
 
-		switch strings.ToLower(args[0]) {
-		case "guild":
-			returnVal = loc.channel.GuildID
-		case "name":
-			returnVal = loc.channel.Name
-		case "topic":
-			returnVal = loc.channel.Topic
-		case "type":
-			returnVal = loc.channel.Type
-		default:
-			stdutil.PrintErr(tl("invalid.value"), nil)
-		}
+		values := chan2array(loc.channel)
 
-		if returnVal != "" {
+		if nargs < 1 {
+			for _, keyval := range values {
+				writeln(w, keyval.String())
+			}
+		} else {
+			var ok bool
+			returnVal, ok = findValByKey(values, args[0])
+			if !ok {
+				stdutil.PrintErr(tl("invalid.value"), nil)
+				return
+			}
+
 			writeln(w, returnVal)
 		}
 	case "ginfo":
-		if nargs < 1 {
-			stdutil.PrintErr("ginfo <property>", nil)
-			return
-		}
 		if loc.guild == nil {
 			stdutil.PrintErr(tl("invalid.guild"), nil)
 			return
 		}
 
-		switch strings.ToLower(args[0]) {
-		case "name":
-			returnVal = loc.guild.Name
-		case "icon":
-			returnVal = loc.guild.Icon
-		case "region":
-			returnVal = loc.guild.Region
-		case "owner":
-			returnVal = loc.guild.OwnerID
-		case "splash":
-			returnVal = loc.guild.Splash
-		case "members":
-			returnVal = strconv.Itoa(loc.guild.MemberCount)
-		case "level":
-			returnVal = typeVerifications[loc.guild.VerificationLevel]
-		default:
-			stdutil.PrintErr(tl("invalid.value"), nil)
-		}
+		values := guild2array(loc.guild)
 
-		if returnVal != "" {
+		if nargs < 1 {
+			for _, keyval := range values {
+				writeln(w, keyval.String())
+			}
+		} else {
+			var ok bool
+			returnVal, ok = findValByKey(values, args[0])
+			if !ok {
+				stdutil.PrintErr(tl("invalid.value"), nil)
+				return
+			}
+
 			writeln(w, returnVal)
 		}
 	case "uinfo":
-		if nargs < 2 {
-			stdutil.PrintErr("uinfo <user id> <property>", nil)
-			return
-		}
 		id := args[0]
-		var user *discordgo.User
+		var keyvals []*keyval
 
 		if strings.EqualFold(id, "cache") {
 			if cacheUser == nil {
@@ -178,41 +161,95 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 				return
 			}
 
-			user = cacheUser
+			keyvals = cacheUser
 		} else {
 			if userType != typeBot && !strings.EqualFold(id, "@me") {
 				stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
 				return
 			}
 
-			var err error
-			user, err = session.User(id)
+			user, err := session.User(id)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.user"), err)
 				return
 			}
 
-			cacheUser = user
+			keyvals = user2array(user)
+			cacheUser = keyvals
 		}
 
-		switch strings.ToLower(args[1]) {
-		case "id":
-			returnVal = user.ID
-		case "email":
-			returnVal = user.Email
-		case "name":
-			returnVal = user.Username
-		case "avatar":
-			returnVal = user.Avatar
-		case "bot":
-			returnVal = strconv.FormatBool(user.Bot)
-		default:
-			stdutil.PrintErr(tl("invalid.value"), nil)
-		}
+		if nargs < 2 {
+			for _, keyval := range keyvals {
+				writeln(w, keyval.String())
+			}
+		} else {
+			var ok bool
+			returnVal, ok = findValByKey(keyvals, args[1])
+			if !ok {
+				stdutil.PrintErr(tl("invalid.value"), nil)
+				return
+			}
 
-		if returnVal != "" {
 			writeln(w, returnVal)
 		}
 	}
 	return
+}
+
+func guild2array(guild *discordgo.Guild) []*keyval {
+	return []*keyval{
+		&keyval{"ID", guild.ID},
+		&keyval{"Name", guild.Name},
+		&keyval{"Icon", guild.Icon},
+		&keyval{"Region", guild.Region},
+		&keyval{"Owner", guild.OwnerID},
+		&keyval{"Splash", guild.Splash},
+		&keyval{"Members", strconv.Itoa(guild.MemberCount)},
+		&keyval{"Level", typeVerifications[guild.VerificationLevel]},
+	}
+}
+
+func chan2array(channel *discordgo.Channel) []*keyval {
+	return []*keyval{
+		&keyval{"ID", channel.ID},
+		&keyval{"Guild", channel.GuildID},
+		&keyval{"Name", channel.Name},
+		&keyval{"Topic", channel.Topic},
+		&keyval{"Type", channel.Type},
+	}
+}
+
+func user2array(user *discordgo.User) []*keyval {
+	return []*keyval{
+		&keyval{"ID", user.ID},
+		&keyval{"Email", user.Email},
+		&keyval{"Name", user.Username},
+		&keyval{"Avatar", user.Avatar},
+		&keyval{"Bot", strconv.FormatBool(user.Bot)},
+	}
+}
+
+func invite2array(invite *discordgo.Invite) []*keyval {
+	values := make([]*keyval, 0)
+	for _, keyval := range user2array(invite.Inviter) {
+		keyval.Key = "Inviter_" + keyval.Key
+		values = append(values, keyval)
+	}
+	for _, keyval := range guild2array(invite.Guild) {
+		keyval.Key = "Guild_" + keyval.Key
+		values = append(values, keyval)
+	}
+	for _, keyval := range chan2array(invite.Channel) {
+		keyval.Key = "Channel_" + keyval.Key
+		values = append(values, keyval)
+	}
+	values = append(values,
+		&keyval{"Created_at", string(invite.CreatedAt)},
+		&keyval{"Max_age", (time.Duration(invite.MaxAge) * time.Second).String()},
+		&keyval{"Max_uses", strconv.Itoa(invite.MaxUses)},
+		&keyval{"Uses", strconv.Itoa(invite.Uses)},
+		&keyval{"Revoked", strconv.FormatBool(invite.Revoked)},
+		&keyval{"Temporary", strconv.FormatBool(invite.Temporary)},
+	)
+	return values
 }
