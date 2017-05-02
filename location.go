@@ -17,7 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 package main
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+	"github.com/legolord208/stdutil"
+)
 
 type location struct {
 	guild   *discordgo.Guild
@@ -40,6 +43,25 @@ func (loc *location) push(guild *discordgo.Guild, channel *discordgo.Channel) {
 
 	if !sameGuild {
 		cacheChannels = nil
+	}
+
+	var err error
+	if vc != nil {
+		playing = ""
+		if channel != nil && channel.Type == typeChannelVoice {
+			err = vc.ChangeChannel(channel.ID, false, false)
+		} else {
+			err = vc.Disconnect()
+			vc = nil
+		}
+		if err != nil {
+			stdutil.PrintErr(tl("failed.voice.disconnect"), err)
+		}
+	} else if guild != nil && channel != nil && channel.Type == typeChannelVoice {
+		vc, err = session.ChannelVoiceJoin(guild.ID, channel.ID, false, false)
+		if err != nil {
+			stdutil.PrintErr(tl("failed.voice.connect"), err)
+		}
 	}
 }
 

@@ -33,7 +33,6 @@ type luaEventData struct {
 	function string
 }
 
-var luaSessionCopy *discordgo.Session
 var luaMessageEvents = make(map[string]*luaEventData)
 
 func runLua(session *discordgo.Session, file string, args ...string) error {
@@ -54,15 +53,13 @@ func runLua(session *discordgo.Session, file string, args ...string) error {
 
 	lua.OpenLibraries(l)
 
-	luaSessionCopy = session
-
 	err := lua.DoFile(l, file)
 	return err
 }
 
 func luaExec(l *lua.State) int {
 	colorAutomated.Set()
-	returnVal := command(luaSessionCopy, commandSource{}, lua.CheckString(l, 1), color.Output)
+	returnVal := command(session, commandSource{}, lua.CheckString(l, 1), color.Output)
 	color.Unset()
 
 	l.PushString(returnVal)
@@ -113,7 +110,6 @@ func luaMessageEvent(session *discordgo.Session, e *discordgo.Message) {
 		"AuthorName":   e.Author.Username,
 	}
 
-	luaSessionCopy = session
 	for _, event := range luaMessageEvents {
 		l := event.state
 		l.Global(event.function)

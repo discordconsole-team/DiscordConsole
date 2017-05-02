@@ -27,6 +27,8 @@ import (
 	"github.com/legolord208/stdutil"
 )
 
+var vc *discordgo.VoiceConnection
+
 var playing string
 var cacheAudio = make(map[string][][]byte, 0)
 
@@ -72,37 +74,23 @@ func loadAudio(file string, buffer *[][]byte) error {
 }
 
 func play(buffer [][]byte, session *discordgo.Session, guild, channel string) {
-	vc, err := session.ChannelVoiceJoin(guild, channel, false, true)
-	if err != nil {
-		stdutil.PrintErr(tl("failed.voice.connect"), err)
-		return
-	}
-
-	err = vc.Speaking(true)
+	err := vc.Speaking(true)
 	if err != nil {
 		stdutil.PrintErr(tl("failed.voice.speak"), err)
-
-		err = vc.Disconnect()
-		if err != nil {
-			stdutil.PrintErr(tl("failed.voice.disconnect"), err)
-		}
 		return
 	}
+	defer func() {
+		err = vc.Speaking(false)
+		if err != nil {
+			stdutil.PrintErr(tl("failed.voice.speak"), err)
+			return
+		}
+	}()
 
 	for _, buf := range buffer {
 		if playing == "" {
 			break
 		}
 		vc.OpusSend <- buf
-	}
-
-	err = vc.Speaking(false)
-	if err != nil {
-		stdutil.PrintErr(tl("failed.voice.speak"), err)
-	}
-
-	err = vc.Disconnect()
-	if err != nil {
-		stdutil.PrintErr(tl("failed.voice.disconnect"), err)
 	}
 }

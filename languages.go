@@ -182,6 +182,7 @@ invalid.webhook=Webhook format invalid. Format: id/token
 invalid.webhook.command=Not an allowed webhook command
 invalid.limit.message=Message exceeds character limit
 invalid.channel=No channel selected!
+invalid.channel.voice=No voice channel selected!
 invalid.guild=No guild selected!
 invalid.value=No such value
 invalid.role=No role with that ID

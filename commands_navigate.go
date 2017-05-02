@@ -94,7 +94,28 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 		}
 		loc.push(guild, channel)
 	case "channels":
-		channels(session, "text", w)
+		channels(session, typeChannelText, w)
+	case "vchannels":
+		channels(session, typeChannelVoice, w)
+	case "pchannels":
+		channels, err := session.UserChannels()
+		if err != nil {
+			stdutil.PrintErr(tl("failed.channel"), err)
+			return
+		}
+
+		table := gtable.NewStringTable()
+		table.AddStrings("ID", "Recipient")
+
+		for _, channel := range channels {
+			table.AddRow()
+			recipient := ""
+			if channel.Recipient != nil {
+				recipient = channel.Recipient.Username
+			}
+			table.AddStrings(channel.ID, recipient)
+		}
+		writeln(w, table.String())
 	case "channel":
 		if nargs < 1 {
 			stdutil.PrintErr("channel <id>", nil)
@@ -134,25 +155,6 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 				loc.push(loc.guild, channel)
 			}
 		}
-	case "pchannels":
-		channels, err := session.UserChannels()
-		if err != nil {
-			stdutil.PrintErr(tl("failed.channel"), err)
-			return
-		}
-
-		table := gtable.NewStringTable()
-		table.AddStrings("ID", "Recipient")
-
-		for _, channel := range channels {
-			table.AddRow()
-			recipient := ""
-			if channel.Recipient != nil {
-				recipient = channel.Recipient.Username
-			}
-			table.AddStrings(channel.ID, recipient)
-		}
-		writeln(w, table.String())
 	case "dm":
 		if nargs < 1 {
 			stdutil.PrintErr("dm <user id>", nil)

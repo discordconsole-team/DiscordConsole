@@ -39,14 +39,6 @@ var cacheRead *discordgo.Message
 var cacheUser []*keyval
 var cacheInvite []*keyval
 
-const (
-	messagesNone = iota
-	messagesCurrent
-	messagesPrivate
-	messagesMentions
-	messagesAll
-)
-
 var messages = messagesNone
 var intercept = true
 var output = false
@@ -172,11 +164,13 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		fallthrough
 	case "channels":
 		fallthrough
+	case "pchannels":
+		fallthrough
+	case "vchannels":
+		fallthrough
 	case "channel":
 		fallthrough
 	case "dm":
-		fallthrough
-	case "pchannels":
 		fallthrough
 	case "bookmarks":
 		fallthrough
@@ -522,8 +516,6 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				stdutil.PrintErr(tl("failed.nick"), err)
 			}
 		}
-	case "vchannels":
-		channels(session, "voice", w)
 	case "play":
 		if userType != typeBot {
 			stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
@@ -533,12 +525,8 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr("play <dca audio file>", nil)
 			return
 		}
-		if loc.guild == nil {
-			stdutil.PrintErr(tl("invalid.guild"), nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
+		if vc == nil {
+			stdutil.PrintErr(tl("invalid.channel.voice"), nil)
 			return
 		}
 		if playing != "" {

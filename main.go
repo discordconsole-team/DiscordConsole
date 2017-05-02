@@ -50,6 +50,7 @@ var closed bool
 var userID string
 var userToken string
 var userType int
+var session *discordgo.Session
 
 var rl *readline.Instance
 var colorDefault = color.New(color.Bold)
@@ -167,7 +168,6 @@ under certain conditions.
 		fmt.Println("[HIDDEN]")
 	}
 
-	var session *discordgo.Session
 	if token == "" {
 		userType = typeUser
 
@@ -326,6 +326,9 @@ func exit(session *discordgo.Session) {
 
 	apiStop()
 	playing = ""
+	if vc != nil {
+		vc.Disconnect()
+	}
 
 	if typeUser != typeWebhook {
 		session.Close()
