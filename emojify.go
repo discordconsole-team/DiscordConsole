@@ -33,7 +33,7 @@ func toEmojiString(c rune) string {
 		case '$':
 			return ":heavy_dollar_sign:"
 		case '*':
-			return ":heavy_asterisk_sign:"
+			return ":asterisk:"
 		case '!':
 			return ":exclamation:"
 		case '?':
@@ -67,28 +67,29 @@ func toEmojiString(c rune) string {
 		}
 	}
 }
-func toEmoji(c rune) rune {
+func toEmoji(c rune) string {
+	if c >= 'A' && c <= 'Z' {
+		return string(c - 'A' + '🇦')
+	}
 	if c >= 'a' && c <= 'z' {
-		return c - 'a' + '🇦'
-	} else if c >= 'A' && c <= 'Z' {
-		return c - 'A' + '🇦'
-	} else {
-		switch c {
-		case '-':
-			return '➖'
-		case '+':
-			return '➕'
-		case '$':
-			return '💲'
-		case '*':
-			return '\u2731'
-		case '!':
-			return '❗'
-		case '?':
-			return '❓'
-		default:
-			return c
-		}
+		return string(c - 'a' + '🇦')
+	}
+	if c >= '0' && c <= '9' || c == '*' {
+		return string(c) + "\u20E3"
+	}
+	switch c {
+	case '-':
+		return "➖"
+	case '+':
+		return "➕"
+	case '$':
+		return "💲"
+	case '!':
+		return "❗"
+	case '?':
+		return "❓"
+	default:
+		return string(c)
 	}
 }
 
