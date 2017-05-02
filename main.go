@@ -27,6 +27,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/chzyer/readline"
@@ -45,7 +46,8 @@ const (
 	typeWebhook
 )
 
-var closed bool
+var closing bool
+var closed = make(chan bool)
 
 var userID string
 var userToken string
@@ -63,6 +65,40 @@ const msgLimit = 2000
 
 func main() {
 	defer handleCrash()
+	defer func() {
+		closing = true
+
+		apiStop()
+		playing = ""
+		if vc != nil {
+			vc.Disconnect()
+		}
+
+		if session != nil {
+			session.Close()
+		}
+		color.Unset()
+
+		close(closed)
+	}()
+
+	go func() {
+		c := make(chan os.Signal, 2)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+
+		<-c
+		closing = true
+		after := time.After(time.Second * 2)
+
+		select {
+		case <-closed:
+		case <-after:
+			// Took too long.
+			// Malicious LUA script?
+			stdutil.PrintErr("Timed out", nil)
+			os.Exit(1)
+		}
+	}()
 
 	var token string
 	var email string
@@ -270,14 +306,6 @@ under certain conditions.
 		fmt.Println()
 	}
 
-	go func() {
-		c := make(chan os.Signal, 2)
-		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
-		<-c
-		exit(session)
-	}()
-
 	colorAutomated.Set()
 
 	for _, cmd := range arLines {
@@ -288,12 +316,18 @@ under certain conditions.
 		fmt.Println(cmd)
 
 		command(session, commandSource{Terminal: true}, cmd, color.Output)
+		if closing {
+			return
+		}
 	}
 	for _, cmd := range commands {
 		printPointer(session)
 		fmt.Println(cmd)
 
 		command(session, commandSource{Terminal: true}, cmd, color.Output)
+		if closing {
+			return
+		}
 	}
 
 	color.Unset()
@@ -313,30 +347,15 @@ under certain conditions.
 			} else {
 				fmt.Println("exit")
 			}
-			exit(session)
+			closing = true
 			return
 		}
 
 		command(session, commandSource{Terminal: true}, cmd, color.Output)
-		if closed {
+		if closing {
 			break
 		}
 	}
-}
-
-func exit(session *discordgo.Session) {
-	closed = true
-
-	apiStop()
-	playing = ""
-	if vc != nil {
-		vc.Disconnect()
-	}
-
-	if typeUser != typeWebhook {
-		session.Close()
-	}
-	color.Unset()
 }
 
 func execute(command string, args ...string) error {

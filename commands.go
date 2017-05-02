@@ -105,7 +105,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		search := strings.Join(args, " ")
 		printHelp(search)
 	case "exit":
-		exit(session)
+		closing = true
 	case "exec":
 		if nargs < 1 {
 			stdutil.PrintErr("exec <command>", nil)
