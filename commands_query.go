@@ -231,9 +231,11 @@ func user2array(user *discordgo.User) []*keyval {
 
 func invite2array(invite *discordgo.Invite) []*keyval {
 	values := make([]*keyval, 0)
-	for _, keyval := range user2array(invite.Inviter) {
-		keyval.Key = "Inviter_" + keyval.Key
-		values = append(values, keyval)
+	if invite.Inviter != nil {
+		for _, keyval := range user2array(invite.Inviter) {
+			keyval.Key = "Inviter_" + keyval.Key
+			values = append(values, keyval)
+		}
 	}
 	for _, keyval := range guild2array(invite.Guild) {
 		keyval.Key = "Guild_" + keyval.Key
