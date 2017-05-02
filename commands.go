@@ -815,6 +815,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			go func() {
 				panic("die")
 			}()
+			return
 		}
 		panic("triggered crash")
 	default:
