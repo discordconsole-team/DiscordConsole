@@ -121,14 +121,16 @@ under certain conditions.
 	fmt.Println(tl("loading.bookmarks"))
 	err := loadBookmarks()
 	if err != nil {
-		stdutil.PrintErr(tl("failed.reading"), err)
+		stdutil.PrintErr(tl("failed.file.read"), err)
 	}
 
 	var arLines []string
 	if !noautorun {
 		ar, err := ioutil.ReadFile(autoRunFile)
-		if err != nil && os.IsExist(err) {
-			stdutil.PrintErr(tl("failed.reading")+autoRunFile, err)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				stdutil.PrintErr(tl("failed.file.read")+autoRunFile, err)
+			}
 		} else if err == nil {
 			arLines = strings.Split(string(ar), "\n")
 
@@ -278,13 +280,14 @@ under certain conditions.
 
 	colorAutomated.Set()
 
-	if arLines != nil {
-		for _, cmd := range arLines {
-			printPointer(session)
-			fmt.Println(cmd)
-
-			command(session, commandSource{Terminal: true}, cmd, color.Output)
+	for _, cmd := range arLines {
+		if cmd == "" {
+			continue
 		}
+		printPointer(session)
+		fmt.Println(cmd)
+
+		command(session, commandSource{Terminal: true}, cmd, color.Output)
 	}
 	for _, cmd := range commands {
 		printPointer(session)

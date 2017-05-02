@@ -26,6 +26,14 @@ var cachedChannelType string
 var chanReady = make(chan []*discordgo.UserGuild)
 
 func ready(session *discordgo.Session, e *discordgo.Ready) {
+	select {
+	case _, ok := <-chanReady:
+		if ok {
+			return
+		}
+	default:
+	}
+
 	uguilds := make([]*discordgo.UserGuild, len(e.Guilds))
 	for i, guild := range e.Guilds {
 		uguilds[i] = toUserGuild(guild)
