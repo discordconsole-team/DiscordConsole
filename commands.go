@@ -158,47 +158,11 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 
 		loadLangAuto(args[0])
-	case "guilds":
-		fallthrough
-	case "guild":
-		fallthrough
-	case "channels":
-		fallthrough
-	case "pchannels":
-		fallthrough
-	case "vchannels":
-		fallthrough
-	case "channel":
-		fallthrough
-	case "dm":
-		fallthrough
-	case "bookmarks":
-		fallthrough
-	case "bookmark":
-		fallthrough
-	case "go":
+	case "guilds", "guild", "channels", "pchannels", "vchannels",
+		"channel", "dm", "bookmarks", "bookmark", "go":
 		returnVal = commandsNavigate(session, cmd, args, nargs, w)
-	case "say":
-		fallthrough
-	case "tts":
-		fallthrough
-	case "embed":
-		fallthrough
-	case "quote":
-		fallthrough
-	case "big":
-		fallthrough
-	case "file":
-		fallthrough
-	case "edit":
-		fallthrough
-	case "editembed":
-		fallthrough
-	case "sayfile":
-		fallthrough
-	case "del":
-		fallthrough
-	case "delall":
+	case "say", "tts", "embed", "quote", "big", "file", "edit",
+		"editembed", "sayfile", "del", "delall":
 		returnVal = commandsSay(session, source, cmd, args, nargs, w)
 	case "log":
 		if loc.channel == nil {
@@ -280,8 +244,8 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr("invite accept <code> OR invite create [expire] [max uses] ['temp']", nil)
 			return
 		}
-		switch args[0] {
-		case "see":
+		switch strings.ToLower(args[0]) {
+		case "see", "read":
 			if nargs < 2 {
 				stdutil.PrintErr("invite see <code> [property]", nil)
 				return
@@ -725,37 +689,11 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		writeln(w, tl("status.status"))
-	case "avatar":
-		fallthrough
-	case "name":
-		fallthrough
-	case "playing":
-		fallthrough
-	case "streaming":
-		fallthrough
-	case "typing":
-		fallthrough
-	case "nick":
+	case "avatar", "name", "playing", "streaming", "typing", "nick":
 		returnVal = commandsUserMod(session, cmd, args, nargs, w)
-	case "read":
-		fallthrough
-	case "cinfo":
-		fallthrough
-	case "ginfo":
-		fallthrough
-	case "uinfo":
+	case "read", "cinfo", "ginfo", "uinfo":
 		returnVal = commandsQuery(session, cmd, args, nargs, w)
-	case "roles":
-		fallthrough
-	case "roleadd":
-		fallthrough
-	case "roledel":
-		fallthrough
-	case "rolecreate":
-		fallthrough
-	case "roleedit":
-		fallthrough
-	case "roledelete":
+	case "roles", "roleadd", "roledel", "rolecreate", "roleedit", "roledelete":
 		returnVal = commandsRoles(session, cmd, args, nargs, w)
 	case "api_start":
 		if apiName != "" {
@@ -871,6 +809,14 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		writeln(w, strconv.Itoa(pm.Perm))
+	case "crash":
+		if nargs >= 1 && strings.EqualFold(args[0], "die") {
+			// Make error async for more "damage"
+			go func() {
+				panic("die")
+			}()
+		}
+		panic("triggered crash")
 	default:
 		stdutil.PrintErr(tl("invalid.command"), nil)
 	}

@@ -35,7 +35,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.3.2"
+const version = "2.3.2dev"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -380,6 +380,9 @@ func writeln(w io.Writer, line string) error {
 
 func handleCrash() {
 	if val := recover(); val != nil {
+		if val == "die" {
+			panic(val)
+		}
 		// No translations here. We wanna be as safe as possible
 		stdutil.PrintErr("DiscordConsole has crashed.", nil)
 		stdutil.PrintErr("Please tell LEGOlord208 what you did to cause this.", nil)
