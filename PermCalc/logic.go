@@ -38,10 +38,6 @@ func handleKey(key termbox.Key, char rune) {
 }
 
 func moveX(right bool) {
-	if right && d.y == optionY1+optionH1-1 {
-		d.y--
-	}
-
 	if right {
 		if d.x == optionX1+1 {
 			d.x = optionX2 + 1
@@ -58,15 +54,10 @@ func moveY(up bool) {
 	case up && y == optionY1:
 	case !up && y == optionY3+optionH3-1:
 
-	case y == optionY1+optionH1-1 && d.x == optionX1+1 && !up:
-		fallthrough
-	case !up && y == optionY1+optionH1-2 && d.x == optionX2+1:
+	case !up && y == optionY1+optionH1-1:
 		d.y = optionY2
 	case up && y == optionY2:
 		d.y = optionY1 + optionH1 - 1
-		if d.x == optionX2+1 {
-			d.y--
-		}
 
 	case !up && y == optionY2+optionH2-1:
 		d.y = optionY3
@@ -105,7 +96,7 @@ func drawScreen() error {
 	drawString(optionX1-1, optionY1-1, "General Permissions")
 	total := 0
 	drawOptions(optionX1, optionY1, optionH1, &total)
-	drawOptions(optionX2, optionY1, optionH1-1, &total)
+	drawOptions(optionX2, optionY1, optionH1, &total)
 
 	drawString(optionX1-1, optionY2-1, "Text Permissions")
 	drawOptions(optionX1, optionY2, optionH2, &total)
@@ -130,12 +121,12 @@ func pos2perm(x, y int) int {
 	section2 := x == optionX2+1
 
 	if y >= optionY3 {
-		index = optionH1*2 - 1 + optionH2*2 + y - optionY3
+		index = optionH1*2 + optionH2*2 + y - optionY3
 		if section2 {
 			index += optionH3
 		}
 	} else if y >= optionY2 {
-		index = optionH1*2 - 1 + y - optionY2
+		index = optionH1*2 + y - optionY2
 		if section2 {
 			index += optionH2
 		}

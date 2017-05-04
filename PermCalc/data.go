@@ -10,6 +10,7 @@ const (
 	PermManageChannels
 	PermManageServer
 	PermAddReactions
+	PermViewAuditLogs
 )
 
 // Second batch of permission constants
@@ -48,6 +49,7 @@ const (
 var PermOrder = []int{
 	// General Permissions
 	PermAdministrator,
+	PermViewAuditLogs,
 	PermManageRoles,
 	PermKickMembers,
 	PermCreateInstantInvite,
@@ -87,6 +89,7 @@ var PermOrder = []int{
 var PermStrings = map[int]string{
 	// General Permissions
 	PermAdministrator:       "Administrator",
+	PermViewAuditLogs:       "View Audit Logs",
 	PermManageRoles:         "Manage Roles",
 	PermKickMembers:         "Kick Members",
 	PermCreateInstantInvite: "Create Instant Invite",
