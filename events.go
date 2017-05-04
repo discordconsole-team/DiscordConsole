@@ -28,7 +28,7 @@ var chanReady = make(chan []*discordgo.UserGuild)
 func ready(session *discordgo.Session, e *discordgo.Ready) {
 	select {
 	case _, ok := <-chanReady:
-		if ok {
+		if !ok {
 			return
 		}
 	default:
