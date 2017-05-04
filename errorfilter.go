@@ -23,12 +23,13 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/legolord208/stdutil"
+	"github.com/mattn/go-colorable"
 )
 
 func doErrorHook() {
 	stdutil.EventPrePrintError = append(stdutil.EventPrePrintError, func(full string, msg string, err error) bool {
 		if err != nil && isPermission(err) {
-			colorError.Fprintln(os.Stderr, tl("failed.perms"))
+			colorError.Fprintln(colorable.NewColorable(os.Stderr), tl("failed.perms"))
 			return true
 		}
 		color.Unset()
@@ -41,5 +42,5 @@ func doErrorHook() {
 }
 
 func isPermission(err error) bool {
-	return strings.Contains(strings.ToLower(err.Error()), "permission")
+	return strings.Contains(err.Error(), "Missing Permission")
 }
