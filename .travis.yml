@@ -4,11 +4,8 @@ go:
   - master
 
 install:
-  - go get github.com/bwmarrin/discordgo
-  - cd $GOPATH/src/github.com/bwmarrin/discordgo
-  - git checkout develop
-  - go install
-  - cd -
+  - curl https://gist.githubusercontent.com/legolord208/795561fb98ee1c5dd06f14792f1d0052/raw/3a39a8f8b6118db313220b5ffe0009c9cb7aed26/gogetbranch.sh > gogetbranch.sh
+  - bash gogetbranch.sh github.com/bwmarrin/discordgo develop
   - cd PermCalc
   - go get
   - go install
