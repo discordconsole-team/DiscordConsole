@@ -43,6 +43,7 @@ func findValByKey(keyvals []*keyval, key string) (string, bool) {
 
 type commandSource struct {
 	Terminal bool
+	NoMutex  bool
 	Alias    bool
 }
 

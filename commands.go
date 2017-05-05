@@ -23,6 +23,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/bwmarrin/discordgo"
@@ -31,6 +32,8 @@ import (
 	"github.com/legolord208/gtable"
 	"github.com/legolord208/stdutil"
 )
+
+var mutexCommand sync.Mutex
 
 var lastUsedMsg string
 var lastUsedRole string
@@ -67,6 +70,11 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 	defer handleCrash()
 	nargs := len(args)
 
+	if !source.NoMutex {
+		mutexCommand.Lock()
+		defer mutexCommand.Unlock()
+	}
+
 	if aliascmd, ok := aliases[cmd]; ok && !source.Alias && cmd != "alias" {
 		if nargs >= 1 {
 			aliascmd += " " + strings.Join(args, " ")
@@ -83,6 +91,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		// Won't use source anywhere else.
 		// No reason to copy the variable.
 		source.Alias = true
+		source.NoMutex = true
 		return command(session, source, aliascmd, w)
 	}
 
@@ -730,7 +739,8 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("failed.generic"), err)
 			return
 		}
-		commandRaw(session, source, args[0], args[1:], w)
+		source.NoMutex = true
+		return commandRaw(session, source, args[0], args[1:], w)
 	case "api_stop":
 		apiStop()
 	case "region":
