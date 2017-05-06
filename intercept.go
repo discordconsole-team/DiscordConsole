@@ -55,7 +55,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 		return
 	}
 
-	lastMsg = location{
+	lastMsg = &location{
 		guild:   guild,
 		channel: channel,
 	}

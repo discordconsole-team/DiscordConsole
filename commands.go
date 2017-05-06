@@ -664,8 +664,8 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		cacheChannels = nil
 		cacheAudio = make(map[string][][]byte)
 
-		lastLoc = location{}
-		lastMsg = location{}
+		lastLoc = &location{}
+		lastMsg = &location{}
 		lastUsedMsg = ""
 		lastUsedRole = ""
 

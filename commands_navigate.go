@@ -228,7 +228,7 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 			}
 		}
 
-		bookmarksCache[name] = location{
+		bookmarksCache[name] = &location{
 			guild:   guild,
 			channel: channel,
 		}

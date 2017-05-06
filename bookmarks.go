@@ -25,7 +25,7 @@ import (
 const fileBookmarks = ".bookmarks"
 
 var bookmarks = make(map[string]string)
-var bookmarksCache = make(map[string]location)
+var bookmarksCache = make(map[string]*location)
 
 func loadBookmarks() error {
 	reader, err := os.Open(fileBookmarks)
