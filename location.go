@@ -65,6 +65,6 @@ func (loc *location) push(guild *discordgo.Guild, channel *discordgo.Channel) {
 	}
 }
 
-var loc *location
-var lastLoc *location
-var lastMsg *location
+var loc = &location{}
+var lastLoc = &location{}
+var lastMsg = &location{}
