@@ -1,5 +1,7 @@
 default:
 	go install
+race:
+	go install --race
 dgo:
 	go get github.com/bwmarrin/discordgo
 	cd $(GOPATH)/src/github.com/bwmarrin/discordgo; \

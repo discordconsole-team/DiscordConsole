@@ -30,9 +30,9 @@ import (
 func commandsNavigate(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
 	case "guilds":
-		cache := cacheGuilds
-		if cache == nil {
-			cache = <-chanReady
+		cache, ok := <-chanReady
+		if !ok {
+			cache = cacheGuilds
 		}
 
 		var guilds []*discordgo.UserGuild

@@ -32,6 +32,9 @@ import (
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	defer handleCrash()
 
+	mutexCommand.Lock()
+	defer mutexCommand.Unlock()
+
 	if e.Author == nil {
 		return
 	}
@@ -84,7 +87,7 @@ outer:
 			}
 		}
 
-		user, err := session.GuildMember(guild.ID, userID)
+		user, err := session.State.Member(guild.ID, userID)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.user"), err)
 			break
@@ -213,7 +216,9 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		fmt.Println(cmd)
 		w = color.Output
 	}
-	command(session, commandSource{}, cmd, w)
+	command(session, commandSource{
+		NoMutex: true,
+	}, cmd, w)
 
 	if !capture {
 		color.Unset()
