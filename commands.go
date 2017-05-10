@@ -156,7 +156,9 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("failed.fixpath"), err)
 		}
 
+		mutexCommand.Unlock()
 		err = runLua(session, script, scriptArgs...)
+		mutexCommand.Lock()
 		if err != nil {
 			stdutil.PrintErr(tl("failed.lua.run"), err)
 		}
