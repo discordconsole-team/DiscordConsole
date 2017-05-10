@@ -31,7 +31,10 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 	switch cmd {
 	case "guilds":
 		cache, ok := <-chanReady
-		if !ok {
+		if !ok && cacheGuilds != nil {
+			mutexCacheGuilds.RLock()
+			defer mutexCacheGuilds.RUnlock()
+
 			cache = cacheGuilds
 		}
 
@@ -55,7 +58,9 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 				}
 			}
 
+			mutexCacheGuilds.Lock()
 			cacheGuilds = guilds
+			mutexCacheGuilds.Unlock()
 		}
 
 		table := gtable.NewStringTable()

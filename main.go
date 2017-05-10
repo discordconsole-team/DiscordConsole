@@ -276,6 +276,7 @@ under certain conditions.
 			stdutil.PrintErr(tl("failed.auth"), err)
 			return
 		}
+		session.StateEnabled = false
 
 		userToken = session.Token
 

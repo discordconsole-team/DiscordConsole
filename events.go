@@ -17,8 +17,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 package main
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"sync"
 
+	"github.com/bwmarrin/discordgo"
+)
+
+var mutexCacheGuilds sync.RWMutex
 var cacheGuilds []*discordgo.UserGuild
 var cacheChannels []*discordgo.Channel
 var cachedChannelType string
@@ -34,13 +39,17 @@ func ready(session *discordgo.Session, e *discordgo.Ready) {
 	default:
 	}
 
-	uguilds := make([]*discordgo.UserGuild, len(e.Guilds))
+	guilds := make([]*discordgo.UserGuild, len(e.Guilds))
 	for i, guild := range e.Guilds {
-		uguilds[i] = toUserGuild(guild)
+		guilds[i] = toUserGuild(guild)
 	}
-	guilds := sortGuilds(uguilds, e.Settings)
+	if userType == typeUser {
+		guilds = sortGuilds(guilds, e.Settings)
+	}
 
+	mutexCacheGuilds.Lock()
 	cacheGuilds = guilds
+	mutexCacheGuilds.Unlock()
 
 	select {
 	case chanReady <- guilds:
@@ -50,6 +59,9 @@ func ready(session *discordgo.Session, e *discordgo.Ready) {
 }
 
 func guildCreate(session *discordgo.Session, e *discordgo.GuildCreate) {
+	mutexCacheGuilds.Lock()
+	defer mutexCacheGuilds.Unlock()
+
 	// Fot bots, the guildcreate event triggers on startup.
 	for _, guild := range cacheGuilds {
 		if guild.ID == e.ID {
@@ -57,18 +69,23 @@ func guildCreate(session *discordgo.Session, e *discordgo.GuildCreate) {
 			return
 		}
 	}
+	mutexCacheGuilds.Unlock()
 
 	cacheGuilds = append(cacheGuilds, toUserGuild(e.Guild))
 }
 func guildDelete(session *discordgo.Session, e *discordgo.GuildDelete) {
 	index := -1
+	mutexCacheGuilds.RLock()
 	for i, guild := range cacheGuilds {
 		if guild.ID == e.Guild.ID {
 			index = i
 		}
 	}
+	mutexCacheGuilds.RUnlock()
 	if index >= 0 {
+		mutexCacheGuilds.Lock()
 		cacheGuilds = append(cacheGuilds[index:], cacheGuilds[index+1:]...)
+		mutexCacheGuilds.Unlock()
 	}
 }
 
