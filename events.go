@@ -79,6 +79,7 @@ func guildDelete(session *discordgo.Session, e *discordgo.GuildDelete) {
 	for i, guild := range cacheGuilds {
 		if guild.ID == e.Guild.ID {
 			index = i
+			break
 		}
 	}
 	mutexCacheGuilds.RUnlock()
