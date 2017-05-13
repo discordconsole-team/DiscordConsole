@@ -32,21 +32,30 @@ import (
 func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	defer handleCrash()
 
-	mutexCommand.Lock()
-	defer mutexCommand.Unlock()
-
 	if e.Author == nil {
 		return
 	}
 
-	channel, err := session.Channel(e.ChannelID)
-	if err != nil {
-		stdutil.PrintErr(tl("failed.channel"), err)
-		return
+	var channel *discordgo.Channel
+	var err error
+	for _, c := range cacheChannels {
+		if c.ID == e.ChannelID {
+			channel = c
+			break
+		}
+	}
+
+	if channel == nil {
+		channel, err = session.Channel(e.ChannelID)
+		if err != nil {
+			stdutil.PrintErr(tl("failed.channel"), err)
+			return
+		}
 	}
 
 	var guild *discordgo.Guild
 	if !channel.IsPrivate {
+		// Can't use cache. It's of user guild
 		guild, err = session.Guild(channel.GuildID)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.guild"), err)
@@ -216,9 +225,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		fmt.Println(cmd)
 		w = color.Output
 	}
-	command(session, commandSource{
-		NoMutex: true,
-	}, cmd, w)
+	command(session, commandSource{}, cmd, w)
 
 	if !capture {
 		color.Unset()
