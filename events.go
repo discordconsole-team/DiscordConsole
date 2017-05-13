@@ -69,7 +69,6 @@ func guildCreate(session *discordgo.Session, e *discordgo.GuildCreate) {
 			return
 		}
 	}
-	mutexCacheGuilds.Unlock()
 
 	cacheGuilds = append(cacheGuilds, toUserGuild(e.Guild))
 }
