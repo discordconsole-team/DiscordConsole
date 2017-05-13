@@ -73,19 +73,18 @@ func guildCreate(session *discordgo.Session, e *discordgo.GuildCreate) {
 	cacheGuilds = append(cacheGuilds, toUserGuild(e.Guild))
 }
 func guildDelete(session *discordgo.Session, e *discordgo.GuildDelete) {
+	mutexCacheGuilds.Lock()
+	defer mutexCacheGuilds.Unlock()
+
 	index := -1
-	mutexCacheGuilds.RLock()
 	for i, guild := range cacheGuilds {
 		if guild.ID == e.Guild.ID {
 			index = i
 			break
 		}
 	}
-	mutexCacheGuilds.RUnlock()
 	if index >= 0 {
-		mutexCacheGuilds.Lock()
-		cacheGuilds = append(cacheGuilds[index:], cacheGuilds[index+1:]...)
-		mutexCacheGuilds.Unlock()
+		cacheGuilds = append(cacheGuilds[:index], cacheGuilds[index+1:]...)
 	}
 }
 
