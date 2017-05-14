@@ -1,6 +1,7 @@
 [package]
-name = "DiscordConsole"
+name = "discord_console"
 version = "0.1.0"
 authors = ["LEGOlord208 <LEGOlord208@krake.one>"]
 
 [dependencies]
+cursive = "0.5"
