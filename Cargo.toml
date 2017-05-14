@@ -5,3 +5,5 @@ authors = ["LEGOlord208 <LEGOlord208@krake.one>"]
 
 [dependencies]
 cursive = "0.5"
+discord = "0.8"
+clap = "2.24"
