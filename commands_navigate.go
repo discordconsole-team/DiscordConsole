@@ -172,7 +172,7 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 		}
 		loc.push(nil, channel)
 
-		writeln(w, tl("channel.select")+" "+channel.ID)
+		writeln(w, tl("status.channel")+" "+channel.ID)
 	case "bookmarks":
 		for key := range bookmarks {
 			writeln(w, key)
