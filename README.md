@@ -8,20 +8,22 @@ Don't worry, the old version will still be supported.
 ## Changes
 
 First big change:  
-**You are now navigating in a UI.**  
-That said, the commands system still exists, and it is how it all functions behind the scenes.
+**You will be navigating in a UI.**  
+That said, the commands system will still exist, and it is how it all functions behind the scenes.  
+You will also be able to disable the UI and get a normal commands dialog.
 
 Secondly,
-you can now pass multiple `-t` or `--token` (long option is also new) parameters at startup, to be able to  
+you will be able to pass multiple `-t` or `--token` (long option is also new) parameters at startup, to be able to  
 switch between tokens in one instance.  
-However, this slows down startup time.
+However, this would slow down startup time.
 
-To reduce this problem, you can run it with `--novalidation`, to disable account validation on startup.  
-Please keep in mind however, this will let other functions fail silently.
+To reduce this problem, you will be able to run it with `--novalidation`, to disable account validation on startup.  
+Please keep in mind however, this will let invalid tokens fail silently.  
+There will also be stuff like `--nowebsocket` and similar, to speedup startup time even more.
 
-User tokens are now the default, instead of bots. You can still specify `user ` before though, it won't break.
+User tokens are will now be the default, instead of bots. You can still specify `user ` before though, it won't break.
 
 ### Requirements
 
 Unfortunately, this means the requirements changes.  
-These are the same as [discord-rs](https://github.com/SpaceManiac/discord-rs)'s.
+They will be the same as [discord-rs](https://github.com/SpaceManiac/discord-rs)'s.
