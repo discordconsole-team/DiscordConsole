@@ -1,19 +1,40 @@
 extern crate cursive;
 extern crate clap;
-
-mod options;
+extern crate discord;
 
 use cursive::Cursive;
 use cursive::event::Key;
 use cursive::views::{Dialog, EditView};
 use cursive::menu::MenuTree;
 
+macro_rules! stderr {
+	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!($fmt, "\n"), $($arg)*).unwrap(); }
+}
+macro_rules! flush {
+	() => { ::std::io::stdout().flush().unwrap(); }
+}
+
+mod options;
+
 const VERSION: &str = "0.1";
 
 fn main() {
-	let options = options::get_options();
+	let mut options = options::get_options();
 
-	println!("{:?}", options);
+	for token in &mut options.tokens {
+		*token = token.trim().to_string();
+		let lower = token.to_lowercase();
+
+		if lower.starts_with("bot ") {
+			*token = "Bot ".to_string() + &token[4..];
+		} else if lower.starts_with("user ") {
+			*token = token[5..].to_string();
+		}
+	}
+
+	//let session = discord::Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
+
+	println!("{:?}", options.tokens);
 
 	let mut screen = Cursive::new();
 	screen.add_global_callback('q', Cursive::quit);

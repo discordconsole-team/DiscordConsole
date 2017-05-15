@@ -1,8 +1,11 @@
 use super::clap::{App, Arg};
 
+use ::std::io::Write;
+
 #[derive(Debug)]
 pub struct Options {
-	tokens: Vec<String>,
+	pub tokens: Vec<String>,
+	pub token:  usize,
 }
 
 pub fn get_options() -> Options {
@@ -20,7 +23,20 @@ pub fn get_options() -> Options {
 		.get_matches();
 
 	let tokens = args.values_of("token");
+	let tokens = if tokens.is_some() {
+		tokens.unwrap().map(|s| s.to_string()).collect()
+	} else {
+		print!("Token: ");
+		flush!();
+
+		let mut token = String::new();
+		super::std::io::stdin().read_line(&mut token).unwrap();
+
+		vec!(token)
+	};
+
 	Options{
-		tokens: if tokens.is_some() { tokens.unwrap().map(|s| s.to_string()).collect() } else { vec!() },
+		tokens: tokens,
+		token: 0,
 	}
 }
