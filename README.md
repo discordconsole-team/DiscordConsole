@@ -21,6 +21,10 @@ To reduce this problem, you will be able to run it with `--novalidation`, to dis
 Please keep in mind however, this will let invalid tokens fail silently.  
 There will also be stuff like `--nowebsocket` and similar, to speedup startup time even more.
 
+Because of the startup time fixes, support for LUA, API and selfbot *might* be dropped.  
+Instead, you would be expected to run commands by starting a new process.  
+We might even add official scripts to do these things.
+
 User tokens are will now be the default, instead of bots. You can still specify `user ` before though, it won't break.
 
 ### Requirements

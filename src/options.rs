@@ -1,4 +1,5 @@
-use super::clap::{App, Arg};
+extern crate clap;
+use self::clap::{App, Arg};
 
 use ::std::io::Write;
 
