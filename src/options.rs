@@ -33,7 +33,7 @@ pub fn get_options() -> Options {
 		let mut token = String::new();
 		super::std::io::stdin().read_line(&mut token).unwrap();
 
-		vec!(token)
+		vec![token]
 	};
 
 	Options{
