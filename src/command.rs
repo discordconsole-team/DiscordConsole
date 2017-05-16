@@ -1,8 +1,20 @@
 macro_rules! success {
-	($val:expr) => { return ($val, true); }
+	($val:expr) => {
+		return CommandResult{
+			text:    $val,
+			success: true,
+			exit:    false,
+		}
+	}
 }
 macro_rules! fail {
-	($val:expr) => { return (Some($val.to_string()), false); }
+	($val:expr) => {
+		return CommandResult{
+			text:    Some($val.to_string()),
+			success: false,
+			exit:    false,
+		}
+	}
 }
 macro_rules! usage_min {
 	($tokens:expr, $min:expr, $usage:expr) => {
@@ -27,7 +39,7 @@ macro_rules! usage {
 macro_rules! usage_one {
 	($tokens:expr, $usage:expr) => {
 		if $tokens.len() != 1 {
-			fail!(concat!($usage, "\nYou did not supply 1 argument.\n \
+			fail!(concat!($usage, "\nYou did not supply 1 argument.\n\
 							Did you mean to put quotes around the argument?"));
 		}
 	}
@@ -39,8 +51,13 @@ pub struct CommandContext {
 	channel: Option<String>,
 }
 */
+pub struct CommandResult {
+	pub text:    Option<String>,
+	pub success: bool,
+	pub exit:    bool,
+}
 
-pub fn execute<'a>(mut tokens: Vec<String>/*, context: CommandContext*/) -> (Option<String>, bool) {
+pub fn execute<'a>(mut tokens: Vec<String>/*, context: CommandContext*/) -> CommandResult {
 	if tokens.len() < 1 {
 		success!(None);
 	}
@@ -52,6 +69,14 @@ pub fn execute<'a>(mut tokens: Vec<String>/*, context: CommandContext*/) -> (Opt
 			usage_one!(tokens, "echo <text>");
 			success!(Some(tokens[0].clone()));
 		},
+		"exit" => {
+			usage_max!(tokens, 0, "exit");
+			CommandResult{
+				text:    None,
+				success: true,
+				exit:    true,
+			}
+		},
 		_ => {
 			fail!("Unknown command!");
 		},
@@ -62,6 +87,6 @@ pub fn execute<'a>(mut tokens: Vec<String>/*, context: CommandContext*/) -> (Opt
 mod test {
 	#[test]
 	fn test_execute() {
-		assert_eq!(super::execute(vec!["echo".to_string(), "Hello World".to_string()]), (Some("Hello World".to_string()), true))
+		assert_eq!(super::execute(vec!["echo".to_string(), "Hello World".to_string()]).text.unwrap(), "Hello World".to_string())
 	}
 }

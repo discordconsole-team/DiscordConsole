@@ -1,10 +1,10 @@
-fn tokens<'a, GET>(input: GET) -> Result<Vec<String>, &'a str>
-	where GET: Fn() -> Result<&'a str, &'a str> {
+pub fn tokens<'a, GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
+	where GET: FnMut() -> Result<String, ERR> {
 
 	let mut tokens = Vec::new();
 	let mut buffer = String::new();
 
-	let mut escaped = true;
+	let mut escaped = false;
 	let mut in_quote = '\0';
 
 	loop {
@@ -51,15 +51,21 @@ fn tokens<'a, GET>(input: GET) -> Result<Vec<String>, &'a str>
 
 #[cfg(test)]
 mod test {
+	macro_rules! test {
+		($str:expr, $vec:expr) => {
+			assert_eq!(super::tokens::<_, ()>(|| Ok($str.to_string())).unwrap(), $vec);
+		}
+	}
+
 	#[test]
 	fn test_tokens() {
 		// General test.
-		assert_eq!(super::tokens(|| Ok("hello `world \\` lol` r\\ i\\ p")).unwrap(), vec!["hello", "world ` lol", "r i p"]);
+		test!("hello `world \\` lol` l\\ o\\ l", vec!["hello", "world ` lol", "l o l"]);
 
 		// More escaping.
-		assert_eq!(super::tokens(|| Ok("hello\" world\\\\\"")).unwrap(), vec!["hello world\\"]);
+		test!("hello\" world\\\\\"", vec!["hello world\\"]);
 
 		// Calls again if quote is not closed.
-		assert_eq!(super::tokens(|| Ok("hello\"")).unwrap(), vec!["hellohello"]);
+		test!("hello\"", vec!["hellohello"]);
 	}
 }

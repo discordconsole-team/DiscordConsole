@@ -7,6 +7,8 @@ use ::std::io::Write;
 pub struct Options {
 	pub tokens: Vec<String>,
 	pub token:  usize,
+
+	pub notui: bool,
 }
 
 pub fn get_options() -> Options {
@@ -21,6 +23,9 @@ pub fn get_options() -> Options {
 			.help("Specify Discord token")
 			.multiple(true)
 			.takes_value(true))
+		.arg(Arg::with_name("notui")
+			.long("notui")
+			.help("No Text UI will be used. Pure command mode."))
 		.get_matches();
 
 	let tokens = args.values_of("token");
@@ -39,5 +44,7 @@ pub fn get_options() -> Options {
 	Options{
 		tokens: tokens,
 		token: 0,
+
+		notui: args.is_present("notui"),
 	}
 }

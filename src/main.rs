@@ -1,5 +1,6 @@
 extern crate discord;
 
+#[macro_export]
 macro_rules! stderr {
 	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!($fmt, "\n"), $($arg)*).unwrap(); }
 }
@@ -11,6 +12,7 @@ mod options;
 mod tui;
 mod tokenizer;
 mod command;
+mod raw;
 
 const VERSION: &str = "0.1";
 
@@ -31,5 +33,10 @@ fn main() {
 	//let session = discord::Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
 
 	println!("{:?}", options.tokens);
-	tui::tui();
+
+	if options.notui {
+		raw::raw();
+	} else {
+		tui::tui();
+	}
 }
