@@ -89,7 +89,6 @@ func printHelp(search string) {
 			"current (default), none")
 		help = append(help, "intercept [yes/no]\tToggle intercepting 'console.' commands in Discord.")
 		help = append(help, "output [yes/no]\tToggle showing 'console.' outputs directly in Discord.")
-		help = append(help, "reply\tJump to the channel of the last received message.")
 		help = append(help, "back\tJump to previous guild and/or channel.")
 		help = append(help, "")
 		help = append(help, "bans\tList all bans")

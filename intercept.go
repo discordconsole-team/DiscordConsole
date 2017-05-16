@@ -36,11 +36,6 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 		return
 	}
 
-	mutexCommand.Lock()
-	defer mutexCommand.Unlock()
-
-	// Dirty code. WAAY too many errors without it. UGH.
-
 	var channel *discordgo.Channel
 	var err error
 	for _, c := range cacheChannels {
@@ -71,9 +66,6 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	if messageCommand(session, e.Message, guild, channel) {
 		return
 	}
-
-	lastMsg.guild = guild
-	lastMsg.channel = channel
 
 	hasOutput := false
 
@@ -228,9 +220,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		fmt.Println(cmd)
 		w = color.Output
 	}
-	command(session, commandSource{
-		NoMutex: true,
-	}, cmd, w)
+	command(session, commandSource{}, cmd, w)
 
 	if !capture {
 		color.Unset()

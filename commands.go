@@ -391,8 +391,6 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		output = state
-	case "reply":
-		loc.push(lastMsg.guild, lastMsg.channel)
 	case "back":
 		loc.push(lastLoc.guild, lastLoc.channel)
 	case "ban":
@@ -665,9 +663,9 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		cacheGuilds = nil
 		cacheChannels = nil
 		cacheAudio = make(map[string][][]byte)
+		bookmarksCache = make(map[string]*location)
 
 		lastLoc = &location{}
-		lastMsg = &location{}
 		lastUsedMsg = ""
 		lastUsedRole = ""
 
