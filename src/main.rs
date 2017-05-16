@@ -10,6 +10,7 @@ macro_rules! flush {
 mod options;
 mod tui;
 mod tokenizer;
+mod command;
 
 const VERSION: &str = "0.1";
 

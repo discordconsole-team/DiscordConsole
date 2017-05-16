@@ -1,7 +1,7 @@
 fn tokens<'a, GET>(input: GET) -> Result<Vec<String>, &'a str>
 	where GET: Fn() -> Result<&'a str, &'a str> {
 
-	let mut tokens = vec![];
+	let mut tokens = Vec::new();
 	let mut buffer = String::new();
 
 	let mut escaped = true;
@@ -49,14 +49,17 @@ fn tokens<'a, GET>(input: GET) -> Result<Vec<String>, &'a str>
 	Ok(tokens)
 }
 
-#[test]
-fn test_tokens() {
-	// General test.
-	assert_eq!(tokens(|| Ok("hello `world \\` lol` r\\ i\\ p")).unwrap(), vec!["hello", "world ` lol", "r i p"]);
+#[cfg(test)]
+mod test {
+	#[test]
+	fn test_tokens() {
+		// General test.
+		assert_eq!(super::tokens(|| Ok("hello `world \\` lol` r\\ i\\ p")).unwrap(), vec!["hello", "world ` lol", "r i p"]);
 
-	// More escaping.
-	assert_eq!(tokens(|| Ok("hello\" world\\\\\"")).unwrap(),             vec!["hello world\\"]);
+		// More escaping.
+		assert_eq!(super::tokens(|| Ok("hello\" world\\\\\"")).unwrap(), vec!["hello world\\"]);
 
-	// Calls again if quote is not closed.
-	assert_eq!(tokens(|| Ok("hello\"")).unwrap(),                        vec!["hellohello"]);
+		// Calls again if quote is not closed.
+		assert_eq!(super::tokens(|| Ok("hello\"")).unwrap(), vec!["hellohello"]);
+	}
 }
