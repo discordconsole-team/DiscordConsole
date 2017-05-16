@@ -4,7 +4,7 @@ use std::io::Write;
 use self::rustyline::Editor;
 use self::rustyline::error::ReadlineError;
 
-pub fn raw() {
+pub fn raw(mut context: ::command::CommandContext) {
 	let mut rl = Editor::<()>::new();
 
 	loop {
@@ -41,7 +41,7 @@ pub fn raw() {
 			},
 		};
 
-		let result = ::command::execute(tokens);
+		let result = ::command::execute(&mut context, tokens);
 		if result.success {
 			match result.text {
 				Some(string) => println!("{}", string.as_str()),

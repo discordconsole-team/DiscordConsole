@@ -30,13 +30,14 @@ fn main() {
 		}
 	}
 
-	//let session = discord::Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
+	let session = discord::Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
+	let context = command::CommandContext::new(session);
 
 	println!("{:?}", options.tokens);
 
 	if options.notui {
-		raw::raw();
+		raw::raw(context);
 	} else {
-		tui::tui();
+		tui::tui(context);
 	}
 }

@@ -1,9 +1,10 @@
+use ::discord::Discord;
+
 macro_rules! success {
 	($val:expr) => {
 		return CommandResult{
 			text:    $val,
-			success: true,
-			exit:    false,
+			..Default::default()
 		}
 	}
 }
@@ -12,7 +13,7 @@ macro_rules! fail {
 		return CommandResult{
 			text:    Some($val.to_string()),
 			success: false,
-			exit:    false,
+			..Default::default()
 		}
 	}
 }
@@ -45,21 +46,45 @@ macro_rules! usage_one {
 	}
 }
 
-/*
+// TODO!!!!
+#[allow(dead_code)]
 pub struct CommandContext {
+	session: Discord,
 	guild:   Option<String>,
 	channel: Option<String>,
 }
-*/
+impl CommandContext {
+	pub fn new(session: Discord) -> CommandContext {
+		CommandContext {
+			session: session,
+			guild:   None,
+			channel: None,
+		}
+	}
+}
 pub struct CommandResult {
 	pub text:    Option<String>,
 	pub success: bool,
 	pub exit:    bool,
+	pub empty:   bool,
+}
+impl Default for CommandResult {
+	fn default() -> CommandResult {
+		CommandResult{
+			text:    None,
+			success: true,
+			exit:    false,
+			empty:   false,
+		}
+	}
 }
 
-pub fn execute<'a>(mut tokens: Vec<String>/*, context: CommandContext*/) -> CommandResult {
+pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> CommandResult {
 	if tokens.len() < 1 {
-		success!(None);
+		return CommandResult{
+			empty: true,
+			..Default::default()
+		}
 	}
 	let command = tokens.remove(0);
 	let command = command.as_str();
@@ -72,21 +97,17 @@ pub fn execute<'a>(mut tokens: Vec<String>/*, context: CommandContext*/) -> Comm
 		"exit" => {
 			usage_max!(tokens, 0, "exit");
 			CommandResult{
-				text:    None,
-				success: true,
 				exit:    true,
+				..Default::default()
 			}
+		},
+		"guild" => {
+			usage_max!(tokens, 1, "guild <id/name>");
+			context.guild = if tokens.len() < 1 { None } else { Some(tokens[0].clone()) };
+			success!(None);
 		},
 		_ => {
 			fail!("Unknown command!");
 		},
-	}
-}
-
-#[cfg(test)]
-mod test {
-	#[test]
-	fn test_execute() {
-		assert_eq!(super::execute(vec!["echo".to_string(), "Hello World".to_string()]).text.unwrap(), "Hello World".to_string())
 	}
 }
