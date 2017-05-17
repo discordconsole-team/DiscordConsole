@@ -7,7 +7,13 @@ pub fn tokens<'a, GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 	let mut escaped = false;
 	let mut in_quote = '\0';
 
+	let mut first = true;
 	loop {
+		if first {
+			first = false;
+		} else {
+			buffer.push('\n');
+		}
 		let input = input()?;
 		for c in input.chars() {
 			if c == '\\' && !escaped {
