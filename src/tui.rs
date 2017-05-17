@@ -11,9 +11,22 @@ use ::std::sync::{Arc, Mutex};
 
 pub fn tui(context: ::command::CommandContext) {
 	let mut screen = Cursive::new();
-	let context = Arc::new(Mutex::new(context));
-
 	screen.add_global_callback('q', Cursive::quit);
+
+	let mut guilds = MenuTree::new();
+	let servers =
+		if let Some(settings) = context.state.settings() {
+			::sort::sort_guilds(&settings, context.state.servers().to_vec())
+		} else {
+			context.state.servers().to_vec()
+		};
+	for server in servers {
+		guilds.add_leaf(server.name.clone(), |_| {
+			// TODO
+		});
+	}
+
+	let context = Arc::new(Mutex::new(context));
 
 	screen.menubar()
 		.add_subtree("General",
@@ -55,20 +68,7 @@ pub fn tui(context: ::command::CommandContext) {
 					.with_id("cmd"));
 			})
 			.leaf("Exit", Cursive::quit))
-		.add_subtree("Guilds",
-			MenuTree::new()
-			.subtree("Example Server",
-				MenuTree::new()
-				.leaf("ID: 123456789", |_| {})
-				.leaf("Name: Example Server", |s| {
-					s.add_layer(
-						Dialog::around(EditView::new()
-							.on_submit(|s, _| {
-								s.pop_layer();
-							})
-						)
-						.title("Enter new server name:"));
-				})));
+		.add_subtree("Guilds", guilds);
 
 	screen.add_layer(Dialog::text("Press <esc> to access the menu, and <q> to quit"));
 

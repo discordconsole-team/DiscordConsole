@@ -1,18 +1,23 @@
 extern crate discord;
 
+pub use std::io::Write;
+use discord::{Discord, State};
+
 #[macro_export]
 macro_rules! stderr {
-	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!($fmt, "\n"), $($arg)*).unwrap(); }
+	($fmt:expr)              => { writeln!(::std::io::stderr(), concat!($fmt, "\n")).unwrap(); };
+	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!($fmt, "\n"), $($arg)*).unwrap(); };
 }
 macro_rules! flush {
 	() => { ::std::io::stdout().flush().unwrap(); }
 }
 
 mod options;
-mod tui;
 mod tokenizer;
 mod command;
+mod sort;
 mod raw;
+mod tui;
 
 const VERSION: &str = "0.1";
 
@@ -30,10 +35,17 @@ fn main() {
 		}
 	}
 
-	let session = discord::Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
-	let context = command::CommandContext::new(session);
+	let session       = Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
+	let (conn, ready) = match session.connect() {
+		Ok((conn, ready)) => (conn, ready),
+		Err(_)            => {
+			stderr!("Could not connect to websocket.");
+			return;
+		}
+	};
+	let state = State::new(ready);
 
-	println!("{:?}", options.tokens);
+	let context = command::CommandContext::new(session, conn, state);
 
 	if options.notui {
 		raw::raw(context);

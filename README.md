@@ -21,7 +21,8 @@ However, this would slow down startup time.
 
 To reduce this problem, you will be able to run it with `--novalidation`, to disable account validation on startup.  
 Please keep in mind however, this will let invalid tokens fail silently.  
-There will also be stuff like `--nowebsocket` and similar, to speedup startup time even more.
+~~There will also be stuff like `--nowebsocket` and similar, to speedup startup time even more.~~  
+EDIT: No, actually. There will not be a `--nowebsocket`. It's because we're gonna use that to make less web requests!
 
 Because of the startup time fixes, support for LUA, API and selfbot *might* be dropped.  
 Instead, you would be expected to run commands by starting a new process.  

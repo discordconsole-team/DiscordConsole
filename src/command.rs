@@ -1,4 +1,4 @@
-use ::discord::Discord;
+use ::discord::{Discord, Connection, State};
 
 macro_rules! success {
 	($val:expr) => {
@@ -49,14 +49,20 @@ macro_rules! usage_one {
 // TODO!!!!
 #[allow(dead_code)]
 pub struct CommandContext {
-	session: Discord,
+	pub session:   Discord,
+	pub websocket: Connection,
+	pub state:     State,
+
 	guild:   Option<String>,
 	channel: Option<String>,
 }
 impl CommandContext {
-	pub fn new(session: Discord) -> CommandContext {
+	pub fn new(session: Discord, conn: Connection, state: State) -> CommandContext {
 		CommandContext {
-			session: session,
+			session:   session,
+			websocket: conn,
+			state:     state,
+
 			guild:   None,
 			channel: None,
 		}
