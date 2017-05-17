@@ -84,10 +84,11 @@ fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: Vec
 		match result.text.clone() {
 			Some(string) => text.push_str(string.as_str()),
 			None         => {
-				if !result.success {
-					unreachable!(); // Just to make sure
+				if result.success {
+					text.push_str("Successfully executed command.");
+				} else {
+					text.push_str("Failed to execute command.");
 				}
-				text.push_str("Successfully executed command.");
 			}
 		}
 		s.add_layer(Dialog::info(text.as_str()))

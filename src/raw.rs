@@ -43,14 +43,12 @@ pub fn raw(mut context: ::command::CommandContext) {
 
 		let result = ::command::execute(&mut context, tokens);
 		if result.success {
-			match result.text {
-				Some(string) => println!("{}", string.as_str()),
-				None         => {},
+			if let Some(text) = result.text {
+				println!("{}", text.as_str());
 			}
 		} else {
-			match result.text {
-				Some(string) => stderr!("{}", string.as_str()),
-				None         => unreachable!(),
+			if let Some(text) = result.text {
+				stderr!("{}", text.as_str());
 			}
 		}
 
