@@ -5,6 +5,7 @@ use self::cursive::event::Key;
 use self::cursive::view::{Position, Offset};
 use self::cursive::views::{Dialog, EditView};
 use self::cursive::menu::MenuTree;
+use tui::cursive::traits::Identifiable;
 
 use ::std::sync::{Arc, Mutex};
 
@@ -18,6 +19,12 @@ pub fn tui(context: ::command::CommandContext) {
 		.add_subtree("General",
 			MenuTree::new()
 			.leaf("Run command", move |s| {
+				//if let Some(dialog) = s.find_id("cmd").unwrap() {
+				if s.find_id::<Dialog>("cmd").is_some() {
+					s.pop_layer();
+					return;
+				}
+
 				let ctx = context.clone();
 
 				s.screen_mut().add_layer_at(
@@ -44,8 +51,8 @@ pub fn tui(context: ::command::CommandContext) {
 							command(s, &mut ctx.lock().unwrap(), tokens.unwrap());
 						})
 					)
-					.dismiss_button("Close")
-					.title("Run command"));
+					.title("Run command")
+					.with_id("cmd"));
 			})
 			.leaf("Exit", Cursive::quit))
 		.add_subtree("Guilds",
