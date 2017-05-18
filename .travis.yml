@@ -5,6 +5,7 @@ rust:
   - stable
 
 install:
+# Libsodium
   - wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.12.tar.gz
   - tar -xvf libsodium-1.0.12.tar.gz
   - cd libsodium-1.0.12
@@ -13,3 +14,12 @@ install:
   - make check
   - sudo make install
   - sudo ldconfig
+
+# RustFmt
+  - export PATH="$PATH:$HOME/.cargo/bin"
+  - which rustfmt || cargo install rustfmt
+
+script:
+  - cargo fmt -- --write-mode=diff
+  - cargo build
+  - cargo test

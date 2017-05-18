@@ -1,7 +1,7 @@
 extern crate discord;
 
-pub use std::io::Write;
 use discord::{Discord, State};
+pub use std::io::Write;
 
 #[macro_export]
 macro_rules! stderr {
@@ -35,13 +35,13 @@ fn main() {
 		}
 	}
 
-	let session       = Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
+	let session = Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
 	let (conn, ready) = match session.connect() {
 		Ok((conn, ready)) => (conn, ready),
-		Err(_)            => {
+		Err(_) => {
 			stderr!("Could not connect to websocket.");
 			return;
-		}
+		},
 	};
 	let state = State::new(ready);
 

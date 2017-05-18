@@ -1,5 +1,6 @@
 pub fn tokens<'a, GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
-	where GET: FnMut() -> Result<String, ERR> {
+	where GET: FnMut() -> Result<String, ERR>
+{
 
 	let mut tokens = Vec::new();
 	let mut buffer = String::new();
@@ -33,7 +34,7 @@ pub fn tokens<'a, GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 					} else if in_quote == c {
 						in_quote = '\0';
 					}
-				}
+				},
 				' ' => {
 					if in_quote == '\0' {
 						tokens.push(buffer);
@@ -49,7 +50,7 @@ pub fn tokens<'a, GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 			if !buffer.is_empty() {
 				tokens.push(buffer);
 			}
-			break
+			break;
 		}
 	}
 	Ok(tokens)
@@ -66,7 +67,10 @@ mod test {
 	#[test]
 	fn test_tokens() {
 		// General test.
-		test!("hello `world \\` lol` l\\ o\\ l", vec!["hello", "world ` lol", "l o l"]);
+		test!(
+			"hello `world \\` lol` l\\ o\\ l",
+			vec!["hello", "world ` lol", "l o l"]
+		);
 
 		// More escaping.
 		test!("hello\" world\\\\\"", vec!["hello world\\"]);

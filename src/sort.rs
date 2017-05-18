@@ -1,4 +1,4 @@
-use ::discord::model::{UserSettings, LiveServer};
+use discord::model::{LiveServer, UserSettings};
 
 pub fn sort_guilds(settings: &UserSettings, mut guilds: Vec<LiveServer>) -> Vec<LiveServer> {
 	let mut new_guilds = Vec::new();

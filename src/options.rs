@@ -1,31 +1,34 @@
 extern crate clap;
 use self::clap::{App, Arg};
 
-use ::std::io::Write;
+use std::io::Write;
 
 #[derive(Debug)]
 pub struct Options {
 	pub tokens: Vec<String>,
-	pub token:  usize,
+	pub token: usize,
 
-	pub notui: bool,
+	pub notui: bool
 }
 
 pub fn get_options() -> Options {
-	let args =
-		App::new("discord_console")
+	let args = App::new("discord_console")
 		.version(super::VERSION)
 		.about("Use discord in a new way")
 		.author("LEGOlord208")
-		.arg(Arg::with_name("token")
-			.long("token")
-			.short("t")
-			.help("Specify Discord token")
-			.multiple(true)
-			.takes_value(true))
-		.arg(Arg::with_name("notui")
-			.long("notui")
-			.help("No Text UI will be used. Pure command mode."))
+		.arg(
+			Arg::with_name("token")
+				.long("token")
+				.short("t")
+				.help("Specify Discord token")
+				.multiple(true)
+				.takes_value(true)
+		)
+		.arg(
+			Arg::with_name("notui")
+				.long("notui")
+				.help("No Text UI will be used. Pure command mode.")
+		)
 		.get_matches();
 
 	let tokens = args.values_of("token");
@@ -41,10 +44,10 @@ pub fn get_options() -> Options {
 		vec![token]
 	};
 
-	Options{
+	Options {
 		tokens: tokens,
 		token: 0,
 
-		notui: args.is_present("notui"),
+		notui: args.is_present("notui")
 	}
 }

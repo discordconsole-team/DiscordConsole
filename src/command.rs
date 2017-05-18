@@ -1,4 +1,4 @@
-use ::discord::{Discord, Connection, State};
+use discord::{Connection, Discord, State};
 
 macro_rules! success {
 	($val:expr) => {
@@ -49,48 +49,48 @@ macro_rules! usage_one {
 // TODO!!!!
 #[allow(dead_code)]
 pub struct CommandContext {
-	pub session:   Discord,
+	pub session: Discord,
 	pub websocket: Connection,
-	pub state:     State,
+	pub state: State,
 
-	guild:   Option<String>,
-	channel: Option<String>,
+	guild: Option<String>,
+	channel: Option<String>
 }
 impl CommandContext {
 	pub fn new(session: Discord, conn: Connection, state: State) -> CommandContext {
 		CommandContext {
-			session:   session,
+			session: session,
 			websocket: conn,
-			state:     state,
+			state: state,
 
-			guild:   None,
-			channel: None,
+			guild: None,
+			channel: None
 		}
 	}
 }
 pub struct CommandResult {
-	pub text:    Option<String>,
+	pub text: Option<String>,
 	pub success: bool,
-	pub exit:    bool,
-	pub empty:   bool,
+	pub exit: bool,
+	pub empty: bool
 }
 impl Default for CommandResult {
 	fn default() -> CommandResult {
-		CommandResult{
-			text:    None,
+		CommandResult {
+			text: None,
 			success: true,
-			exit:    false,
-			empty:   false,
+			exit: false,
+			empty: false
 		}
 	}
 }
 
 pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> CommandResult {
 	if tokens.len() < 1 {
-		return CommandResult{
-			empty: true,
-			..Default::default()
-		}
+		return CommandResult {
+		           empty: true,
+		           ..Default::default()
+		       };
 	}
 	let command = tokens.remove(0);
 	let command = command.as_str();
@@ -102,14 +102,18 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 		},
 		"exit" => {
 			usage_max!(tokens, 0, "exit");
-			CommandResult{
-				exit:    true,
+			CommandResult {
+				exit: true,
 				..Default::default()
 			}
 		},
 		"guild" => {
 			usage_max!(tokens, 1, "guild <id/name>");
-			context.guild = if tokens.len() < 1 { None } else { Some(tokens[0].clone()) };
+			context.guild = if tokens.len() < 1 {
+				None
+			} else {
+				Some(tokens[0].clone())
+			};
 			success!(None);
 		},
 		_ => {
