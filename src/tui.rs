@@ -22,8 +22,8 @@ use self::cursive::event::Key;
 use self::cursive::menu::MenuTree;
 use self::cursive::view::{Offset, Position};
 use self::cursive::views::{Button, Dialog, EditView, LinearLayout};
-
-use std::sync::{Arc, Mutex};
+use std::cell::RefCell;
+use std::rc::Rc;
 use tui::cursive::traits::Identifiable;
 
 pub fn tui(context: ::command::CommandContext) {
@@ -37,7 +37,7 @@ pub fn tui(context: ::command::CommandContext) {
 		context.state.servers().to_vec()
 	};
 
-	let context = Arc::new(Mutex::new(context));
+	let context = Rc::new(RefCell::new(context));
 	for server in servers {
 		let context = context.clone();
 		guilds.add_leaf(
@@ -60,7 +60,6 @@ pub fn tui(context: ::command::CommandContext) {
 			MenuTree::new()
 				.leaf(
 					"Run command", move |s| {
-						// if let Some(dialog) = s.find_id("cmd").unwrap() {
 						if s.find_id::<Dialog>("cmd").is_some() {
 							s.pop_layer();
 							return;
@@ -91,7 +90,7 @@ pub fn tui(context: ::command::CommandContext) {
 												return;
 											}
 
-											command(s, &mut context.lock().unwrap(), tokens.unwrap());
+											command(s, &mut context.borrow_mut(), tokens.unwrap());
 										}
 									)
 								)
@@ -111,13 +110,13 @@ pub fn tui(context: ::command::CommandContext) {
 	screen.run();
 }
 
-fn command_field(context: Arc<Mutex<::command::CommandContext>>, key: &str, val: &str, tokens: Vec<&str>) -> Button {
+fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val: &str, tokens: Vec<&str>) -> Button {
 	let mut string = String::with_capacity(key.len() + 2 + val.len());
 	string.push_str(key);
 	string.push_str(": ");
 	string.push_str(val);
 
-	let tokens: Arc<Vec<String>> = Arc::new(tokens.iter().map(|string| string.to_string()).collect());
+	let tokens: Rc<Vec<String>> = Rc::new(tokens.iter().map(|string| string.to_string()).collect());
 	let val = val.to_string();
 	Button::new(
 		string, move |s| {
@@ -132,7 +131,7 @@ fn command_field(context: Arc<Mutex<::command::CommandContext>>, key: &str, val:
 								s.pop_layer();
 								let mut tokens = (*tokens).clone();
 								tokens.push(string.to_string());
-								command(s, &mut context.lock().unwrap(), tokens);
+								command(s, &mut context.borrow_mut(), tokens);
 							}
 						)
 				)
