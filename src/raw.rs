@@ -1,5 +1,5 @@
-/*
- * DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
+/* DiscordConsole is a software aiming to give you full control over
+ * accounts, bots and webhooks!
  * Copyright (C) 2017  LEGOlord208
  *
  * This program is free software: you can redistribute it and/or modify
@@ -14,15 +14,22 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * */
 extern crate rustyline;
 
 use self::rustyline::Editor;
 use self::rustyline::error::ReadlineError;
+use color::*;
 use std::io::Write;
 
 pub fn raw(mut context: ::command::CommandContext) {
 	let mut rl = Editor::<()>::new();
+
+	let mut prefix = String::with_capacity(COLOR_YELLOW.len() + 2 + COLOR_RESET.len());
+	prefix.push_str(*COLOR_YELLOW);
+	prefix.push_str("> ");
+	prefix.push_str(*COLOR_RESET);
+	let prefix = prefix.as_str();
 
 	loop {
 		let mut first = true;
@@ -33,7 +40,7 @@ pub fn raw(mut context: ::command::CommandContext) {
 				let result = rl.readline(
 					if first {
 						first = false;
-						"> "
+						prefix
 					} else {
 						""
 					}

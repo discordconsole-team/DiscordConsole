@@ -1,5 +1,5 @@
-/*
- * DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
+/* DiscordConsole is a software aiming to give you full control over
+ * accounts, bots and webhooks!
  * Copyright (C) 2017  LEGOlord208
  *
  * This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * */
 pub fn tokens<'a, GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 	where GET: FnMut() -> Result<String, ERR>
 {

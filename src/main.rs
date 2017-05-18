@@ -1,5 +1,5 @@
-/*
- * DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
+/* DiscordConsole is a software aiming to give you full control over
+ * accounts, bots and webhooks!
  * Copyright (C) 2017  LEGOlord208
  *
  * This program is free software: you can redistribute it and/or modify
@@ -14,16 +14,15 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * */
 extern crate discord;
-
-use discord::{Discord, State};
-pub use std::io::Write;
+#[macro_use]
+extern crate lazy_static;
 
 #[macro_export]
 macro_rules! stderr {
-	($fmt:expr)              => { writeln!(::std::io::stderr(), concat!($fmt, "\n")).unwrap(); };
-	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!($fmt, "\n"), $($arg)*).unwrap(); };
+	($fmt:expr)              => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}\n"), *COLOR_RED, *COLOR_RESET).unwrap(); };
+	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}\n"), *COLOR_RED, $($arg)*, *COLOR_RESET).unwrap(); };
 }
 macro_rules! flush {
 	() => { ::std::io::stdout().flush().unwrap(); }
@@ -33,8 +32,13 @@ mod options;
 mod tokenizer;
 mod command;
 mod sort;
-mod raw;
 mod tui;
+mod color;
+mod raw;
+
+use color::*;
+use discord::{Discord, State};
+use std::io::Write;
 
 const VERSION: &str = "0.1";
 
@@ -55,8 +59,8 @@ fn main() {
 	let session = Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
 	let (conn, ready) = match session.connect() {
 		Ok((conn, ready)) => (conn, ready),
-		Err(_) => {
-			stderr!("Could not connect to websocket.");
+		Err(err) => {
+			stderr!("Could not connect to websocket: {}", err);
 			return;
 		},
 	};
@@ -69,4 +73,6 @@ fn main() {
 	} else {
 		tui::tui(context);
 	}
+
+	print!("{}", *COLOR_RESET);
 }

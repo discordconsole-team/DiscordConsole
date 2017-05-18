@@ -1,5 +1,5 @@
-/*
- * DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
+/* DiscordConsole is a software aiming to give you full control over
+ * accounts, bots and webhooks!
  * Copyright (C) 2017  LEGOlord208
  *
  * This program is free software: you can redistribute it and/or modify
@@ -14,14 +14,14 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * */
 extern crate cursive;
 
 use self::cursive::Cursive;
 use self::cursive::event::Key;
 use self::cursive::menu::MenuTree;
 use self::cursive::view::{Offset, Position};
-use self::cursive::views::{Dialog, EditView, LinearLayout, TextView};
+use self::cursive::views::{Button, Dialog, EditView, LinearLayout};
 
 use std::sync::{Arc, Mutex};
 use tui::cursive::traits::Identifiable;
@@ -36,20 +36,22 @@ pub fn tui(context: ::command::CommandContext) {
 	} else {
 		context.state.servers().to_vec()
 	};
+
+	let context = Arc::new(Mutex::new(context));
 	for server in servers {
+		let context = context.clone();
 		guilds.add_leaf(
 			server.name.clone(), move |s| {
+				let context = context.clone();
 				s.screen_mut()
 					.add_layer(
-						Dialog::around(LinearLayout::vertical().child(TextView::new(format!("Name: {}", server.name))))
+						Dialog::around(LinearLayout::vertical().child(command_field(context, "Name", server.name.as_str(), vec!["echo"])))
 							.title("Guild info")
 							.dismiss_button("Close")
 					);
 			}
 		);
 	}
-
-	let context = Arc::new(Mutex::new(context));
 
 	screen
 		.menubar()
@@ -64,7 +66,7 @@ pub fn tui(context: ::command::CommandContext) {
 							return;
 						}
 
-						let ctx = context.clone();
+						let context = context.clone();
 
 						s.screen_mut()
 							.add_layer_at(
@@ -89,7 +91,7 @@ pub fn tui(context: ::command::CommandContext) {
 												return;
 											}
 
-											command(s, &mut ctx.lock().unwrap(), tokens.unwrap());
+											command(s, &mut context.lock().unwrap(), tokens.unwrap());
 										}
 									)
 								)
@@ -109,33 +111,37 @@ pub fn tui(context: ::command::CommandContext) {
 	screen.run();
 }
 
-/*
 fn command_field(context: Arc<Mutex<::command::CommandContext>>, key: &str, val: &str, tokens: Vec<&str>) -> Button {
 	let mut string = String::with_capacity(key.len() + 2 + val.len());
 	string.push_str(key);
 	string.push_str(": ");
 	string.push_str(val);
 
-	let mut tokens = Arc::new(Mutex::new(tokens.iter().map(|string| string.to_string()).collect()));
+	let tokens: Arc<Vec<String>> = Arc::new(tokens.iter().map(|string| string.to_string()).collect());
 	let val = val.to_string();
 	Button::new(
 		string, move |s| {
-			let ctx = context.clone();
+			let context = context.clone();
+			let tokens = tokens.clone();
 			s.add_layer(
-				EditView::new()
-					.content(val.clone())
-					.on_submit_mut(
-						move |s, string| {
-							let tokens: &mut Vec<String> = &mut tokens.lock().unwrap();
-							tokens.push(string.to_string());
-							command(s, &mut ctx.lock().unwrap(), tokens.clone());
-						}
-					)
+				Dialog::around(
+					EditView::new()
+						.content(val.clone())
+						.on_submit(
+							move |s, string| {
+								s.pop_layer();
+								let mut tokens = (*tokens).clone();
+								tokens.push(string.to_string());
+								command(s, &mut context.lock().unwrap(), tokens);
+							}
+						)
+				)
+						.title("Edit Field")
+						.dismiss_button("Cancel")
 			);
 		}
 	)
 }
-*/
 
 fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: Vec<String>) -> ::command::CommandResult {
 	let result = ::command::execute(context, tokens);
