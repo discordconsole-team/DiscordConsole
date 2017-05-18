@@ -71,7 +71,7 @@ mod test {
 		// More escaping.
 		test!("hello\" world\\\\\"", vec!["hello world\\"]);
 
-		// Calls again if quote is not closed.
-		test!("hello\"", vec!["hellohello"]);
+		// Calls again and adds newline if quote is not closed.
+		test!("hello\"", vec!["hello\nhello"]);
 	}
 }
