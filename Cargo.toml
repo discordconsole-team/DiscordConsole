@@ -1,10 +1,14 @@
 [package]
-name = "discord_console"
+name        = "discord_console"
+description = "DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!"
+license     = "GPL-3.0+"
+
 version = "0.1.0"
 authors = ["LEGOlord208 <LEGOlord208@krake.one>"]
 
+
 [dependencies]
-cursive = "0.5"
-discord = "0.8"
-clap = "2.24"
+cursive   = "0.5"
+discord   = "0.8"
+clap      = "2.24"
 rustyline = "1.0"
