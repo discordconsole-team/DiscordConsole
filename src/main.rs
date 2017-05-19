@@ -18,6 +18,8 @@
 extern crate discord;
 #[macro_use]
 extern crate lazy_static;
+#[macro_use]
+extern crate serde_json;
 
 #[macro_export]
 macro_rules! stderr {
