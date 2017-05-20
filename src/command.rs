@@ -17,7 +17,7 @@
  * */
 
 use discord::{Connection, Discord, State};
-use discord::model::{LiveServer, ServerId};
+use discord::model::{ChannelId, LiveServer, ServerId};
 
 macro_rules! success {
 	($val:expr) => {
@@ -65,6 +65,16 @@ macro_rules! usage_one {
 	}
 }
 
+macro_rules! to_id {
+	($type:expr, $ref:expr, $string:expr) => {
+		let i = $string.parse();
+		if i.is_err() {
+			fail!("That's not a number!");
+		}
+		*$ref = $type(i.unwrap());
+	}
+}
+
 // TODO!!!!
 #[allow(dead_code)]
 pub struct CommandContext {
@@ -72,8 +82,8 @@ pub struct CommandContext {
 	pub websocket: Connection,
 	pub state: State,
 
-	guild: Option<String>,
-	channel: Option<String>
+	pub guild: Option<ServerId>,
+	pub channel: Option<ChannelId>
 }
 impl CommandContext {
 	pub fn new(session: Discord, conn: Connection, state: State) -> CommandContext {
@@ -127,37 +137,34 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			}
 		},
 		"guild" => {
-			usage_max!(tokens, 2, "guild <id/name> [property]");
+			usage_max!(tokens, 2, "guild <id/name>");
+
 			match tokens.len() {
 				0 => context.guild = None,
 				1 => {
-					let id = tokens[0].parse();
-					if id.is_err() {
-						fail!("That's not a number!");
-					}
-					let id = ServerId(id.unwrap());
+					let mut id = ServerId(0);
+					to_id!(ServerId, &mut id, tokens[0]);
 
 					let guild = find_guild(&context.state, id);
-					success!(
-						match guild {
-							Some(guild) => {
-								let json = json!({
+					match guild {
+						Some(guild) => {
+							let json = json!({
 										"id":       guild.id.to_string().as_str(),
 										"name":     guild.name.as_str(),
 										"owner_id": guild.owner_id.to_string().as_str(),
-										"app_id":   guild.application_id.unwrap_or_default().to_string().as_str(),
-										// "roles":    guild.roles.to_vec()
 									});
-								let json = ::serde_json::to_string_pretty(&json);
+							let json = ::serde_json::to_string_pretty(&json);
 
-								if json.is_err() {
-									fail!("Unable to generate JSON");
-								}
-								Some(json.unwrap())
-							},
-							None => Some("Not found in cache".to_string()),
-						}
-					)
+							context.guild = Some(guild.id);
+							context.channel = Some(guild.id.main());
+
+							if json.is_err() {
+								fail!("Unable to generate JSON");
+							}
+							success!(Some(json.unwrap()))
+						},
+						None => fail!("Not found in cache"),
+					}
 				},
 				_ => unreachable!(),
 			}

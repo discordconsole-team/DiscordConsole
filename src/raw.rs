@@ -20,18 +20,49 @@ extern crate rustyline;
 use self::rustyline::Editor;
 use self::rustyline::error::ReadlineError;
 use color::*;
+
+use discord::ChannelRef;
 use std::io::Write;
 
 pub fn raw(mut context: ::command::CommandContext) {
 	let mut rl = Editor::<()>::new();
 
-	let mut prefix = String::with_capacity(COLOR_YELLOW.len() + 2 + COLOR_RESET.len());
-	prefix.push_str(*COLOR_YELLOW);
-	prefix.push_str("> ");
-	prefix.push_str(*COLOR_RESET);
-	let prefix = prefix.as_str();
-
 	loop {
+		let mut prefix = String::with_capacity(COLOR_YELLOW.len() + 2 + COLOR_RESET.len()); // Minimum capacity
+		prefix.push_str(*COLOR_YELLOW);
+		if let Some(guild) = context.guild {
+			prefix.push_str(
+				match ::command::find_guild(&context.state, guild) {
+					Some(guild) => guild.name.as_str(),
+					None => "Unknown",
+				}
+			);
+		}
+		if let Some(channel) = context.channel {
+			prefix.push_str(" (");
+			prefix.push_str(
+				match context.state.find_channel(channel) {
+						Some(channel) => {
+							match channel {
+								ChannelRef::Public(server, channel) => {
+									let mut name = channel.name.clone();
+									name.insert(0, '#');
+									name
+								},
+								ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
+								ChannelRef::Private(channel) => channel.recipient.name.clone(),
+							}
+						},
+						None => "unknown".to_string(),
+					}
+					.as_str()
+			);
+			prefix.push_str(")");
+		}
+		prefix.push_str("> ");
+		prefix.push_str(*COLOR_RESET);
+		let prefix = prefix.as_str();
+
 		let mut first = true;
 		let mut command = String::new();
 

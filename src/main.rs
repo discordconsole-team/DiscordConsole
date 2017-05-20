@@ -23,8 +23,8 @@ extern crate serde_json;
 
 #[macro_export]
 macro_rules! stderr {
-	($fmt:expr)              => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}\n"), *COLOR_RED, *COLOR_RESET).unwrap(); };
-	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}\n"), *COLOR_RED, $($arg)*, *COLOR_RESET).unwrap(); };
+	($fmt:expr)              => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}"), *COLOR_RED, *COLOR_RESET).unwrap(); };
+	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}"), *COLOR_RED, $($arg)*, *COLOR_RESET).unwrap(); };
 }
 macro_rules! flush {
 	() => { ::std::io::stdout().flush().unwrap(); }
