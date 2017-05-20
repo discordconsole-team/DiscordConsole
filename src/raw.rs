@@ -21,6 +21,8 @@ use self::rustyline::Editor;
 use self::rustyline::error::ReadlineError;
 use color::*;
 
+use command::MoreStateFunctionsSuperOriginalTraitNameExclusiveTM;
+
 use discord::ChannelRef;
 use std::io::Write;
 
@@ -32,7 +34,7 @@ pub fn raw(mut context: ::command::CommandContext) {
 		prefix.push_str(*COLOR_YELLOW);
 		if let Some(guild) = context.guild {
 			prefix.push_str(
-				match ::command::find_guild(&context.state, guild) {
+				match context.state.find_guild(guild) {
 					Some(guild) => guild.name.as_str(),
 					None => "Unknown",
 				}

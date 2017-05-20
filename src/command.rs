@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 
-use discord::{Connection, Discord, State};
+use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, LiveServer, ServerId};
 
 macro_rules! success {
@@ -64,14 +64,46 @@ macro_rules! usage_one {
 		}
 	}
 }
-
 macro_rules! to_id {
-	($type:expr, $ref:expr, $string:expr) => {
-		let i = $string.parse();
-		if i.is_err() {
-			fail!("That's not a number!");
+	($type:expr, $context:expr, $funcid:ident, $funcname:ident, $ref:expr, $nameorid:expr) => {
+		{
+			let i = $nameorid.parse();
+			let mut val;
+
+			if i.is_err() {
+				val = $context.state.$funcname($context.guild, $nameorid.as_str())
+			} else {
+				val = $context.state.$funcid($type(i.unwrap()));
+				if val.is_none() {
+					val = $context.state.$funcname($context.guild, $nameorid.as_str())
+				}
+			}
+
+			val
 		}
-		*$ref = $type(i.unwrap());
+	}
+}
+macro_rules! unwrap_cache {
+	($cache:expr) => {
+		{
+			if $cache.is_none() {
+				fail!("Could not find in local cache.")
+			}
+			$cache.unwrap()
+		}
+	}
+}
+macro_rules! pretty_json {
+	($($json:tt)+) => {
+		{
+			let json = json!($($json)+);
+			let json = ::serde_json::to_string_pretty(&json);
+
+			if json.is_err() {
+				fail!("Unable to generate JSON");
+			}
+			json.unwrap()
+		}
 	}
 }
 
@@ -141,38 +173,93 @@ pub fn execute(context: &mut CommandContext, tokens: &[String]) -> CommandResult
 			}
 		},
 		"guild" => {
-			usage_max!(tokens, 2, "guild <id/name>");
+			usage_max!(tokens, 1, "guild <id/name>");
 
-			match tokens.len() {
-				0 => context.guild = None,
-				1 => {
-					let mut id = ServerId(0);
-					to_id!(ServerId, &mut id, tokens[0]);
-
-					let guild = find_guild(&context.state, id);
-					match guild {
-						Some(guild) => {
-							let json = json!({
-										"id":       guild.id.to_string().as_str(),
-										"name":     guild.name.as_str(),
-										"owner_id": guild.owner_id.to_string().as_str(),
-									});
-							let json = ::serde_json::to_string_pretty(&json);
-
-							context.guild = Some(guild.id);
-							context.channel = Some(guild.id.main());
-
-							if json.is_err() {
-								fail!("Unable to generate JSON");
-							}
-							success!(Some(json.unwrap()))
-						},
-						None => fail!("Not found in cache"),
-					}
-				},
-				_ => unreachable!(),
+			if tokens.is_empty() {
+				context.guild = None;
+				context.channel = None;
+				success!(None);
 			}
-			success!(None);
+			let guild = to_id!(
+				ServerId,
+				context,
+				find_guild,
+				find_guild_by_name,
+				&mut guild,
+				tokens[0]
+			);
+
+			let guild = unwrap_cache!(guild);
+			context.guild = Some(guild.id);
+			context.channel = Some(guild.id.main());
+
+			success!(
+				Some(
+					pretty_json!({
+						"id":       guild.id.to_string().as_str(),
+						"name":     guild.name.as_str(),
+						"owner_id": guild.owner_id.to_string().as_str(),
+					})
+				)
+			);
+		},
+		"channel" => {
+			usage_max!(tokens, 1, "channel <id/name>");
+
+			if tokens.is_empty() {
+				if let Some(guild) = context.guild {
+					context.channel = Some(guild.main());
+				} else {
+					context.channel = None;
+				}
+				success!(None);
+			}
+			let channel = to_id!(
+				ChannelId,
+				context,
+				find_channel,
+				find_channel_by_name,
+				&mut channel,
+				tokens[0]
+			);
+			let channel = unwrap_cache!(channel);
+
+			match channel {
+				ChannelRef::Private(channel) => {
+					context.guild = None;
+					context.channel = Some(channel.id);
+
+					success!(Some(pretty_json!({
+						"id":        channel.id.to_string().as_str(),
+						"recipient": {
+							"id":   channel.recipient.id.to_string().as_str(),
+							"name": channel.recipient.name.as_str()
+						}
+					})));
+				},
+				ChannelRef::Group(channel) => {
+					context.guild = None;
+					context.channel = Some(channel.channel_id);
+
+					success!(Some(pretty_json!({
+						"id":       channel.channel_id.to_string().as_str(),
+						"name":     channel.name.clone().unwrap_or_default().as_str()
+					})));
+				},
+				ChannelRef::Public(guild, channel) => {
+					context.guild = Some(guild.id);
+					context.channel = Some(channel.id);
+
+					success!(Some(pretty_json!({
+						"id":       channel.id.to_string().as_str(),
+						"name":     channel.name.as_str(),
+						"guild": {
+							"id":   guild.id.to_string().as_str(),
+							"name": guild.name.as_str()
+						}
+					})));
+				},
+			}
 		},
 		_ => {
 			fail!("Unknown command!");
@@ -180,11 +267,55 @@ pub fn execute(context: &mut CommandContext, tokens: &[String]) -> CommandResult
 	}
 }
 
-pub fn find_guild(state: &State, id: ServerId) -> Option<&LiveServer> {
-	for server in state.servers() {
-		if server.id == id {
-			return Some(server);
+pub trait MoreStateFunctionsSuperOriginalTraitNameExclusiveTM {
+	fn find_guild(&self, id: ServerId) -> Option<&LiveServer>;
+	fn find_guild_by_name<'a>(&'a self, guild: Option<ServerId>, name: &str) -> Option<&'a LiveServer>;
+	fn find_channel_by_name<'a>(&'a self, guild: Option<ServerId>, name: &'a str) -> Option<ChannelRef<'a>>;
+}
+impl MoreStateFunctionsSuperOriginalTraitNameExclusiveTM for State {
+	fn find_guild(&self, id: ServerId) -> Option<&LiveServer> {
+		for guild in self.servers() {
+			if guild.id == id {
+				return Some(guild);
+			}
 		}
+		None
 	}
-	None
+
+	// Unsure what the best way to deal with this is.
+	// The function is called from a macro.
+	#[allow(unused_variables)]
+	fn find_guild_by_name<'a>(&'a self, guild: Option<ServerId>, name: &str) -> Option<&'a LiveServer> {
+		for guild in self.servers() {
+			if guild.name == name {
+				return Some(guild);
+			}
+		}
+		None
+	}
+
+	fn find_channel_by_name<'a>(&'a self, guild: Option<ServerId>, name: &str) -> Option<ChannelRef<'a>> {
+		for guild2 in self.servers() {
+			if guild.is_some() && guild2.id != guild.unwrap() {
+				continue;
+			}
+			for channel in &guild2.channels {
+				if channel.name == name {
+					return Some(ChannelRef::Public(guild2, channel));
+				}
+			}
+		}
+		let some_name = Some(name.to_string());
+		for (_, group) in self.groups() {
+			if group.name == some_name {
+				return Some(ChannelRef::Group(group));
+			}
+		}
+		for private in self.private_channels() {
+			if private.recipient.name == name {
+				return Some(ChannelRef::Private(private));
+			}
+		}
+		None
+	}
 }
