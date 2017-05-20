@@ -208,6 +208,11 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 			return
 		}
 
+		channel := ""
+		if loc.channel != nil {
+			channel = loc.channel.ID
+		}
+
 		path := args[0]
 		err := fixPath(&path)
 		if err != nil {
@@ -231,7 +236,7 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 				stdutil.PrintErr("Line "+strconv.Itoa(i)+" exceeded "+strconv.Itoa(msgLimit)+" characters.", nil)
 				return
 			} else if len(buffer)+len(text) > msgLimit {
-				msg, ok := say(session, w, loc.channel.ID, buffer)
+				msg, ok := say(session, w, channel, buffer)
 				if !ok {
 					return
 				}
@@ -251,7 +256,7 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 			return
 		}
 		if buffer != "" {
-			msg, _ := say(session, w, loc.channel.ID, buffer)
+			msg, _ := say(session, w, channel, buffer)
 			if msg != nil {
 				returnVal = msg.ID
 				lastUsedMsg = msg.ID
