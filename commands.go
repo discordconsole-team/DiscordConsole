@@ -27,8 +27,8 @@ import (
 	"unicode"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/discordconsole-team/DiscordConsole/PermCalc"
 	"github.com/fatih/color"
-	"github.com/legolord208/DiscordConsole/PermCalc"
 	"github.com/legolord208/gtable"
 	"github.com/legolord208/stdutil"
 )

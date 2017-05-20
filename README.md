@@ -14,7 +14,7 @@
 
 To get started, simply [download the console from releases](https://github.com/LEGOlord208/DiscordConsole/releases).
 
-Or compile it yourself: `go get github.com/legolord208/DiscordConsole`, you'll also need the DiscordGo development version; to get that type `make dgo`. Then, actually make the switch to develop: `git checkout develop`. Finally, just type `go install`.
+Or compile it yourself: `go get github.com/discord-team/DiscordConsole`, you'll also need the DiscordGo development version; to get that type `make dgo`. Then, actually make the switch to develop: `git checkout develop`. Finally, just type `go install`.
 
 ### Usage
 
@@ -30,11 +30,11 @@ Once you got your token, just type `user TOKEN` in the terminal. You'll get the 
 
 Try to type something like `help` and let the magic happens! For a detailed review of each commands, check [this wiki page](https://discordconsole-team.github.io/Wiki/wiki.html) or type `help command`.
 
-**Don't want to go through all of this? Check our [Beta Launcher](https://github.com/legolord208/DConsoleLauncher)!**
+**Don't want to go through all of this? Check our [Beta Launcher](https://github.com/discordconsole-team/DConsoleLauncher)!**
 
 ### Credits
 
-DiscordConsole written by [LEGOlord208](https://github.com/LEGOlord208), with documentation improvments by [Parallaχ](https://github.com/Doyouwanttomakeacake).
+DiscordConsole written by [LEGOlord208](https://github.com/legolord208), with documentation improvments by [Parallaχ](https://github.com/Doyouwanttomakeacake).
 
 ### Contribute
 
@@ -42,4 +42,4 @@ Feels free to submit a Pull Request! Not a coder, but want to be involved in the
 
 ### License
 
-GNU G.P.L. © LEGOlord208 - [Click here for more information.](https://github.com/LEGOlord208/DiscordConsole/blob/master/LICENSE)
+GNU G.P.L. © LEGOlord208 - [Click here for more information.](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE)
