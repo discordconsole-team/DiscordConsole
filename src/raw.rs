@@ -44,7 +44,7 @@ pub fn raw(mut context: ::command::CommandContext) {
 				match context.state.find_channel(channel) {
 						Some(channel) => {
 							match channel {
-								ChannelRef::Public(server, channel) => {
+								ChannelRef::Public(_, channel) => {
 									let mut name = channel.name.clone();
 									name.insert(0, '#');
 									name
@@ -99,15 +99,13 @@ pub fn raw(mut context: ::command::CommandContext) {
 			},
 		};
 
-		let result = ::command::execute(&mut context, tokens);
+		let result = ::command::execute(&mut context, &tokens);
 		if result.success {
 			if let Some(text) = result.text {
 				println!("{}", text.as_str());
 			}
-		} else {
-			if let Some(text) = result.text {
-				stderr!("{}", text.as_str());
-			}
+		} else if let Some(text) = result.text {
+			stderr!("{}", text.as_str());
 		}
 
 		if result.exit {

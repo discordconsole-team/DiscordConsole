@@ -32,7 +32,7 @@ pub fn tui(context: ::command::CommandContext) {
 
 	let mut guilds = MenuTree::new();
 	let servers = if let Some(settings) = context.state.settings() {
-		::sort::sort_guilds(&settings, context.state.servers().to_vec())
+		::sort::sort_guilds(settings, context.state.servers().to_vec())
 	} else {
 		context.state.servers().to_vec()
 	};
@@ -45,7 +45,7 @@ pub fn tui(context: ::command::CommandContext) {
 				let context = context.clone();
 				s.screen_mut()
 					.add_layer(
-						Dialog::around(LinearLayout::vertical().child(command_field(context, "Name", server.name.as_str(), vec!["echo"])))
+						Dialog::around(LinearLayout::vertical().child(command_field(context, "Name", server.name.as_str(), &["echo"])))
 							.title("Guild info")
 							.dismiss_button("Close")
 					);
@@ -90,7 +90,7 @@ pub fn tui(context: ::command::CommandContext) {
 												return;
 											}
 
-											command(s, &mut context.borrow_mut(), tokens.unwrap());
+											command(s, &mut context.borrow_mut(), &tokens.unwrap());
 										}
 									)
 								)
@@ -110,7 +110,7 @@ pub fn tui(context: ::command::CommandContext) {
 	screen.run();
 }
 
-fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val: &str, tokens: Vec<&str>) -> Button {
+fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val: &str, tokens: &[&str]) -> Button {
 	let mut string = String::with_capacity(key.len() + 2 + val.len());
 	string.push_str(key);
 	string.push_str(": ");
@@ -131,7 +131,7 @@ fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val
 								s.pop_layer();
 								let mut tokens = (*tokens).clone();
 								tokens.push(string.to_string());
-								command(s, &mut context.borrow_mut(), tokens);
+								command(s, &mut context.borrow_mut(), &tokens);
 							}
 						)
 				)
@@ -142,7 +142,7 @@ fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val
 	)
 }
 
-fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: Vec<String>) -> ::command::CommandResult {
+fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: &[String]) -> ::command::CommandResult {
 	let result = ::command::execute(context, tokens);
 	if result.exit {
 		s.quit();

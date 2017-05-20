@@ -114,14 +114,18 @@ impl Default for CommandResult {
 	}
 }
 
-pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> CommandResult {
+// Shut clippy up about my macros... for now at least
+#[cfg_attr(feature = "cargo-clippy", allow(needless_return))]
+#[cfg_attr(feature = "cargo-clippy", allow(deref_addrof))]
+pub fn execute(context: &mut CommandContext, tokens: &[String]) -> CommandResult {
 	if tokens.len() < 1 {
 		return CommandResult {
 		           empty: true,
 		           ..Default::default()
 		       };
 	}
-	let command = tokens.remove(0);
+	let command = &tokens[0];
+	let tokens = &tokens[1..];
 	let command = command.as_str();
 
 	match command {
