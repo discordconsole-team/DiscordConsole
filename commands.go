@@ -48,7 +48,7 @@ var output = false
 
 var aliases map[string]string
 
-var webhookCommands = []string{"big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run", "lang"}
+var webhookCommands = []string{"help", "big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run", "lang"}
 
 func command(session *discordgo.Session, source commandSource, cmd string, w io.Writer) (returnVal string) {
 	cmd = strings.TrimSpace(cmd)
