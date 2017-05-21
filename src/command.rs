@@ -17,7 +17,7 @@
  * */
 
 use discord::{ChannelRef, Connection, Discord, State};
-use discord::model::{ChannelId, ChannelType, LiveServer, PublicChannel, ServerId};
+use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
 
 macro_rules! success {
 	($val:expr) => {

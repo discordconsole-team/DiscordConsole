@@ -30,7 +30,7 @@ pub fn tokens<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 		if first {
 			first = false;
 		} else {
-			buffer.push('\n');
+			buffer.push(' ');
 		}
 		let input = input()?;
 		for c in input.chars() {
@@ -40,6 +40,11 @@ pub fn tokens<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 			}
 			if escaped {
 				escaped = false;
+
+				if c == 'n' {
+					buffer.push('\n');
+					continue;
+				}
 
 				buffer.push(c);
 				continue;

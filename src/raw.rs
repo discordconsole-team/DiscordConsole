@@ -70,18 +70,17 @@ pub fn raw(mut context: ::command::CommandContext) {
 
 		let tokens = ::tokenizer::tokens(
 			|| {
-				let result = rl.readline(
-					if first {
-						first = false;
-						prefix
-					} else {
-						""
-					}
-				);
+				let wasfirst = first;
+				first = false;
+
+				let result = rl.readline(if wasfirst { prefix } else { "" });
 
 				match result {
 					Ok(res) => {
 						command.push_str(res.as_str());
+						if wasfirst {
+							command.push(' ');
+						}
 						Ok(res)
 					},
 					Err(err) => Err(err),
