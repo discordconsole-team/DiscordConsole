@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 
-use discord::model::{LiveServer, UserSettings};
+use discord::model::{LiveServer, PublicChannel, UserSettings};
 
-pub fn sort_guilds(settings: &UserSettings, mut guilds: Vec<LiveServer>) -> Vec<LiveServer> {
+pub fn sort_guilds(settings: &UserSettings, guilds: &mut Vec<LiveServer>) {
 	let mut new_guilds = Vec::new();
 
 	for guild_id in &settings.server_positions {
-		for guild in &guilds {
+		for guild in guilds.iter() {
 			if guild.id == *guild_id {
 				new_guilds.push(guild.clone());
 				break;
@@ -45,6 +45,6 @@ pub fn sort_guilds(settings: &UserSettings, mut guilds: Vec<LiveServer>) -> Vec<
 	}
 
 	guilds.append(&mut new_guilds);
-
-	guilds
 }
+
+pub fn sort_channels(channels: &mut Vec<&PublicChannel>) { channels.sort_by_key(|c| c.position); }

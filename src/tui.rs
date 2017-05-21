@@ -30,22 +30,21 @@ pub fn tui(context: ::command::CommandContext) {
 	let mut screen = Cursive::new();
 	screen.add_global_callback('q', Cursive::quit);
 
-	let mut guilds = MenuTree::new();
-	let servers = if let Some(settings) = context.state.settings() {
-		::sort::sort_guilds(settings, context.state.servers().to_vec())
-	} else {
-		context.state.servers().to_vec()
-	};
+	let mut guilds = context.state.servers().to_vec();
+	if let Some(settings) = context.state.settings() {
+		::sort::sort_guilds(settings, &mut guilds)
+	}
 
+	let mut guildtree = MenuTree::new();
 	let context = Rc::new(RefCell::new(context));
-	for server in servers {
+	for guild in guilds {
 		let context = context.clone();
-		guilds.add_leaf(
-			server.name.clone(), move |s| {
+		guildtree.add_leaf(
+			guild.name.clone(), move |s| {
 				let context = context.clone();
 				s.screen_mut()
 					.add_layer(
-						Dialog::around(LinearLayout::vertical().child(command_field(context, "Name", server.name.as_str(), &["echo"])))
+						Dialog::around(LinearLayout::vertical().child(command_field(context, "Name", guild.name.as_str(), &["echo"])))
 							.title("Guild info")
 							.dismiss_button("Close")
 					);
@@ -101,7 +100,7 @@ pub fn tui(context: ::command::CommandContext) {
 				)
 				.leaf("Exit", Cursive::quit)
 		)
-		.add_subtree("Guilds", guilds);
+		.add_subtree("Guilds", guildtree);
 
 	screen.add_layer(Dialog::text("Press <esc> to access the menu, and <q> to quit"));
 

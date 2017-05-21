@@ -17,7 +17,7 @@
  * */
 
 use discord::{ChannelRef, Connection, Discord, State};
-use discord::model::{ChannelId, LiveServer, ServerId};
+use discord::model::{ChannelId, ChannelType, LiveServer, PublicChannel, ServerId};
 
 macro_rules! success {
 	($val:expr) => {
@@ -103,6 +103,17 @@ macro_rules! pretty_json {
 				fail!("Unable to generate JSON");
 			}
 			json.unwrap()
+		}
+	}
+}
+macro_rules! require_guild {
+	($context:expr) => {
+		{
+			if $context.guild.is_none() {
+				fail!("This command requires a guild to be selected.");
+			}
+
+			$context.guild.unwrap()
 		}
 	}
 }
@@ -260,6 +271,61 @@ pub fn execute(context: &mut CommandContext, tokens: &[String]) -> CommandResult
 					})));
 				},
 			}
+		},
+		"guilds" => {
+			usage_max!(tokens, 0, "guilds");
+
+			let mut guilds = context.state.servers().to_vec();
+			if let Some(settings) = context.state.settings() {
+				::sort::sort_guilds(settings, &mut guilds);
+			}
+
+			let mut value = String::new();
+			let mut first = true;
+			for guild in guilds {
+				if first {
+					first = false;
+				} else {
+					value.push('\n');
+				}
+				value.push_str(guild.id.to_string().as_str());
+				value.push(' ');
+				value.push_str(guild.name.as_str());
+			}
+
+			success!(Some(value));
+		},
+		"channels" => {
+			usage_max!(tokens, 0, "channels");
+			let guild = require_guild!(context);
+			let guild = unwrap_cache!(context.state.find_guild(guild));
+
+			let mut value = String::new();
+			let mut first = true;
+
+			for kind in [ChannelType::Text, ChannelType::Voice].iter() {
+				let mut channels = guild
+					.channels
+					.iter()
+					.filter(|x| x.kind == *kind)
+					.collect();
+				::sort::sort_channels(&mut channels);
+
+				for channel in channels {
+					if first {
+						first = false;
+					} else {
+						value.push('\n');
+					}
+					value.push_str(channel.id.to_string().as_str());
+					value.push(' ');
+					value.push_str(channel.kind.name());
+					value.push(' ');
+					value.push_str(channel.name.as_str());
+				}
+			}
+
+			success!(Some(value));
 		},
 		_ => {
 			fail!("Unknown command!");
