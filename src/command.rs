@@ -306,7 +306,7 @@ impl MoreStateFunctionsSuperOriginalTraitNameExclusiveTM for State {
 			}
 		}
 		let some_name = Some(name.to_string());
-		for (_, group) in self.groups() {
+		for group in self.groups().values() {
 			if group.name == some_name {
 				return Some(ChannelRef::Group(group));
 			}
