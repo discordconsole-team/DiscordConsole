@@ -32,6 +32,7 @@ macro_rules! flush {
 
 mod options;
 mod tokenizer;
+mod escape;
 mod command;
 mod sort;
 mod tui;

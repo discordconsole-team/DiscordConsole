@@ -33,7 +33,7 @@ pub fn tokens<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 			buffer.push(' ');
 		}
 		let input = input()?;
-		for c in input.chars() {
+		for c in input.trim().chars() {
 			if c == '\\' && !escaped {
 				escaped = true;
 				continue;
@@ -97,7 +97,7 @@ mod test {
 		// More escaping.
 		test!("hello\" world\\\\\"", vec!["hello world\\"]);
 
-		// Calls again and adds newline if quote is not closed.
-		test!("hello\"", vec!["hello\nhello"]);
+		// Calls again and if quote is unclosed
+		test!("hello\"", vec!["hello hello"]);
 	}
 }

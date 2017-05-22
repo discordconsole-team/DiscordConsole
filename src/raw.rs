@@ -77,10 +77,11 @@ pub fn raw(mut context: ::command::CommandContext) {
 
 				match result {
 					Ok(res) => {
-						command.push_str(res.as_str());
-						if wasfirst {
+						if !wasfirst {
 							command.push(' ');
 						}
+						command.push_str(res.as_str());
+
 						Ok(res)
 					},
 					Err(err) => Err(err),
@@ -100,7 +101,7 @@ pub fn raw(mut context: ::command::CommandContext) {
 			},
 		};
 
-		let result = ::command::execute(&mut context, &tokens);
+		let result = ::command::execute(&mut context, tokens);
 		if result.success {
 			if let Some(text) = result.text {
 				println!("{}", text.as_str());

@@ -18,6 +18,7 @@
 
 use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
+use std::collections::HashMap;
 
 macro_rules! success {
 	($val:expr) => {
@@ -117,13 +118,26 @@ macro_rules! require_guild {
 		}
 	}
 }
+macro_rules! require_channel {
+	($context:expr) => {
+		{
+			if $context.channel.is_none() {
+				fail!("This command requires a channel to be selected.");
+			}
+
+			$context.channel.unwrap()
+		}
+	}
+}
 
 // TODO!!!!
-#[allow(dead_code)]
+// [allow(dead_code)]
 pub struct CommandContext {
 	pub session: Discord,
 	pub websocket: Connection,
 	pub state: State,
+
+	pub alias: HashMap<String, Vec<String>>,
 
 	pub guild: Option<ServerId>,
 	pub channel: Option<ChannelId>
@@ -134,6 +148,8 @@ impl CommandContext {
 			session: session,
 			websocket: conn,
 			state: state,
+
+			alias: HashMap::new(),
 
 			guild: None,
 			channel: None
@@ -159,22 +175,75 @@ impl Default for CommandResult {
 
 // Shut clippy up about my macros... for now at least
 #[cfg_attr(feature = "cargo-clippy", allow(needless_return))]
-#[cfg_attr(feature = "cargo-clippy", allow(deref_addrof))]
-pub fn execute(context: &mut CommandContext, tokens: &[String]) -> CommandResult {
+pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> CommandResult {
 	if tokens.len() < 1 {
 		return CommandResult {
 		           empty: true,
 		           ..Default::default()
 		       };
 	}
-	let command = &tokens[0];
-	let tokens = &tokens[1..];
+	let mut command = tokens[0].clone();
+	tokens.remove(0);
+
+	// Unsure about the best approach here.
+	// Used to take a slice to this whole function, but it'd cause issues
+	// when this came along...
+	if let Some(atokens) = context.alias.get(&command) {
+		let mut atokens = atokens.clone();
+
+		command = atokens[0].clone();
+		atokens.remove(0);
+		atokens.append(&mut tokens);
+		tokens = atokens;
+	}
+
 	let command = command.as_str();
 
 	match command {
 		"echo" => {
 			usage_one!(tokens, "echo <text>");
 			success!(Some(tokens[0].clone()));
+		},
+		"alias" => {
+			match tokens.len() {
+				0 => {
+					let mut output = String::new();
+					let mut first = true;
+
+					for (key, val) in &context.alias {
+						if first {
+							first = false;
+						} else {
+							output.push('\n');
+						}
+						output.push_str("alias ");
+						output.push_str(key.as_str());
+						output.push(' ');
+						output.push_str(::escape::escape(&val).as_str());
+					}
+
+					success!(
+						if output.is_empty() {
+							None
+						} else {
+							Some(output)
+						}
+					);
+				},
+				1 => {
+					context.alias.remove(tokens[0].as_str());
+					success!(None);
+				},
+				_ => {
+					let name = tokens[0].clone();
+					if name == "alias" {
+						fail!("lol nope");
+					}
+					context.alias.insert(name, tokens[1..].to_vec());
+
+					success!(None);
+				},
+			}
 		},
 		"exit" => {
 			usage_max!(tokens, 0, "exit");
@@ -326,6 +395,11 @@ pub fn execute(context: &mut CommandContext, tokens: &[String]) -> CommandResult
 			}
 
 			success!(Some(value));
+		},
+		"say" => {
+			usage_max!(tokens, 1, "say [text]");
+			// TODO :^)
+			success!(None);
 		},
 		_ => {
 			fail!("Unknown command!");

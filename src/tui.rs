@@ -89,7 +89,7 @@ pub fn tui(context: ::command::CommandContext) {
 												return;
 											}
 
-											command(s, &mut context.borrow_mut(), &tokens.unwrap());
+											command(s, &mut context.borrow_mut(), tokens.unwrap());
 										}
 									)
 								)
@@ -130,7 +130,7 @@ fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val
 								s.pop_layer();
 								let mut tokens = (*tokens).clone();
 								tokens.push(string.to_string());
-								command(s, &mut context.borrow_mut(), &tokens);
+								command(s, &mut context.borrow_mut(), tokens);
 							}
 						)
 				)
@@ -141,7 +141,7 @@ fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val
 	)
 }
 
-fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: &[String]) -> ::command::CommandResult {
+fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: Vec<String>) -> ::command::CommandResult {
 	let result = ::command::execute(context, tokens);
 	if result.exit {
 		s.quit();
