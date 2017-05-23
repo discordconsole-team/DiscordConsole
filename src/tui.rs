@@ -29,7 +29,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use tui::cursive::traits::Identifiable;
 
-pub fn tui(mut context: CommandContext) {
+pub fn tui(context: CommandContext) {
 	let mut screen = Cursive::new();
 	screen.add_global_callback('q', Cursive::quit);
 

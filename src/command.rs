@@ -416,11 +416,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			let mut first = true;
 
 			for kind in [ChannelType::Text, ChannelType::Voice].iter() {
-				let mut channels = guild
-					.channels
-					.iter()
-					.filter(|x| x.kind == *kind)
-					.collect();
+				let mut channels = guild.channels.iter().filter(|x| x.kind == *kind).collect();
 				::sort::sort_channels(&mut channels);
 
 				for channel in channels {

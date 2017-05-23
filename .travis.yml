@@ -18,8 +18,9 @@ install:
 # RustFmt
   - export PATH="$PATH:$HOME/.cargo/bin"
   - which rustfmt || cargo install rustfmt
+  - rustfmt --version
 
 script:
-  - cargo fmt -- --write-mode=diff
+  - cargo fmt -- --write-mode=diff -v
   - cargo build
   - cargo test
