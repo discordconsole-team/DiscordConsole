@@ -31,39 +31,7 @@ pub fn raw(mut context: CommandContext) {
 	let mut rl = Editor::<()>::new();
 
 	loop {
-		let mut prefix = String::with_capacity(COLOR_YELLOW.len() + 2 + COLOR_RESET.len()); // Minimum capacity
-		prefix.push_str(*COLOR_YELLOW);
-		if let Some(guild) = context.guild {
-			prefix.push_str(
-				match context.state.find_guild(guild) {
-					Some(guild) => guild.name.as_str(),
-					None => "Unknown",
-				}
-			);
-		}
-		if let Some(channel) = context.channel {
-			prefix.push_str(" (");
-			prefix.push_str(
-				match context.state.find_channel(channel) {
-						Some(channel) => {
-							match channel {
-								ChannelRef::Public(_, channel) => {
-									let mut name = channel.name.clone();
-									name.insert(0, '#');
-									name
-								},
-								ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
-								ChannelRef::Private(channel) => channel.recipient.name.clone(),
-							}
-						},
-						None => "unknown".to_string(),
-					}
-					.as_str()
-			);
-			prefix.push_str(")");
-		}
-		prefix.push_str("> ");
-		prefix.push_str(*COLOR_RESET);
+		let prefix = pointer(&context);
 		let prefix = prefix.as_str();
 
 		let mut first = true;
@@ -115,4 +83,51 @@ pub fn raw(mut context: CommandContext) {
 			break;
 		}
 	}
+}
+
+pub fn pointer(context: &CommandContext) -> String {
+	let mut capacity = 2; // Minimum capacity
+	if context.terminal {
+		capacity += COLOR_YELLOW.len();
+		capacity += COLOR_RESET.len();
+	}
+
+	let mut prefix = String::with_capacity(capacity);
+	if context.terminal {
+		prefix.push_str(*COLOR_YELLOW);
+	}
+	if let Some(guild) = context.guild {
+		prefix.push_str(
+			match context.state.find_guild(guild) {
+				Some(guild) => guild.name.as_str(),
+				None => "Unknown",
+			}
+		);
+	}
+	if let Some(channel) = context.channel {
+		prefix.push_str(" (");
+		prefix.push_str(
+			match context.state.find_channel(channel) {
+					Some(channel) => {
+						match channel {
+							ChannelRef::Public(_, channel) => {
+								let mut name = channel.name.clone();
+								name.insert(0, '#');
+								name
+							},
+							ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
+							ChannelRef::Private(channel) => channel.recipient.name.clone(),
+						}
+					},
+					None => "unknown".to_string(),
+				}
+				.as_str()
+		);
+		prefix.push_str(")");
+	}
+	prefix.push_str("> ");
+	if context.terminal {
+		prefix.push_str(*COLOR_RESET);
+	}
+	return prefix;
 }

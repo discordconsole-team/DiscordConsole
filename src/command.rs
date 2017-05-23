@@ -22,6 +22,8 @@ use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
 
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
 
 macro_rules! success {
@@ -88,14 +90,31 @@ macro_rules! to_id {
 		}
 	}
 }
+macro_rules! attempt {
+	($result:expr, $message:expr) => {
+		{
+			if $result.is_err() {
+				fail!($message);
+			}
+
+			$result.unwrap()
+		}
+	}
+}
+macro_rules! require {
+	($option:expr, $message:expr) => {
+		{
+			if $option.is_none() {
+				fail!($message);
+			}
+
+			$option.unwrap()
+		}
+	}
+}
 macro_rules! unwrap_cache {
 	($cache:expr) => {
-		{
-			if $cache.is_none() {
-				fail!("Could not find in local cache.")
-			}
-			$cache.unwrap()
-		}
+		require!($cache, "Could not find in local cache.")
 	}
 }
 macro_rules! pretty_json {
@@ -104,33 +123,18 @@ macro_rules! pretty_json {
 			let json = json!($($json)+);
 			let json = ::serde_json::to_string_pretty(&json);
 
-			if json.is_err() {
-				fail!("Unable to generate JSON");
-			}
-			json.unwrap()
+			attempt!(json, "Unable to generate JSON.")
 		}
 	}
 }
 macro_rules! require_guild {
 	($context:expr) => {
-		{
-			if $context.guild.is_none() {
-				fail!("This command requires a guild to be selected.");
-			}
-
-			$context.guild.unwrap()
-		}
+		require!($context.guild, "This command requires a guild to be selected.")
 	}
 }
 macro_rules! require_channel {
 	($context:expr) => {
-		{
-			if $context.channel.is_none() {
-				fail!("This command requires a channel to be selected.");
-			}
-
-			$context.channel.unwrap()
-		}
+		require!($context.channel, "This command requires a channel to be selected.")
 	}
 }
 
@@ -250,10 +254,12 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			}
 		},
 		"exec" => {
-			usage!(tokens, 2, "exec <type> <command>");
+			usage_min!(tokens, 2, "exec <type> <command>");
 
 			match tokens[0].as_str() {
 				"shell" => {
+					usage_max!(tokens, 2, "exec shell <command>");
+
 					let cmd = if cfg!(target_os = "windows") {
 						Command::new("cmd")
 							.arg("/c")
@@ -270,9 +276,10 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 							.stdout(Stdio::inherit())
 							.stderr(Stdio::inherit())
 							.status()
+
 					};
 					if cmd.is_err() {
-						fail!("Could not execute command.");
+						fail!("Could not execute command");
 					}
 					success!(
 						Some(
@@ -284,6 +291,61 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 							)
 						)
 					);
+				},
+				"file" => {
+					usage_max!(tokens, 2, "exec file <file>");
+
+					let file = attempt!(File::open(tokens[1].clone()), "Could not open file");
+					let bufreader = BufReader::new(file);
+
+					let mut results = String::new();
+					let mut first = true;
+
+					for line in bufreader.lines() {
+						let line = attempt!(line, "Could not read line from file");
+
+						if first {
+							first = false;
+						} else {
+							results.push('\n');
+						}
+
+						let mut first = true;
+						let tokens = ::tokenizer::tokens(
+							|| if first {
+								first = false;
+								Ok(line.clone())
+							} else {
+								Err(())
+							}
+						);
+						let tokens = attempt!(tokens, "Unclosed quote or trailing \\");
+						let result = execute(context, tokens);
+
+						if result.empty {
+							continue;
+						}
+						if result.exit {
+							return CommandResult {
+							           exit: true,
+							           ..Default::default()
+							       };
+						}
+
+						let mut prefix = ::raw::pointer(context);
+						if context.terminal {
+							prefix.push_str(*COLOR_ITALIC);
+						}
+						prefix.push_str(line.as_str());
+						if context.terminal {
+							prefix.push_str(*COLOR_RESET);
+						}
+						prefix.push('\n');
+						results.push_str(prefix.as_str());
+						results.push_str(result.text.unwrap_or_default().as_str())
+					}
+
+					success!(Some(results));
 				},
 				_ => fail!("Not a valid type."),
 			}
