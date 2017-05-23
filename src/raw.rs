@@ -19,14 +19,15 @@ extern crate rustyline;
 
 use self::rustyline::Editor;
 use self::rustyline::error::ReadlineError;
+
 use color::*;
 
-use command::MoreStateFunctionsSuperOriginalTraitNameExclusiveTM;
-
+use command::{CommandContext, MoreStateFunctionsSuperOriginalTraitNameExclusiveTM};
 use discord::ChannelRef;
 use std::io::Write;
 
-pub fn raw(mut context: ::command::CommandContext) {
+pub fn raw(mut context: CommandContext) {
+	context.terminal = true;
 	let mut rl = Editor::<()>::new();
 
 	loop {

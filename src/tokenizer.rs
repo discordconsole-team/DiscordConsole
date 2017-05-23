@@ -15,6 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
+
+use clipboard::{ClipboardContext, ClipboardProvider};
+
 pub fn tokens<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 	where GET: FnMut() -> Result<String, ERR>
 {
@@ -41,12 +44,22 @@ pub fn tokens<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 			if escaped {
 				escaped = false;
 
-				if c == 'n' {
-					buffer.push('\n');
-					continue;
+				match c {
+					'n' => buffer.push('\n'),
+					'c' => {
+						// Unsure where and how to save the variable 'clip' to
+						// be the most efficient.
+						// Storing it globally seems to make it complain A LOT.
+						let clip = ClipboardProvider::new();
+						if clip.is_ok() {
+							let mut clip: ClipboardContext = clip.unwrap();
+							if let Ok(clip) = clip.get_contents() {
+								buffer.push_str(clip.as_str());
+							}
+						}
+					},
+					_ => buffer.push(c),
 				}
-
-				buffer.push(c);
 				continue;
 			}
 			match c {

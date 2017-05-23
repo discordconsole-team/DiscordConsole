@@ -28,6 +28,9 @@ lazy_static! {
 	pub static ref COLOR_RED: &'static str = {
 		if *NOCOLOR { "" } else { "\x1B[1;31m" }
 	};
+	pub static ref COLOR_BLACK: &'static str = {
+		if *NOCOLOR { "" } else { "\x1B[0;30m" }
+	};
 	pub static ref COLOR_RESET: &'static str = {
 		if *NOCOLOR { "" } else { "\x1B[0m" }
 	};

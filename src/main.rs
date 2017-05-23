@@ -20,6 +20,7 @@ extern crate discord;
 extern crate lazy_static;
 #[macro_use]
 extern crate serde_json;
+extern crate clipboard;
 
 #[macro_export]
 macro_rules! stderr {
@@ -40,6 +41,7 @@ mod color;
 mod raw;
 
 use color::*;
+use command::CommandContext;
 use discord::{Discord, State};
 use std::io::Write;
 
@@ -69,7 +71,7 @@ fn main() {
 	};
 	let state = State::new(ready);
 
-	let context = command::CommandContext::new(session, conn, state);
+	let context = CommandContext::new(session, conn, state);
 
 	if options.notui {
 		raw::raw(context);

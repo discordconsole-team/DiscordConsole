@@ -22,11 +22,14 @@ use self::cursive::event::Key;
 use self::cursive::menu::MenuTree;
 use self::cursive::view::{Offset, Position};
 use self::cursive::views::{Button, Dialog, EditView, LinearLayout};
+
+use command::CommandContext;
+
 use std::cell::RefCell;
 use std::rc::Rc;
 use tui::cursive::traits::Identifiable;
 
-pub fn tui(context: ::command::CommandContext) {
+pub fn tui(mut context: CommandContext) {
 	let mut screen = Cursive::new();
 	screen.add_global_callback('q', Cursive::quit);
 
@@ -35,8 +38,9 @@ pub fn tui(context: ::command::CommandContext) {
 		::sort::sort_guilds(settings, &mut guilds)
 	}
 
-	let mut guildtree = MenuTree::new();
 	let context = Rc::new(RefCell::new(context));
+
+	let mut guildtree = MenuTree::new();
 	for guild in guilds {
 		let context = context.clone();
 		guildtree.add_leaf(

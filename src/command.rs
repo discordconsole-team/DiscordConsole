@@ -16,9 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 
+
+use color::*;
 use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
+
 use std::collections::HashMap;
+use std::process::{Command, Stdio};
 
 macro_rules! success {
 	($val:expr) => {
@@ -130,29 +134,29 @@ macro_rules! require_channel {
 	}
 }
 
-// TODO!!!!
-// [allow(dead_code)]
 pub struct CommandContext {
 	pub session: Discord,
 	pub websocket: Connection,
 	pub state: State,
 
-	pub alias: HashMap<String, Vec<String>>,
-
 	pub guild: Option<ServerId>,
-	pub channel: Option<ChannelId>
+	pub channel: Option<ChannelId>,
+
+	pub alias: HashMap<String, Vec<String>>,
+	pub terminal: bool
 }
 impl CommandContext {
-	pub fn new(session: Discord, conn: Connection, state: State) -> CommandContext {
+	pub fn new(session: Discord, websocket: Connection, state: State) -> CommandContext {
 		CommandContext {
 			session: session,
-			websocket: conn,
+			websocket: websocket,
 			state: state,
 
-			alias: HashMap::new(),
-
 			guild: None,
-			channel: None
+			channel: None,
+
+			alias: HashMap::new(),
+			terminal: false
 		}
 	}
 }
@@ -243,6 +247,45 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 
 					success!(None);
 				},
+			}
+		},
+		"exec" => {
+			usage!(tokens, 2, "exec <type> <command>");
+
+			match tokens[0].as_str() {
+				"shell" => {
+					let cmd = if cfg!(target_os = "windows") {
+						Command::new("cmd")
+							.arg("/c")
+							.arg(tokens[1].clone())
+							.stdin(Stdio::inherit())
+							.stdout(Stdio::inherit())
+							.stderr(Stdio::inherit())
+							.status()
+					} else {
+						Command::new("sh")
+							.arg("-c")
+							.arg(tokens[1].clone())
+							.stdin(Stdio::inherit())
+							.stdout(Stdio::inherit())
+							.stderr(Stdio::inherit())
+							.status()
+					};
+					if cmd.is_err() {
+						fail!("Could not execute command.");
+					}
+					success!(
+						Some(
+							format!(
+								"{}Process exited with status {}{}",
+								if context.terminal { *COLOR_BLACK } else { "" },
+								cmd.unwrap().code().unwrap_or(1),
+								if context.terminal { *COLOR_RESET } else { "" },
+							)
+						)
+					);
+				},
+				_ => fail!("Not a valid type."),
 			}
 		},
 		"exit" => {
