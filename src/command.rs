@@ -20,6 +20,7 @@
 use color::*;
 use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
+use escape::escape;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -181,8 +182,10 @@ impl Default for CommandResult {
 	}
 }
 
-// Shut clippy up about my macros... for now at least
 #[cfg_attr(feature = "cargo-clippy", allow(needless_return))]
+// Shut clippy up about my macros... for now at least
+#[cfg_attr(feature = "cargo-clippy", allow(cyclomatic_complexity))]
+// Unsure if I really should split it up. It shall be thought about.
 pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> CommandResult {
 	if tokens.len() < 1 {
 		return CommandResult {
@@ -227,7 +230,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 						output.push_str("alias ");
 						output.push_str(key.as_str());
 						output.push(' ');
-						output.push_str(::escape::escape(&val).as_str());
+						output.push_str(escape(val).as_str());
 					}
 
 					success!(
@@ -477,7 +480,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			let mut value = String::new();
 			let mut first = true;
 
-			for kind in [ChannelType::Text, ChannelType::Voice].iter() {
+			for kind in &[ChannelType::Text, ChannelType::Voice] {
 				let mut channels = guild.channels.iter().filter(|x| x.kind == *kind).collect();
 				::sort::sort_channels(&mut channels);
 

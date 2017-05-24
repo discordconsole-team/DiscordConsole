@@ -31,7 +31,7 @@ pub fn escape(tokens: &[String]) -> String {
 
 		output.push_str(escaped.as_str());
 	}
-	return output;
+	output
 }
 
 #[cfg(test)]

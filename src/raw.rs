@@ -129,5 +129,5 @@ pub fn pointer(context: &CommandContext) -> String {
 	if context.terminal {
 		prefix.push_str(*COLOR_RESET);
 	}
-	return prefix;
+	prefix
 }
