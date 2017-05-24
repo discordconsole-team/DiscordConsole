@@ -21,8 +21,10 @@ use color::*;
 use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
 use escape::escape;
-
 use std::collections::HashMap;
+
+use std::error::Error;
+use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
@@ -94,8 +96,8 @@ macro_rules! to_id {
 macro_rules! attempt {
 	($result:expr, $message:expr) => {
 		{
-			if $result.is_err() {
-				fail!($message);
+			if let Err(err) = $result {
+				fail!(format!("{} (Details: {})", $message, err));
 			}
 
 			$result.unwrap()
@@ -297,58 +299,10 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				},
 				"file" => {
 					usage_max!(tokens, 2, "exec file <file>");
+					let result = execute_file(context, tokens[1].clone());
+					let result = attempt!(result, "Could not run commands file");
 
-					let file = attempt!(File::open(tokens[1].clone()), "Could not open file");
-					let bufreader = BufReader::new(file);
-
-					let mut results = String::new();
-					let mut first = true;
-
-					for line in bufreader.lines() {
-						let line = attempt!(line, "Could not read line from file");
-
-						if first {
-							first = false;
-						} else {
-							results.push('\n');
-						}
-
-						let mut first = true;
-						let tokens = ::tokenizer::tokens(
-							|| if first {
-								first = false;
-								Ok(line.clone())
-							} else {
-								Err(())
-							}
-						);
-						let tokens = attempt!(tokens, "Unclosed quote or trailing \\");
-						let result = execute(context, tokens);
-
-						if result.empty {
-							continue;
-						}
-						if result.exit {
-							return CommandResult {
-							           exit: true,
-							           ..Default::default()
-							       };
-						}
-
-						let mut prefix = ::raw::pointer(context);
-						if context.terminal {
-							prefix.push_str(*COLOR_ITALIC);
-						}
-						prefix.push_str(line.as_str());
-						if context.terminal {
-							prefix.push_str(*COLOR_RESET);
-						}
-						prefix.push('\n');
-						results.push_str(prefix.as_str());
-						results.push_str(result.text.unwrap_or_default().as_str())
-					}
-
-					success!(Some(results));
+					success!(Some(result))
 				},
 				_ => fail!("Not a valid type."),
 			}
@@ -500,8 +454,9 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 
 			success!(Some(value));
 		},
-		"say" => {
-			usage_max!(tokens, 1, "say [text]");
+		"message" => {
+			usage_min!(tokens, 1, "message <type> [text]");
+			usage_max!(tokens, 2, "message <type> [text]");
 			// TODO :^)
 			success!(None);
 		},
@@ -509,6 +464,69 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			fail!("Unknown command!");
 		},
 	}
+}
+
+#[derive(Debug)]
+struct ErrUnclosed;
+
+impl Error for ErrUnclosed {
+	fn description(&self) -> &str { "Command not closed; Quote unclosed or trailing \\" }
+}
+impl fmt::Display for ErrUnclosed {
+	fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result { write!(fmt, "{}", self.description()) }
+}
+
+pub fn execute_file(context: &mut CommandContext, file: String) -> Result<String, Box<Error>> {
+	let file = File::open(file)?;
+	let bufreader = BufReader::new(file);
+
+	let pointer = ::raw::pointer(context);
+
+	let mut results = String::new();
+	let mut first = true;
+
+	for line in bufreader.lines() {
+		let line = line?;
+
+		if first {
+			first = false;
+		} else {
+			results.push('\n');
+		}
+
+		let mut first = true;
+		let tokens = ::tokenizer::tokens(
+			|| if first {
+				first = false;
+				Ok(line.clone())
+			} else {
+				Err(ErrUnclosed)
+			}
+		);
+		let tokens = tokens?;
+		let result = execute(context, tokens);
+
+		if result.empty {
+			continue;
+		}
+		if result.exit {
+			results.push_str("Can't exit from a commands file");
+			continue;
+		}
+
+		results.push_str(pointer.clone().as_str());
+		if context.terminal {
+			results.push_str(*COLOR_ITALIC);
+		}
+		results.push_str(line.as_str());
+		if context.terminal {
+			results.push_str(*COLOR_RESET);
+		}
+		results.push('\n');
+		results.push_str(result.text.unwrap_or_default().as_str())
+	}
+
+	Ok(results)
 }
 
 pub trait MoreStateFunctionsSuperOriginalTraitNameExclusiveTM {
