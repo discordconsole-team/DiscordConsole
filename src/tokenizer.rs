@@ -68,6 +68,8 @@ pub fn tokens<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 						in_quote = c;
 					} else if in_quote == c {
 						in_quote = '\0';
+					} else {
+						buffer.push(c);
 					}
 				},
 				' ' => {

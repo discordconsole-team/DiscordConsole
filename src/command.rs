@@ -16,13 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
 
+extern crate hlua;
 
+use self::hlua::{AnyLuaValue, Lua};
 use color::*;
 use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
 use escape::escape;
 use std::collections::HashMap;
-
 use std::error::Error;
 use std::fmt;
 use std::fs::File;
@@ -81,8 +82,10 @@ macro_rules! to_id {
 			let mut val;
 
 			if i.is_err() {
+				println!("{:?}", i);
 				val = $context.state.$funcname($context.guild, $nameorid.as_str())
 			} else {
+				println!("{:?}", i);
 				val = $context.state.$funcid($type(i.unwrap()));
 				if val.is_none() {
 					val = $context.state.$funcname($context.guild, $nameorid.as_str())
@@ -259,7 +262,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			}
 		},
 		"exec" => {
-			usage_min!(tokens, 2, "exec <type> <command>");
+			usage_min!(tokens, 2, "exec <type> <value>");
 
 			match tokens[0].as_str() {
 				"shell" => {
@@ -303,6 +306,24 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 					let result = attempt!(result, "Could not run commands file");
 
 					success!(Some(result))
+				},
+				"lua" => {
+					let mut lua = new_lua(context);
+
+					let file = attempt!(File::open(tokens[1].clone()), "Could not open file");
+					if let Err(err) = lua.execute_from_reader::<(), _>(file) {
+						fail!(format!("Error trying to execute: {:?}", err));
+					}
+					success!(None);
+				},
+				"lua-inline" => {
+					usage_max!(tokens, 2, "exec lua-inline <text>");
+					let mut lua = new_lua(context);
+
+					if let Err(err) = lua.execute::<()>(tokens[1].clone().as_str()) {
+						fail!(format!("Error trying to execute: {:?}", err));
+					}
+					success!(None);
 				},
 				_ => fail!("Not a valid type."),
 			}
@@ -527,6 +548,57 @@ pub fn execute_file(context: &mut CommandContext, file: String) -> Result<String
 	}
 
 	Ok(results)
+}
+
+// fn copy(reference: &mut CommandContext) -> &mut CommandContext { return
+// reference; }
+
+fn lua_to_string(value: AnyLuaValue) -> String {
+	match value {
+		AnyLuaValue::LuaString(value) => value,
+		AnyLuaValue::LuaNumber(value) => (value.round() as u64).to_string(),
+		AnyLuaValue::LuaBoolean(value) => value.to_string(),
+		AnyLuaValue::LuaArray(value) => {
+			value
+				.iter()
+				.map(
+					|value| {
+						let value0 = lua_to_string(value.0.clone());
+						let value1 = lua_to_string(value.1.clone());
+						let mut string = String::with_capacity(value0.len() + 2 + value1.len());
+						string.push_str(value0.as_str());
+						string.push_str(": ");
+						string.push_str(value1.as_str());
+
+						string
+					}
+				)
+				.collect::<Vec<_>>()
+				.join(", ")
+		},
+		_ => String::new(),
+	}
+
+}
+pub fn new_lua(context: &mut CommandContext) -> Lua {
+	let mut lua = Lua::new();
+	lua.openlibs();
+
+	// Example: `cmd({"echo", "Hello World"})`
+	// crashes on incorrect type; see https://github.com/tomaka/hlua/issues/149
+	lua.set(
+		"cmd",
+		hlua::function1::<_, String, Vec<AnyLuaValue>>(
+			move |args| {
+				let args = args.iter()
+					.map(|value| lua_to_string(value.clone()))
+					.collect();
+				execute(context, args).text.unwrap_or_default()
+			}
+		)
+	);
+
+	lua
 }
 
 pub trait MoreStateFunctionsSuperOriginalTraitNameExclusiveTM {
