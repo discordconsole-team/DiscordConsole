@@ -91,7 +91,7 @@ outer:
 			}
 		}
 
-		user, err := session.State.Member(guild.ID, userID)
+		user, err := session.GuildMember(guild.ID, userID)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.user"), err)
 			break
