@@ -47,6 +47,8 @@ use std::io::Write;
 
 const VERSION: &str = "0.1";
 
+const LIMIT_MSG: usize = 2000;
+
 fn main() {
 	let mut options = options::get_options();
 

@@ -23,6 +23,7 @@ use color::*;
 use discord::{ChannelRef, Connection, Discord, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
 use escape::escape;
+use std::cmp;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
@@ -82,10 +83,8 @@ macro_rules! to_id {
 			let mut val;
 
 			if i.is_err() {
-				println!("{:?}", i);
 				val = $context.state.$funcname($context.guild, $nameorid.as_str())
 			} else {
-				println!("{:?}", i);
 				val = $context.state.$funcid($type(i.unwrap()));
 				if val.is_none() {
 					val = $context.state.$funcname($context.guild, $nameorid.as_str())
@@ -143,6 +142,16 @@ macro_rules! require_channel {
 		require!($context.channel, "This command requires a channel to be selected.")
 	}
 }
+macro_rules! unknown {
+	($what:expr) => {
+		fail!(concat!("Unknown ", $what, "."));
+	}
+}
+macro_rules! couldnt {
+	($what:expr) => {
+		fail!(concat!("Could not ", $what, "."));
+	}
+}
 
 pub struct CommandContext {
 	pub session: Discord,
@@ -165,7 +174,23 @@ impl CommandContext {
 			guild: None,
 			channel: None,
 
-			alias: HashMap::new(),
+			alias: {
+				let mut map = HashMap::new();
+				map.insert(
+					"say".to_string(),
+					vec!["msg".to_string(), "normal".to_string()]
+				);
+				map.insert(
+					"tts".to_string(),
+					vec!["msg".to_string(), "tts".to_string()]
+				);
+				map.insert(
+					"embed".to_string(),
+					vec!["msg".to_string(), "embed".to_string()]
+				);
+
+				map
+			},
 			terminal: false
 		}
 	}
@@ -325,7 +350,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 					}
 					success!(None);
 				},
-				_ => fail!("Not a valid type."),
+				_ => unknown!("type"),
 			}
 		},
 		"exit" => {
@@ -475,15 +500,51 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 
 			success!(Some(value));
 		},
-		"message" => {
-			usage_min!(tokens, 1, "message <type> [text]");
-			usage_max!(tokens, 2, "message <type> [text]");
-			// TODO :^)
+		"msg" => {
+			usage!(tokens, 2, "msg <type> <text>");
+			let channel = require_channel!(context);
+
+			let kind = match tokens[0].clone().as_str() {
+				"normal" => 0,
+				"tts" => 1,
+				"embed" => 2,
+				_ => unknown!("type"),
+			};
+			let text = tokens[1].clone();
+			let mut text = text.as_str();
+
+			while !text.is_empty() {
+				let amount = cmp::min(text.len(), ::LIMIT_MSG);
+				let value = &text[..amount];
+				text = &text[amount..];
+
+				match kind {
+					0 | 1 => {
+						if context
+						       .session
+						       .send_message(channel, value, "", kind == 1)
+						       .is_err() {
+							couldnt!("send message");
+						}
+					},
+					2 => {
+						fail!("Not implemented. Waiting for discord-rs. See https://github.com/SpaceManiac/discord-rs/issues/112");
+						/*
+						if context
+						       .session
+						       .send_embed(channel, value, |builder| builder.description("Hi"))
+						       .is_err() {
+							couldnt!("send embed");
+						}
+						*/
+					},
+					_ => unreachable!(),
+				}
+			}
+
 			success!(None);
 		},
-		_ => {
-			fail!("Unknown command!");
-		},
+		_ => unknown!("command"),
 	}
 }
 
