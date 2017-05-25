@@ -513,19 +513,30 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			let text = tokens[1].clone();
 			let mut text = text.as_str();
 
+			let mut output = String::new();
+			let mut first = true;
+
 			while !text.is_empty() {
+				if first {
+					first = false;
+				} else {
+					output.push('\n');
+				}
 				let amount = cmp::min(text.len(), ::LIMIT_MSG);
 				let value = &text[..amount];
 				text = &text[amount..];
 
 				match kind {
 					0 | 1 => {
-						if context
-						       .session
-						       .send_message(channel, value, "", kind == 1)
-						       .is_err() {
-							couldnt!("send message");
-						}
+						let msg = context.session.send_message(channel, value, "", kind == 1);
+						let msg = attempt!(msg, "Couldn't send message.");
+
+						let mut string = String::new();
+						string.push_str("Sent message with ID ");
+						string.push_str(msg.id.to_string().as_str());
+						string.push('.');
+
+						output.push_str(string.as_str());
 					},
 					2 => {
 						fail!("Not implemented. Waiting for discord-rs. See https://github.com/SpaceManiac/discord-rs/issues/112");
@@ -542,7 +553,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				}
 			}
 
-			success!(None);
+			success!(Some(output));
 		},
 		_ => unknown!("command"),
 	}
