@@ -17,6 +17,7 @@
  * */
 extern crate clap;
 use self::clap::{App, Arg};
+use color::*;
 
 use std::io::Write;
 
@@ -52,6 +53,21 @@ pub fn get_options() -> Options {
 	let tokens = if tokens.is_some() {
 		tokens.unwrap().map(|s| s.to_string()).collect()
 	} else {
+		println!(
+			"To use your account, we need your {}token{}.",
+			*COLOR_YELLOW,
+			*COLOR_RESET
+		);
+		println!("'tokens' in Discord and a few other services");
+		println!("represent your session.");
+		println!("They're what keeps you logged in.");
+		println!(
+			"{}Your token is re-generated when you change password{}",
+			*COLOR_RED,
+			*COLOR_RESET
+		);
+		println!();
+		println!("Care to let us highjack your session?");
 		print!("Token: ");
 		flush!();
 
