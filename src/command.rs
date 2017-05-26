@@ -21,7 +21,7 @@ extern crate hlua;
 use self::hlua::{AnyLuaValue, Lua};
 use color::*;
 use discord::{ChannelRef, Connection, Discord, State};
-use discord::model::{ChannelId, ChannelType, LiveServer, ServerId};
+use discord::model::{ChannelId, ChannelType, LiveServer, MessageId, ServerId};
 use escape::escape;
 use std::cmp;
 use std::collections::HashMap;
@@ -51,14 +51,14 @@ macro_rules! fail {
 macro_rules! usage_min {
 	($tokens:expr, $min:expr, $usage:expr) => {
 		if $tokens.len() < $min {
-			fail!(concat!($usage, "\nYou supplied too few arguments."));
+			fail!(concat!($usage, "\nYou supplied too few arguments"));
 		}
 	}
 }
 macro_rules! usage_max {
 	($tokens:expr, $max:expr, $usage:expr) => {
 		if $tokens.len() > $max {
-			fail!(concat!($usage, "\nYou supplied too many arguments."));
+			fail!(concat!($usage, "\nYou supplied too many arguments"));
 		}
 	}
 }
@@ -76,7 +76,7 @@ macro_rules! usage_one {
 		}
 	}
 }
-macro_rules! to_id {
+macro_rules! from_id {
 	($type:expr, $context:expr, $funcid:ident, $funcname:ident, $ref:expr, $nameorid:expr) => {
 		{
 			let i = $nameorid.parse();
@@ -119,7 +119,7 @@ macro_rules! require {
 }
 macro_rules! unwrap_cache {
 	($cache:expr) => {
-		require!($cache, "Could not find in local cache.")
+		require!($cache, couldnt!("find in local cache"))
 	}
 }
 macro_rules! pretty_json {
@@ -128,28 +128,36 @@ macro_rules! pretty_json {
 			let json = json!($($json)+);
 			let json = ::serde_json::to_string_pretty(&json);
 
-			attempt!(json, "Unable to generate JSON.")
+			attempt!(json, "Unable to generate JSON")
 		}
 	}
 }
 macro_rules! require_guild {
 	($context:expr) => {
-		require!($context.guild, "This command requires a guild to be selected.")
+		require!($context.guild, "This command requires a guild to be selected")
 	}
 }
 macro_rules! require_channel {
 	($context:expr) => {
-		require!($context.channel, "This command requires a channel to be selected.")
+		require!($context.channel, "This command requires a channel to be selected")
 	}
 }
 macro_rules! unknown {
 	($what:expr) => {
-		fail!(concat!("Unknown ", $what, "."));
+		{ concat!("Unknown ", $what) }
 	}
 }
 macro_rules! couldnt {
 	($what:expr) => {
-		fail!(concat!("Could not ", $what, "."));
+		{ concat!("Could not ", $what) }
+	}
+}
+macro_rules! parse {
+	($str:expr) => {
+		{
+			let num = $str.parse();
+			attempt!(num, "Not a number")
+		}
 	}
 }
 
@@ -178,15 +186,19 @@ impl CommandContext {
 				let mut map = HashMap::new();
 				map.insert(
 					"say".to_string(),
-					vec!["msg".to_string(), "normal".to_string()]
+					vec!["msg".to_string(), "normal".to_string(), "send".to_string()]
 				);
 				map.insert(
 					"tts".to_string(),
-					vec!["msg".to_string(), "tts".to_string()]
+					vec!["msg".to_string(), "tts".to_string(), "send".to_string()]
 				);
 				map.insert(
 					"embed".to_string(),
-					vec!["msg".to_string(), "embed".to_string()]
+					vec!["msg".to_string(), "embed".to_string(), "send".to_string()]
+				);
+				map.insert(
+					"edit".to_string(),
+					vec!["msg".to_string(), "normal".to_string()]
 				);
 
 				map
@@ -258,9 +270,15 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 							output.push('\n');
 						}
 						output.push_str("alias ");
-						output.push_str(key.as_str());
-						output.push(' ');
-						output.push_str(escape(val).as_str());
+						output.push_str(escape(key.to_string()).as_str());
+						output.push_str(" = ");
+						output.push_str(
+							val.iter()
+								.map(|item| escape(item.to_string()))
+								.collect::<Vec<String>>()
+								.join(" ")
+								.as_str()
+						);
 					}
 
 					success!(
@@ -280,7 +298,9 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 					if name == "alias" {
 						fail!("lol nope");
 					}
-					context.alias.insert(name, tokens[1..].to_vec());
+
+					let start = if tokens[1] == "=".to_string() { 2 } else { 1 };
+					context.alias.insert(name, tokens[start..].to_vec());
 
 					success!(None);
 				},
@@ -312,7 +332,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 
 					};
 					if cmd.is_err() {
-						fail!("Could not execute command");
+						fail!(couldnt!("execute command"));
 					}
 					success!(
 						Some(
@@ -328,14 +348,14 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				"file" => {
 					usage_max!(tokens, 2, "exec file <file>");
 					let result = execute_file(context, tokens[1].clone());
-					let result = attempt!(result, "Could not run commands file");
+					let result = attempt!(result, couldnt!("run commands file"));
 
 					success!(Some(result))
 				},
 				"lua" => {
 					let mut lua = new_lua(context);
 
-					let file = attempt!(File::open(tokens[1].clone()), "Could not open file");
+					let file = attempt!(File::open(tokens[1].clone()), couldnt!("open file"));
 					if let Err(err) = lua.execute_from_reader::<(), _>(file) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
@@ -350,7 +370,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 					}
 					success!(None);
 				},
-				_ => unknown!("type"),
+				_ => fail!(unknown!("type (shell/file/lua/lua-inline available)")),
 			}
 		},
 		"exit" => {
@@ -368,7 +388,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				context.channel = None;
 				success!(None);
 			}
-			let guild = to_id!(
+			let guild = from_id!(
 				ServerId,
 				context,
 				find_guild,
@@ -402,7 +422,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				}
 				success!(None);
 			}
-			let channel = to_id!(
+			let channel = from_id!(
 				ChannelId,
 				context,
 				find_channel,
@@ -501,16 +521,21 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			success!(Some(value));
 		},
 		"msg" => {
-			usage!(tokens, 2, "msg <type> <text>");
+			usage!(tokens, 3, "msg <type> <\"send\"/existing id> <text>");
 			let channel = require_channel!(context);
 
 			let kind = match tokens[0].clone().as_str() {
 				"normal" => 0,
 				"tts" => 1,
 				"embed" => 2,
-				_ => unknown!("type"),
+				_ => fail!(unknown!("type (normal/tts/embed available)")),
 			};
-			let text = tokens[1].clone();
+			let edit = match tokens[1].clone().as_str() {
+				"send" => None,
+				id => Some(parse!(id)),
+			};
+
+			let text = tokens[2].clone();
 			let mut text = text.as_str();
 
 			let mut output = String::new();
@@ -526,17 +551,21 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				let value = &text[..amount];
 				text = &text[amount..];
 
-				match kind {
-					0 | 1 => {
-						let msg = context.session.send_message(channel, value, "", kind == 1);
-						let msg = attempt!(msg, "Couldn't send message.");
-
-						let mut string = String::new();
-						string.push_str("Sent message with ID ");
-						string.push_str(msg.id.to_string().as_str());
-						string.push('.');
-
-						output.push_str(string.as_str());
+				let msg = match kind {
+					0 => {
+						if let Some(edit) = edit {
+							context
+								.session
+								.edit_message(channel, MessageId(edit), value)
+						} else {
+							context.session.send_message(channel, value, "", false)
+						}
+					},
+					1 => {
+						if edit.is_some() {
+							fail!("Can't edit TTS");
+						}
+						context.session.send_message(channel, value, "", true)
 					},
 					2 => {
 						fail!("Not implemented. Waiting for discord-rs. See https://github.com/SpaceManiac/discord-rs/issues/112");
@@ -545,17 +574,19 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 						       .session
 						       .send_embed(channel, value, |builder| builder.description("Hi"))
 						       .is_err() {
-							couldnt!("send embed");
+							fail!(couldnt!("send embed"));
 						}
 						*/
 					},
 					_ => unreachable!(),
-				}
+				};
+				let msg = attempt!(msg, couldnt!("send message"));
+				output.push_str(format!("Sent message with ID {}", msg.id).as_str());
 			}
 
 			success!(Some(output));
 		},
-		_ => unknown!("command"),
+		_ => fail!(unknown!("command")),
 	}
 }
 
