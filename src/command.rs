@@ -270,11 +270,11 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 							output.push('\n');
 						}
 						output.push_str("alias ");
-						output.push_str(escape(key.to_string()).as_str());
+						output.push_str(escape(key).as_str());
 						output.push_str(" = ");
 						output.push_str(
 							val.iter()
-								.map(|item| escape(item.to_string()))
+								.map(|item| escape(item))
 								.collect::<Vec<String>>()
 								.join(" ")
 								.as_str()
@@ -299,7 +299,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 						fail!("lol nope");
 					}
 
-					let start = if tokens[1] == "=".to_string() { 2 } else { 1 };
+					let start = if tokens[1] == "=" { 2 } else { 1 };
 					context.alias.insert(name, tokens[start..].to_vec());
 
 					success!(None);

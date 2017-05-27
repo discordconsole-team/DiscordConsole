@@ -1,4 +1,4 @@
-pub fn escape(token: String) -> String {
+pub fn escape(token: &str) -> String {
 	let mut escaped = String::new();
 	let mut found = false;
 
