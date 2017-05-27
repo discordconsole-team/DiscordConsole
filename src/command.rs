@@ -169,8 +169,10 @@ pub struct CommandContext {
 	pub guild: Option<ServerId>,
 	pub channel: Option<ChannelId>,
 
+	pub terminal: bool,
+
 	pub alias: HashMap<String, Vec<String>>,
-	pub terminal: bool
+	pub using: Option<Vec<String>>
 }
 impl CommandContext {
 	pub fn new(session: Discord, websocket: Connection, state: State) -> CommandContext {
@@ -181,6 +183,8 @@ impl CommandContext {
 
 			guild: None,
 			channel: None,
+
+			terminal: false,
 
 			alias: {
 				let mut map = HashMap::new();
@@ -203,7 +207,7 @@ impl CommandContext {
 
 				map
 			},
-			terminal: false
+			using: None
 		}
 	}
 }
@@ -230,26 +234,33 @@ impl Default for CommandResult {
 // Unsure if I really should split it up. It shall be thought about.
 pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> CommandResult {
 	if tokens.len() < 1 {
+		if context.using.is_some() {
+			context.using = None;
+		}
 		return CommandResult {
 		           empty: true,
 		           ..Default::default()
 		       };
 	}
-	let mut command = tokens[0].clone();
-	tokens.remove(0);
 
 	// Unsure about the best approach here.
 	// Used to take a slice to this whole function, but it'd cause issues
-	// when this came along...
-	if let Some(atokens) = context.alias.get(&command) {
+	// when these came along...
+	if let Some(ref using) = context.using {
+		let mut using = using.clone();
+
+		using.append(&mut tokens);
+		tokens = using;
+	}
+	if let Some(atokens) = context.alias.get(&tokens[0]) {
 		let mut atokens = atokens.clone();
 
-		command = atokens[0].clone();
-		atokens.remove(0);
+		tokens.remove(0);
 		atokens.append(&mut tokens);
 		tokens = atokens;
 	}
-
+	let command = tokens[0].clone();
+	tokens.remove(0);
 	let command = command.as_str();
 
 	match command {
@@ -586,6 +597,12 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 
 			success!(Some(output));
 		},
+		"use" => {
+			usage_min!(tokens, 1, "use <command...>");
+
+			context.using = Some(tokens);
+			success!(Some("Use mode enabled.\nSend an empty command to disable.".to_string()));
+		},
 		_ => fail!(unknown!("command")),
 	}
 }
@@ -652,9 +669,6 @@ pub fn execute_file(context: &mut CommandContext, file: String) -> Result<String
 
 	Ok(results)
 }
-
-// fn copy(reference: &mut CommandContext) -> &mut CommandContext { return
-// reference; }
 
 fn lua_to_string(value: AnyLuaValue) -> String {
 	match value {

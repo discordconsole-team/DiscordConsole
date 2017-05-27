@@ -22,14 +22,17 @@ lazy_static! {
 	pub static ref NOCOLOR: bool = {
 		env::var("TERM").unwrap_or_default() == "dumb"
 	};
-	pub static ref COLOR_YELLOW: &'static str = {
-		if *NOCOLOR { "" } else { "\x1B[0;33m" }
+	pub static ref COLOR_BLACK: &'static str = {
+		if *NOCOLOR { "" } else { "\x1B[0;30m" }
 	};
 	pub static ref COLOR_RED: &'static str = {
 		if *NOCOLOR { "" } else { "\x1B[1;31m" }
 	};
-	pub static ref COLOR_BLACK: &'static str = {
-		if *NOCOLOR { "" } else { "\x1B[0;30m" }
+	pub static ref COLOR_YELLOW: &'static str = {
+		if *NOCOLOR { "" } else { "\x1B[0;33m" }
+	};
+	pub static ref COLOR_CYAN: &'static str = {
+		if *NOCOLOR { "" } else { "\x1B[0;36m" }
 	};
 
 	pub static ref COLOR_ITALIC: &'static str = {

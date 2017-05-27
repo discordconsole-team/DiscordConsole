@@ -94,7 +94,13 @@ pub fn pointer(context: &CommandContext) -> String {
 
 	let mut prefix = String::with_capacity(capacity);
 	if context.terminal {
-		prefix.push_str(*COLOR_YELLOW);
+		prefix.push_str(
+			if context.using.is_some() {
+				*COLOR_CYAN
+			} else {
+				*COLOR_YELLOW
+			}
+		);
 	}
 	if let Some(guild) = context.guild {
 		prefix.push_str(
