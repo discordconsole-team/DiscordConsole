@@ -26,9 +26,8 @@ pub fn escape(token: &str) -> String {
 mod test {
 	#[test]
 	fn test_escape() {
-		assert_eq!(
-			super::escape(&["hello world".to_string(), "=)".to_string()]),
-			"\"hello world\" =)"
-		);
+		assert_eq!(super::escape("hello world"), "\"hello world\"");
+		assert_eq!(super::escape("=)"), "=)");
+		assert_eq!(super::escape("\\"), "\\\\");
 	}
 }
