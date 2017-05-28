@@ -29,6 +29,7 @@ use std::error::Error;
 use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::io::Write;
 use std::process::{Command, Stdio};
 
 macro_rules! success {
@@ -204,6 +205,7 @@ impl CommandContext {
 					"edit".to_string(),
 					vec!["msg".to_string(), "normal".to_string()]
 				);
+				map.insert("silent".to_string(), vec!["to".to_string(), String::new()]);
 
 				map
 			},
@@ -306,12 +308,16 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				},
 				_ => {
 					let name = tokens[0].clone();
+					tokens.remove(0);
 					if name == "alias" {
 						fail!("lol nope");
 					}
 
-					let start = if tokens[1] == "=" { 2 } else { 1 };
-					context.alias.insert(name, tokens[start..].to_vec());
+					if tokens.len() >= 2 && tokens[0] == "=" {
+						tokens.remove(0);
+						usage_min!(tokens, 1, "alias <name> = <command...>");
+					}
+					context.alias.insert(name, tokens.to_vec());
 
 					success!(None);
 				},
@@ -391,8 +397,12 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				..Default::default()
 			}
 		},
+		"help" => {
+			usage_one!(tokens, "help <command>");
+			success!(Some(::help::about(tokens[0].as_str())))
+		},
 		"guild" => {
-			usage_max!(tokens, 1, "guild <id/name>");
+			usage_max!(tokens, 1, "guild [id/name]");
 
 			if tokens.is_empty() {
 				context.guild = None;
@@ -423,7 +433,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			);
 		},
 		"channel" => {
-			usage_max!(tokens, 1, "channel <id/name>");
+			usage_max!(tokens, 1, "channel [id/name]");
 
 			if tokens.is_empty() {
 				if let Some(guild) = context.guild {
@@ -602,6 +612,38 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 
 			context.using = Some(tokens);
 			success!(Some("Use mode enabled.\nSend an empty command to disable.".to_string()));
+		},
+		"to" => {
+			usage_min!(tokens, 2, "to <file> <command...>");
+
+			let file = tokens[0].clone();
+			tokens.remove(0);
+
+			if tokens[0] == "from" {
+				tokens.remove(0);
+				usage_min!(tokens, 1, "to <file> from <command...>");
+			}
+
+			let mut result = execute(context, tokens);
+
+			if file.is_empty() {
+				if result.success {
+					result.text = None;
+				}
+			} else {
+				let file = File::create(file);
+				let mut file = attempt!(file, couldnt!("open file"));
+
+				if let Some(text) = result.text.clone() {
+					let write = file.write_all(text.as_bytes());
+					attempt!(write, couldnt!("write to file"));
+					if result.success {
+						result.text = None;
+					}
+				}
+			}
+
+			result
 		},
 		_ => fail!(unknown!("command")),
 	}

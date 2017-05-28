@@ -31,14 +31,15 @@ macro_rules! flush {
 	() => { ::std::io::stdout().flush().unwrap(); }
 }
 
-mod options;
-mod tokenizer;
-mod escape;
-mod command;
-mod sort;
-mod tui;
 mod color;
+mod command;
+mod escape;
+mod help;
+mod options;
 mod raw;
+mod sort;
+mod tokenizer;
+mod tui;
 
 use color::*;
 use command::CommandContext;
