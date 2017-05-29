@@ -146,7 +146,7 @@ fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val
 }
 
 fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: Vec<String>) -> ::command::CommandResult {
-	let result = ::command::execute(context, tokens);
+	let result = ::command::execute(context, false, tokens);
 	if result.exit {
 		s.quit();
 		return result;

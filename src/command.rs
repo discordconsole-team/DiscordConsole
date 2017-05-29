@@ -19,8 +19,9 @@
 extern crate hlua;
 
 use self::hlua::{AnyLuaValue, Lua};
+use {LIMIT, LIMIT_MSG};
 use color::*;
-use discord::{ChannelRef, Connection, Discord, State};
+use discord::{ChannelRef, Connection, Discord, GetMessages, State};
 use discord::model::{ChannelId, ChannelType, LiveServer, MessageId, ServerId};
 use escape::escape;
 use std::cmp;
@@ -154,10 +155,28 @@ macro_rules! couldnt {
 	}
 }
 macro_rules! parse {
-	($str:expr) => {
+	($str:expr, $type:tt) => {
 		{
-			let num = $str.parse();
+			let num = $str.parse::<$type>();
 			attempt!(num, "Not a number")
+		}
+	}
+}
+macro_rules! msg {
+	($id:expr) => {
+		{
+			format!("Sent message with ID {}", $id)
+		}
+	}
+}
+macro_rules! max {
+	($num:expr, $max:expr) => {
+		{
+			if $num > $max {
+				fail!(format!("Too high. Max: {}", $max));
+			}
+
+			$num
 		}
 	}
 }
@@ -169,8 +188,6 @@ pub struct CommandContext {
 
 	pub guild: Option<ServerId>,
 	pub channel: Option<ChannelId>,
-
-	pub terminal: bool,
 
 	pub alias: HashMap<String, Vec<String>>,
 	pub using: Option<Vec<String>>
@@ -184,8 +201,6 @@ impl CommandContext {
 
 			guild: None,
 			channel: None,
-
-			terminal: false,
 
 			alias: {
 				let mut map = HashMap::new();
@@ -234,7 +249,7 @@ impl Default for CommandResult {
 // Shut clippy up about my macros... for now at least
 #[cfg_attr(feature = "cargo-clippy", allow(cyclomatic_complexity))]
 // Unsure if I really should split it up. It shall be thought about.
-pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> CommandResult {
+pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<String>) -> CommandResult {
 	if tokens.len() < 1 {
 		if context.using.is_some() {
 			context.using = None;
@@ -269,6 +284,10 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 		"echo" => {
 			usage_one!(tokens, "echo <text>");
 			success!(Some(tokens[0].clone()));
+		},
+		"help" => {
+			usage_one!(tokens, "help <command>");
+			success!(Some(::help::about(tokens[0].as_str())))
 		},
 		"alias" => {
 			match tokens.len() {
@@ -355,22 +374,22 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 						Some(
 							format!(
 								"{}Process exited with status {}{}",
-								if context.terminal { *COLOR_BLACK } else { "" },
+								if terminal { *COLOR_BLACK } else { "" },
 								cmd.unwrap().code().unwrap_or(1),
-								if context.terminal { *COLOR_RESET } else { "" },
+								if terminal { *COLOR_RESET } else { "" },
 							)
 						)
 					);
 				},
 				"file" => {
 					usage_max!(tokens, 2, "exec file <file>");
-					let result = execute_file(context, tokens[1].clone());
+					let result = execute_file(context, terminal, tokens[1].clone());
 					let result = attempt!(result, couldnt!("run commands file"));
 
 					success!(Some(result))
 				},
 				"lua" => {
-					let mut lua = new_lua(context);
+					let mut lua = new_lua(context, terminal);
 
 					let file = attempt!(File::open(tokens[1].clone()), couldnt!("open file"));
 					if let Err(err) = lua.execute_from_reader::<(), _>(file) {
@@ -380,7 +399,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				},
 				"lua-inline" => {
 					usage_max!(tokens, 2, "exec lua-inline <text>");
-					let mut lua = new_lua(context);
+					let mut lua = new_lua(context, terminal);
 
 					if let Err(err) = lua.execute::<()>(tokens[1].clone().as_str()) {
 						fail!(format!("Error trying to execute: {:?}", err));
@@ -396,10 +415,6 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				exit: true,
 				..Default::default()
 			}
-		},
-		"help" => {
-			usage_one!(tokens, "help <command>");
-			success!(Some(::help::about(tokens[0].as_str())))
 		},
 		"guild" => {
 			usage_max!(tokens, 1, "guild [id/name]");
@@ -492,7 +507,6 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 		},
 		"guilds" => {
 			usage_max!(tokens, 0, "guilds");
-
 			let mut guilds = context.state.servers().to_vec();
 			if let Some(settings) = context.state.settings() {
 				::sort::sort_guilds(settings, &mut guilds);
@@ -553,59 +567,56 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 			};
 			let edit = match tokens[1].clone().as_str() {
 				"send" => None,
-				id => Some(parse!(id)),
+				id => Some(parse!(id, u64)),
 			};
 
 			let text = tokens[2].clone();
 			let mut text = text.as_str();
 
-			let mut output = String::new();
-			let mut first = true;
-
-			while !text.is_empty() {
-				if first {
-					first = false;
-				} else {
-					output.push('\n');
-				}
-				let amount = cmp::min(text.len(), ::LIMIT_MSG);
-				let value = &text[..amount];
-				text = &text[amount..];
-
-				let msg = match kind {
-					0 => {
-						if let Some(edit) = edit {
-							context
-								.session
-								.edit_message(channel, MessageId(edit), value)
-						} else {
-							context.session.send_message(channel, value, "", false)
-						}
-					},
-					1 => {
-						if edit.is_some() {
+			match kind {
+				0 | 1 => {
+					if let Some(edit) = edit {
+						if kind == 1 {
 							fail!("Can't edit TTS");
 						}
-						context.session.send_message(channel, value, "", true)
-					},
-					2 => {
-						fail!("Not implemented. Waiting for discord-rs. See https://github.com/SpaceManiac/discord-rs/issues/112");
-						/*
-						if context
-						       .session
-						       .send_embed(channel, value, |builder| builder.description("Hi"))
-						       .is_err() {
-							fail!(couldnt!("send embed"));
-						}
-						*/
-					},
-					_ => unreachable!(),
-				};
-				let msg = attempt!(msg, couldnt!("send message"));
-				output.push_str(format!("Sent message with ID {}", msg.id).as_str());
-			}
+						max!(text.len() as u16, LIMIT_MSG);
+						let msg = context.session.edit_message(channel, MessageId(edit), text);
+						let msg = attempt!(msg, couldnt!("send message"));
+						success!(Some(msg!(msg.id)));
+					} else {
+						let mut output = String::new();
 
-			success!(Some(output));
+						let mut first = true;
+						while !text.is_empty() {
+							if first {
+								first = false;
+							} else {
+								output.push('\n');
+							}
+							let amount = cmp::min(text.len(), LIMIT_MSG as usize);
+							let value = &text[..amount];
+							text = &text[amount..];
+							let msg = context.session.send_message(channel, value, "", kind == 1);
+							let msg = attempt!(msg, couldnt!("send message"));
+							output.push_str(msg!(msg.id).as_str());
+						}
+
+						success!(Some(output));
+					}
+				},
+				2 => {
+					fail!("Not implemented. Waiting for discord-rs. See https://github.com/SpaceManiac/discord-rs/issues/112");
+					/*
+					if context
+						   .session
+						   .send_embed(channel, value, |builder| builder.description("Hi"))
+						   .is_err() {
+						fail!(couldnt!("send embed"));
+					}
+					*/
+				},
+				_ => unreachable!(),
+			};
 		},
 		"use" => {
 			usage_min!(tokens, 1, "use <command...>");
@@ -624,7 +635,7 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 				usage_min!(tokens, 1, "to <file> from <command...>");
 			}
 
-			let mut result = execute(context, tokens);
+			let mut result = execute(context, false, tokens);
 
 			if file.is_empty() {
 				if result.success {
@@ -645,6 +656,43 @@ pub fn execute(context: &mut CommandContext, mut tokens: Vec<String>) -> Command
 
 			result
 		},
+		"log" => {
+			usage_max!(tokens, 1, "log [n=10]");
+			let channel = require_channel!(context);
+
+			let limit = match tokens.get(0) {
+				Some(num) => Some(max!(parse!(num, u16), LIMIT) as u64), // Ugh. discord-rs uses u64 even though even u16 is more than enough
+				None => Some(10),
+			};
+
+			let messages = context
+				.session
+				.get_messages(channel, GetMessages::MostRecent, limit);
+			let messages = attempt!(messages, couldnt!("get messages"));
+
+			let mut output = String::new();
+			let mut first = true;
+			for msg in messages.iter().rev() {
+				if first {
+					first = false;
+				} else {
+					output.push('\n');
+				}
+
+				if terminal {
+					output.push_str(*COLOR_CYAN);
+				}
+				output.push_str(msg.author.name.as_str());
+				output.push_str(msg.author.discriminator.to_string().as_str());
+				if terminal {
+					output.push_str(*COLOR_RESET);
+				}
+				output.push_str(": ");
+				output.push_str(msg.content.as_str())
+			}
+
+			success!(Some(output));
+		},
 		_ => fail!(unknown!("command")),
 	}
 }
@@ -659,11 +707,11 @@ impl fmt::Display for ErrUnclosed {
 	fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result { write!(fmt, "{}", self.description()) }
 }
 
-pub fn execute_file(context: &mut CommandContext, file: String) -> Result<String, Box<Error>> {
+pub fn execute_file(context: &mut CommandContext, terminal: bool, file: String) -> Result<String, Box<Error>> {
 	let file = File::open(file)?;
 	let bufreader = BufReader::new(file);
 
-	let pointer = ::raw::pointer(context);
+	let pointer = ::raw::pointer(context, terminal);
 
 	let mut results = String::new();
 	let mut first = true;
@@ -687,7 +735,7 @@ pub fn execute_file(context: &mut CommandContext, file: String) -> Result<String
 			}
 		);
 		let tokens = tokens?;
-		let result = execute(context, tokens);
+		let result = execute(context, terminal, tokens);
 
 		if result.empty {
 			continue;
@@ -698,11 +746,11 @@ pub fn execute_file(context: &mut CommandContext, file: String) -> Result<String
 		}
 
 		results.push_str(pointer.clone().as_str());
-		if context.terminal {
+		if terminal {
 			results.push_str(*COLOR_ITALIC);
 		}
 		results.push_str(line.as_str());
-		if context.terminal {
+		if terminal {
 			results.push_str(*COLOR_RESET);
 		}
 		results.push('\n');
@@ -739,7 +787,7 @@ fn lua_to_string(value: AnyLuaValue) -> String {
 	}
 
 }
-pub fn new_lua(context: &mut CommandContext) -> Lua {
+pub fn new_lua(context: &mut CommandContext, terminal: bool) -> Lua {
 	let mut lua = Lua::new();
 	lua.openlibs();
 
@@ -752,7 +800,7 @@ pub fn new_lua(context: &mut CommandContext) -> Lua {
 				let args = args.iter()
 					.map(|value| lua_to_string(value.clone()))
 					.collect();
-				execute(context, args).text.unwrap_or_default()
+				execute(context, terminal, args).text.unwrap_or_default()
 			}
 		)
 	);

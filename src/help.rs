@@ -4,6 +4,11 @@ pub fn about(command: &str) -> String {
 				"echo <text>\n\
 				Print out the text specified."
 			},
+			"help" => {
+				"help\n\
+				The help command shows information about a command,\n\
+				as you can see."
+			},
 			"alias" => {
 				"alias [name] [=] [command...]\n\
 				If 0 arguments,\n\
@@ -66,10 +71,9 @@ pub fn about(command: &str) -> String {
 				<file> may be \"\" (empty) to discard the output.\n\
 				Also see the built-in silent alias."
 			},
-			"help" => {
-				"help\n\
-				The help command shows information about a command,\n\
-				as you can see."
+			"log" => {
+				"log [n=10]\n\
+				Print the last [n] messages (default 10)"
 			},
 			_ => "No help available",
 		}

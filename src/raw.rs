@@ -27,11 +27,10 @@ use discord::ChannelRef;
 use std::io::Write;
 
 pub fn raw(mut context: CommandContext) {
-	context.terminal = true;
 	let mut rl = Editor::<()>::new();
 
 	loop {
-		let prefix = pointer(&context);
+		let prefix = pointer(&context, true);
 		let prefix = prefix.as_str();
 
 		let mut first = true;
@@ -70,7 +69,7 @@ pub fn raw(mut context: CommandContext) {
 			},
 		};
 
-		let result = ::command::execute(&mut context, tokens);
+		let result = ::command::execute(&mut context, true, tokens);
 		if result.success {
 			if let Some(text) = result.text {
 				println!("{}", text.as_str());
@@ -85,15 +84,15 @@ pub fn raw(mut context: CommandContext) {
 	}
 }
 
-pub fn pointer(context: &CommandContext) -> String {
+pub fn pointer(context: &CommandContext, terminal: bool) -> String {
 	let mut capacity = 2; // Minimum capacity
-	if context.terminal {
+	if terminal {
 		capacity += COLOR_YELLOW.len();
 		capacity += COLOR_RESET.len();
 	}
 
 	let mut prefix = String::with_capacity(capacity);
-	if context.terminal {
+	if terminal {
 		prefix.push_str(
 			if context.using.is_some() {
 				*COLOR_CYAN
@@ -132,7 +131,7 @@ pub fn pointer(context: &CommandContext) -> String {
 		prefix.push_str(")");
 	}
 	prefix.push_str("> ");
-	if context.terminal {
+	if terminal {
 		prefix.push_str(*COLOR_RESET);
 	}
 	prefix
