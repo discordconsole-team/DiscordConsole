@@ -75,6 +75,11 @@ pub fn about(command: &str) -> String {
 				"log [n=10]\n\
 				Print the last [n] messages (default 10)"
 			},
+			"accounts" => {
+				"accounts [index]\n\
+				List all accounts, and switch to another account by\n\
+				specifying index."
+			},
 			_ => "No help available",
 		}
 		.to_string()
