@@ -22,23 +22,23 @@ use self::cursive::event::Key;
 use self::cursive::menu::MenuTree;
 use self::cursive::view::{Offset, Position};
 use self::cursive::views::{Button, Dialog, EditView, LinearLayout};
-
-use command::CommandContext;
-
-use std::cell::RefCell;
+use command::{CommandContext, CommandResult};
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 use tui::cursive::traits::Identifiable;
 
-pub fn tui(context: CommandContext) {
+pub fn tui(context: Arc<Mutex<CommandContext>>) {
 	let mut screen = Cursive::new();
 	screen.add_global_callback('q', Cursive::quit);
 
-	let mut guilds = context.state.servers().to_vec();
-	if let Some(settings) = context.state.settings() {
-		::sort::sort_guilds(settings, &mut guilds)
+	let mut guilds;
+	{
+		let context = context.lock().unwrap();
+		guilds = context.state.servers().to_vec();
+		if let Some(settings) = context.state.settings() {
+			::sort::sort_guilds(settings, &mut guilds)
+		}
 	}
-
-	let context = Rc::new(RefCell::new(context));
 
 	let mut guildtree = MenuTree::new();
 	for guild in guilds {
@@ -93,7 +93,7 @@ pub fn tui(context: CommandContext) {
 												return;
 											}
 
-											command(s, &mut context.borrow_mut(), tokens.unwrap());
+											command(s, &mut context.lock().unwrap(), tokens.unwrap());
 										}
 									)
 								)
@@ -113,7 +113,7 @@ pub fn tui(context: CommandContext) {
 	screen.run();
 }
 
-fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val: &str, tokens: &[&str]) -> Button {
+fn command_field(context: Arc<Mutex<CommandContext>>, key: &str, val: &str, tokens: &[&str]) -> Button {
 	let mut string = String::with_capacity(key.len() + 2 + val.len());
 	string.push_str(key);
 	string.push_str(": ");
@@ -134,7 +134,7 @@ fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val
 								s.pop_layer();
 								let mut tokens = (*tokens).clone();
 								tokens.push(string.to_string());
-								command(s, &mut context.borrow_mut(), tokens);
+								command(s, &mut context.lock().unwrap(), tokens);
 							}
 						)
 				)
@@ -145,7 +145,7 @@ fn command_field(context: Rc<RefCell<::command::CommandContext>>, key: &str, val
 	)
 }
 
-fn command(s: &mut Cursive, context: &mut ::command::CommandContext, tokens: Vec<String>) -> ::command::CommandResult {
+fn command(s: &mut Cursive, context: &mut CommandContext, tokens: Vec<String>) -> CommandResult {
 	let result = ::command::execute(context, false, tokens);
 	if result.exit {
 		s.quit();

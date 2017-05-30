@@ -43,8 +43,10 @@ mod tui;
 
 use color::*;
 use command::CommandContext;
-use discord::{Discord, State};
+use discord::{Connection, Discord, State};
 use std::io::Write;
+use std::sync::{Arc, Mutex};
+// use std::thread;
 
 const VERSION: &str = "0.1";
 
@@ -65,17 +67,38 @@ fn main() {
 		}
 	}
 
-	let session = Discord::from_user_token(options.tokens[options.token].as_str()).unwrap();
-	let (conn, ready) = match session.connect() {
-		Ok((conn, ready)) => (conn, ready),
-		Err(err) => {
-			stderr!("Could not connect to websocket: {}", err);
-			return;
-		},
-	};
-	let state = State::new(ready);
+	let context = CommandContext::new(options.tokens, 0);
+	if let Err(err) = context {
+		stderr!("Could not connect to gateway: {}", err);
+		return;
+	}
+	let context = Arc::new(Mutex::new(context.unwrap()));
 
-	let context = CommandContext::new(session, conn, state);
+	// TODO.
+	// See https://krake.one/l/20kh
+	/*
+	let clone = context.clone();
+	thread::spawn(
+		move || loop {
+			println!("Event: Locking {:?}", clone);
+			let mut gateway = {
+				&mut clone.lock().unwrap().gateway
+			};
+			println!("Event: Unlocked {:?}", clone);
+			match gateway.recv_event() {
+				Ok(event) => {
+					// println!("Updating state: {:?}", event);
+					clone.lock().unwrap().state.update(&event)
+				},
+				Err(err) => {
+					stderr!("Error receiving: {}", err);
+				},
+			}
+		}
+	);
+	*/
+
+
 
 	if options.notui {
 		raw::raw(context);
@@ -84,4 +107,17 @@ fn main() {
 	}
 
 	print!("{}", *COLOR_RESET);
+}
+
+pub fn connect(token: &str) -> Result<(Discord, Connection, State), discord::Error> {
+	let session = Discord::from_user_token(token).unwrap();
+	let (gateway, ready) = match session.connect() {
+		Ok((gateway, ready)) => (gateway, ready),
+		Err(err) => {
+			return Err(err);
+		},
+	};
+	let state = State::new(ready);
+
+	Ok((session, gateway, state))
 }

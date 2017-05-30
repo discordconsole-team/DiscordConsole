@@ -19,18 +19,21 @@ extern crate rustyline;
 
 use self::rustyline::Editor;
 use self::rustyline::error::ReadlineError;
-
 use color::*;
-
 use command::{CommandContext, MoreStateFunctionsSuperOriginalTraitNameExclusiveTM};
 use discord::ChannelRef;
 use std::io::Write;
+use std::sync::{Arc, Mutex};
 
-pub fn raw(mut context: CommandContext) {
+pub fn raw(context: Arc<Mutex<CommandContext>>) {
 	let mut rl = Editor::<()>::new();
 
 	loop {
-		let prefix = pointer(&context, true);
+		// println!("Pointer: Locking {:?}", context);
+		let prefix = {
+			pointer(&context.lock().unwrap(), true)
+		};
+		// println!("Pointer: Unlocked {:?}", context);
 		let prefix = prefix.as_str();
 
 		let mut first = true;
@@ -69,7 +72,9 @@ pub fn raw(mut context: CommandContext) {
 			},
 		};
 
-		let result = ::command::execute(&mut context, true, tokens);
+		// println!("Command: Locking");
+		let result = ::command::execute(&mut context.lock().unwrap(), true, tokens);
+		// println!("Command: Executed");
 		if result.success {
 			if let Some(text) = result.text {
 				println!("{}", text.as_str());
@@ -78,6 +83,7 @@ pub fn raw(mut context: CommandContext) {
 			stderr!("{}", text.as_str());
 		}
 
+		// println!("Command: Unlocked");
 		if result.exit {
 			break;
 		}

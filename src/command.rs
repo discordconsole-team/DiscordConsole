@@ -99,23 +99,17 @@ macro_rules! from_id {
 }
 macro_rules! attempt {
 	($result:expr, $message:expr) => {
-		{
-			if let Err(err) = $result {
-				fail!(format!("{} (Details: {})", $message, err));
-			}
-
-			$result.unwrap()
+		match $result {
+			Err(err) => fail!(format!("{} (Details: {})", $message, err)),
+			Ok(ok) => ok,
 		}
 	}
 }
 macro_rules! require {
 	($option:expr, $message:expr) => {
-		{
-			if $option.is_none() {
-				fail!($message);
-			}
-
-			$option.unwrap()
+		match $option {
+			None => fail!($message),
+			Some(some) => some,
 		}
 	}
 }
@@ -182,8 +176,11 @@ macro_rules! max {
 }
 
 pub struct CommandContext {
+	pub tokens: Vec<String>,
+	pub selected: usize,
+
 	pub session: Discord,
-	pub websocket: Connection,
+	pub gateway: Connection,
 	pub state: State,
 
 	pub guild: Option<ServerId>,
@@ -192,40 +189,54 @@ pub struct CommandContext {
 	pub alias: HashMap<String, Vec<String>>,
 	pub using: Option<Vec<String>>
 }
+impl ::std::fmt::Debug for CommandContext {
+	fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result { write!(fmt, "context here") }
+}
 impl CommandContext {
-	pub fn new(session: Discord, websocket: Connection, state: State) -> CommandContext {
-		CommandContext {
-			session: session,
-			websocket: websocket,
-			state: state,
-
-			guild: None,
-			channel: None,
-
-			alias: {
-				let mut map = HashMap::new();
-				map.insert(
-					"say".to_string(),
-					vec!["msg".to_string(), "normal".to_string(), "send".to_string()]
-				);
-				map.insert(
-					"tts".to_string(),
-					vec!["msg".to_string(), "tts".to_string(), "send".to_string()]
-				);
-				map.insert(
-					"embed".to_string(),
-					vec!["msg".to_string(), "embed".to_string(), "send".to_string()]
-				);
-				map.insert(
-					"edit".to_string(),
-					vec!["msg".to_string(), "normal".to_string()]
-				);
-				map.insert("silent".to_string(), vec!["to".to_string(), String::new()]);
-
-				map
-			},
-			using: None
+	pub fn new(tokens: Vec<String>, selected: usize) -> Result<CommandContext, ::discord::Error> {
+		let conn = ::connect(tokens[selected].as_str());
+		if let Err(err) = conn {
+			return Err(err);
 		}
+		let (session, gateway, state) = conn.unwrap();
+
+		Ok(
+			CommandContext {
+				tokens: tokens,
+				selected: selected,
+
+				session: session,
+				gateway: gateway,
+				state: state,
+
+				guild: None,
+				channel: None,
+
+				alias: {
+					let mut map = HashMap::new();
+					map.insert(
+						"say".to_string(),
+						vec!["msg".to_string(), "normal".to_string(), "send".to_string()]
+					);
+					map.insert(
+						"tts".to_string(),
+						vec!["msg".to_string(), "tts".to_string(), "send".to_string()]
+					);
+					map.insert(
+						"embed".to_string(),
+						vec!["msg".to_string(), "embed".to_string(), "send".to_string()]
+					);
+					map.insert(
+						"edit".to_string(),
+						vec!["msg".to_string(), "normal".to_string()]
+					);
+					map.insert("silent".to_string(), vec!["to".to_string(), String::new()]);
+
+					map
+				},
+				using: None
+			}
+		)
 	}
 }
 pub struct CommandResult {
@@ -682,8 +693,15 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				if terminal {
 					output.push_str(*COLOR_CYAN);
 				}
-				output.push_str(msg.author.name.as_str());
-				output.push_str(msg.author.discriminator.to_string().as_str());
+
+				let name = msg.author.name.as_str();
+				let discrim = msg.author.discriminator.to_string();
+				let discrim = discrim.as_str();
+
+				output.reserve(name.len() + 1 + discrim.len());
+				output.push_str(name);
+				output.push('#');
+				output.push_str(discrim);
 				if terminal {
 					output.push_str(*COLOR_RESET);
 				}
@@ -692,6 +710,50 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 
 			success!(Some(output));
+		},
+		"accounts" => {
+			usage_max!(tokens, 1, "accounts [index]");
+
+			match tokens.get(0) {
+				None => {
+					let mut output = String::new();
+					let mut first = true;
+
+					for (i, token) in context.tokens.iter().enumerate() {
+						if first {
+							first = false;
+						} else {
+							output.push('\n');
+						}
+
+						output.push_str(format!("{}. {}", i, token).as_str());
+					}
+
+					success!(Some(output));
+				},
+				Some(index) => {
+					let index = parse!(index, usize);
+					let token = match context.tokens.get(index) {
+						None => fail!("Out of bounds"),
+						Some(token) => token,
+					};
+
+					context.selected = index;
+
+					let conn = ::connect(token);
+					let (session, gateway, state) = attempt!(conn, "Could not connect to gateway");
+
+					// context.gateway.shutdown();
+					//
+					// The borrow checker hates me.
+
+					context.session = session;
+					context.gateway = gateway;
+					context.state = state;
+
+					success!(None);
+				},
+			}
 		},
 		_ => fail!(unknown!("command")),
 	}
