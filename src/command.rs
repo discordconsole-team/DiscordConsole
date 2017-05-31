@@ -33,148 +33,6 @@ use std::io::{BufRead, BufReader};
 use std::io::Write;
 use std::process::{Command, Stdio};
 
-macro_rules! success {
-	($val:expr) => {
-		return CommandResult{
-			text:    $val,
-			..Default::default()
-		}
-	}
-}
-macro_rules! fail {
-	($val:expr) => {
-		return CommandResult{
-			text:    Some($val.to_string()),
-			success: false,
-			..Default::default()
-		}
-	}
-}
-macro_rules! usage_min {
-	($tokens:expr, $min:expr, $usage:expr) => {
-		if $tokens.len() < $min {
-			fail!(concat!($usage, "\nYou supplied too few arguments"));
-		}
-	}
-}
-macro_rules! usage_max {
-	($tokens:expr, $max:expr, $usage:expr) => {
-		if $tokens.len() > $max {
-			fail!(concat!($usage, "\nYou supplied too many arguments"));
-		}
-	}
-}
-macro_rules! usage {
-	($tokens:expr, $exact:expr, $usage:expr) => {
-		usage_min!($tokens, $exact, $usage);
-		usage_max!($tokens, $exact, $usage);
-	}
-}
-macro_rules! usage_one {
-	($tokens:expr, $usage:expr) => {
-		if $tokens.len() != 1 {
-			fail!(concat!($usage, "\nYou did not supply 1 argument.\n\
-							Did you mean to put quotes around the argument?"));
-		}
-	}
-}
-macro_rules! from_id {
-	($type:expr, $context:expr, $funcid:ident, $funcname:ident, $ref:expr, $nameorid:expr) => {
-		{
-			let i = $nameorid.parse();
-			let mut val;
-
-			if i.is_err() {
-				val = $context.state.$funcname($context.guild, $nameorid.as_str())
-			} else {
-				val = $context.state.$funcid($type(i.unwrap()));
-				if val.is_none() {
-					val = $context.state.$funcname($context.guild, $nameorid.as_str())
-				}
-			}
-
-			val
-		}
-	}
-}
-macro_rules! attempt {
-	($result:expr, $message:expr) => {
-		match $result {
-			Err(err) => fail!(format!("{} (Details: {})", $message, err)),
-			Ok(ok) => ok,
-		}
-	}
-}
-macro_rules! require {
-	($option:expr, $message:expr) => {
-		match $option {
-			None => fail!($message),
-			Some(some) => some,
-		}
-	}
-}
-macro_rules! unwrap_cache {
-	($cache:expr) => {
-		require!($cache, couldnt!("find in local cache"))
-	}
-}
-macro_rules! pretty_json {
-	($($json:tt)+) => {
-		{
-			let json = json!($($json)+);
-			let json = ::serde_json::to_string_pretty(&json);
-
-			attempt!(json, "Unable to generate JSON")
-		}
-	}
-}
-macro_rules! require_guild {
-	($context:expr) => {
-		require!($context.guild, "This command requires a guild to be selected")
-	}
-}
-macro_rules! require_channel {
-	($context:expr) => {
-		require!($context.channel, "This command requires a channel to be selected")
-	}
-}
-macro_rules! unknown {
-	($what:expr) => {
-		{ concat!("Unknown ", $what) }
-	}
-}
-macro_rules! couldnt {
-	($what:expr) => {
-		{ concat!("Could not ", $what) }
-	}
-}
-macro_rules! parse {
-	($str:expr, $type:tt) => {
-		{
-			let num = $str.parse::<$type>();
-			attempt!(num, "Not a number")
-		}
-	}
-}
-macro_rules! msg {
-	($id:expr) => {
-		{
-			format!("Sent message with ID {}", $id)
-		}
-	}
-}
-macro_rules! max {
-	($num:expr, $max:expr) => {
-		{
-			if $num > $max {
-				fail!(format!("Too high. Max: {}", $max));
-			}
-
-			$num
-		}
-	}
-}
-
 pub struct CommandContext {
 	pub tokens: Vec<String>,
 	pub selected: usize,
@@ -261,6 +119,148 @@ impl Default for CommandResult {
 #[cfg_attr(feature = "cargo-clippy", allow(cyclomatic_complexity))]
 // Unsure if I really should split it up. It shall be thought about.
 pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<String>) -> CommandResult {
+	macro_rules! success {
+		($val:expr) => {
+			return CommandResult{
+				text:    $val,
+				..Default::default()
+			}
+		}
+	}
+	macro_rules! fail {
+		($val:expr) => {
+			return CommandResult{
+				text:    Some($val.to_string()),
+				success: false,
+				..Default::default()
+			}
+		}
+	}
+	macro_rules! usage_min {
+		($min:expr, $usage:expr) => {
+			if tokens.len() < $min {
+				fail!(concat!($usage, "\nYou supplied too few arguments"));
+			}
+		}
+	}
+	macro_rules! usage_max {
+		($max:expr, $usage:expr) => {
+			if tokens.len() > $max {
+				fail!(concat!($usage, "\nYou supplied too many arguments"));
+			}
+		}
+	}
+	macro_rules! usage {
+		($exact:expr, $usage:expr) => {
+			usage_min!($exact, $usage);
+			usage_max!($exact, $usage);
+		}
+	}
+	macro_rules! usage_one {
+		($usage:expr) => {
+			if tokens.len() != 1 {
+				fail!(concat!($usage, "\nYou did not supply 1 argument.\n\
+								Did you mean to put quotes around the argument?"));
+			}
+		}
+	}
+	macro_rules! from_id {
+		($type:expr, $funcid:ident, $funcname:ident, $ref:expr, $nameorid:expr) => {
+			{
+				let i = $nameorid.parse();
+				let mut val;
+
+				if i.is_err() {
+					val = context.state.$funcname(context.guild, $nameorid.as_str())
+				} else {
+					val = context.state.$funcid($type(i.unwrap()));
+					if val.is_none() {
+						val = context.state.$funcname(context.guild, $nameorid.as_str())
+					}
+				}
+
+				val
+			}
+		}
+	}
+	macro_rules! attempt {
+		($result:expr, $message:expr) => {
+			match $result {
+				Err(err) => fail!(format!("{} (Details: {})", $message, err)),
+				Ok(ok) => ok,
+			}
+		}
+	}
+	macro_rules! require {
+		($option:expr, $message:expr) => {
+			match $option {
+				None => fail!($message),
+				Some(some) => some,
+			}
+		}
+	}
+	macro_rules! unwrap_cache {
+		($cache:expr) => {
+			require!($cache, couldnt!("find in local cache"))
+		}
+	}
+	macro_rules! pretty_json {
+		($($json:tt)+) => {
+			{
+				let json = json!($($json)+);
+				let json = ::serde_json::to_string_pretty(&json);
+
+				attempt!(json, "Unable to generate JSON")
+			}
+		}
+	}
+	macro_rules! require_guild {
+		() => {
+			require!(context.guild, "This command requires a guild to be selected")
+		}
+	}
+	macro_rules! require_channel {
+		() => {
+			require!(context.channel, "This command requires a channel to be selected")
+		}
+	}
+	macro_rules! unknown {
+		($what:expr) => {
+			{ concat!("Unknown ", $what) }
+		}
+	}
+	macro_rules! couldnt {
+		($what:expr) => {
+			{ concat!("Could not ", $what) }
+		}
+	}
+	macro_rules! parse {
+		($str:expr, $type:tt) => {
+			{
+				let num = $str.parse::<$type>();
+				attempt!(num, "Not a number")
+			}
+		}
+	}
+	macro_rules! msg {
+		($id:expr) => {
+			{
+				format!("Sent message with ID {}", $id)
+			}
+		}
+	}
+	macro_rules! max {
+		($num:expr, $max:expr) => {
+			{
+				if $num > $max {
+					fail!(format!("Too high. Max: {}", $max));
+				}
+
+				$num
+			}
+		}
+	}
+
 	if tokens.len() < 1 {
 		if context.using.is_some() {
 			context.using = None;
@@ -293,11 +293,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 
 	match command {
 		"echo" => {
-			usage_one!(tokens, "echo <text>");
+			usage_one!("echo <text>");
 			success!(Some(tokens[0].clone()));
 		},
 		"help" => {
-			usage_one!(tokens, "help <command>");
+			usage_one!("help <command>");
 			success!(Some(::help::about(tokens[0].as_str())))
 		},
 		"alias" => {
@@ -345,7 +345,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 
 					if tokens.len() >= 2 && tokens[0] == "=" {
 						tokens.remove(0);
-						usage_min!(tokens, 1, "alias <name> = <command...>");
+						usage_min!(1, "alias <name> = <command...>");
 					}
 					context.alias.insert(name, tokens.to_vec());
 
@@ -354,11 +354,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 		},
 		"exec" => {
-			usage_min!(tokens, 2, "exec <type> <value>");
+			usage_min!(2, "exec <type> <value>");
 
 			match tokens[0].as_str() {
 				"shell" => {
-					usage_max!(tokens, 2, "exec shell <command>");
+					usage_max!(2, "exec shell <command>");
 
 					let cmd = if cfg!(target_os = "windows") {
 						Command::new("cmd")
@@ -393,7 +393,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					);
 				},
 				"file" => {
-					usage_max!(tokens, 2, "exec file <file>");
+					usage_max!(2, "exec file <file>");
 					let result = execute_file(context, terminal, tokens[1].clone());
 					let result = attempt!(result, couldnt!("run commands file"));
 
@@ -409,7 +409,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					success!(None);
 				},
 				"lua-inline" => {
-					usage_max!(tokens, 2, "exec lua-inline <text>");
+					usage_max!(2, "exec lua-inline <text>");
 					let mut lua = new_lua(context, terminal);
 
 					if let Err(err) = lua.execute::<()>(tokens[1].clone().as_str()) {
@@ -421,14 +421,14 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 		},
 		"exit" => {
-			usage_max!(tokens, 0, "exit");
+			usage_max!(0, "exit");
 			CommandResult {
 				exit: true,
 				..Default::default()
 			}
 		},
 		"guild" => {
-			usage_max!(tokens, 1, "guild [id/name]");
+			usage_max!(1, "guild [id/name]");
 
 			if tokens.is_empty() {
 				context.guild = None;
@@ -437,7 +437,6 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 			let guild = from_id!(
 				ServerId,
-				context,
 				find_guild,
 				find_guild_by_name,
 				&mut guild,
@@ -459,7 +458,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			);
 		},
 		"channel" => {
-			usage_max!(tokens, 1, "channel [id/name]");
+			usage_max!(1, "channel [id/name]");
 
 			if tokens.is_empty() {
 				if let Some(guild) = context.guild {
@@ -471,7 +470,6 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 			let channel = from_id!(
 				ChannelId,
-				context,
 				find_channel,
 				find_channel_by_name,
 				&mut channel,
@@ -517,7 +515,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 		},
 		"guilds" => {
-			usage_max!(tokens, 0, "guilds");
+			usage_max!(0, "guilds");
 			let mut guilds = context.state.servers().to_vec();
 			if let Some(settings) = context.state.settings() {
 				::sort::sort_guilds(settings, &mut guilds);
@@ -539,8 +537,8 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			success!(Some(value));
 		},
 		"channels" => {
-			usage_max!(tokens, 0, "channels");
-			let guild = require_guild!(context);
+			usage_max!(0, "channels");
+			let guild = require_guild!();
 			let guild = unwrap_cache!(context.state.find_guild(guild));
 
 			let mut value = String::new();
@@ -567,8 +565,8 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			success!(Some(value));
 		},
 		"msg" => {
-			usage!(tokens, 3, "msg <type> <\"send\"/existing id> <text>");
-			let channel = require_channel!(context);
+			usage!(3, "msg <type> <\"send\"/existing id> <text>");
+			let channel = require_channel!();
 
 			let kind = match tokens[0].clone().as_str() {
 				"normal" => 0,
@@ -630,20 +628,20 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			};
 		},
 		"use" => {
-			usage_min!(tokens, 1, "use <command...>");
+			usage_min!(1, "use <command...>");
 
 			context.using = Some(tokens);
 			success!(Some("Use mode enabled.\nSend an empty command to disable.".to_string()));
 		},
 		"to" => {
-			usage_min!(tokens, 2, "to <file> <command...>");
+			usage_min!(2, "to <file> <command...>");
 
 			let file = tokens[0].clone();
 			tokens.remove(0);
 
 			if tokens[0] == "from" {
 				tokens.remove(0);
-				usage_min!(tokens, 1, "to <file> from <command...>");
+				usage_min!(1, "to <file> from <command...>");
 			}
 
 			let mut result = execute(context, false, tokens);
@@ -668,8 +666,8 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			result
 		},
 		"log" => {
-			usage_max!(tokens, 1, "log [n=10]");
-			let channel = require_channel!(context);
+			usage_max!(1, "log [n=10]");
+			let channel = require_channel!();
 
 			let limit = match tokens.get(0) {
 				Some(num) => Some(max!(parse!(num, u16), LIMIT) as u64), // Ugh. discord-rs uses u64 even though even u16 is more than enough
@@ -712,7 +710,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			success!(Some(output));
 		},
 		"accounts" => {
-			usage_max!(tokens, 1, "accounts [index]");
+			usage_max!(1, "accounts [index]");
 
 			match tokens.get(0) {
 				None => {
