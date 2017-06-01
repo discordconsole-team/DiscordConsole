@@ -76,31 +76,26 @@ fn main() {
 
 	// TODO.
 	// See https://krake.one/l/20kh
-	/*
-	let clone = context.clone();
-	thread::spawn(
-		move || loop {
-			println!("Event: Locking {:?}", clone);
-			let mut gateway = {
-				&mut clone.lock().unwrap().gateway
-			};
-			println!("Event: Unlocked {:?}", clone);
-			match gateway.recv_event() {
-				Ok(event) => {
-					// println!("Updating state: {:?}", event);
-					clone.lock().unwrap().state.update(&event)
-				},
-				Err(err) => {
-					stderr!("Error receiving: {}", err);
-				},
-			}
-		}
-	);
-	*/
-
-
-
-
+	//
+	// let clone = context.clone();
+	// thread::spawn(
+	// 	move || loop {
+	// 		println!("Event: Locking {:?}", clone);
+	// 		let mut gateway = {
+	// 			&mut clone.lock().unwrap().gateway
+	// 		};
+	// 		println!("Event: Unlocked {:?}", clone);
+	// 		match gateway.recv_event() {
+	// 			Ok(event) => {
+	// 				// println!("Updating state: {:?}", event);
+	// 				clone.lock().unwrap().state.update(&event)
+	// 			},
+	// 			Err(err) => {
+	// 				stderr!("Error receiving: {}", err);
+	// 			},
+	// 		}
+	// 	}
+	// );
 
 	if options.notui {
 		raw::raw(context);
