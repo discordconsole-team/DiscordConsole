@@ -48,7 +48,7 @@ use std::io::Write;
 use std::sync::{Arc, Mutex};
 // use std::thread;
 
-const VERSION: &str = "0.1";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const LIMIT: u16 = 100;
 const LIMIT_MSG: u16 = 2000;
