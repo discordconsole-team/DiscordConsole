@@ -150,7 +150,7 @@ func drawOption(x int, y int, index int) {
 	perm := PermOrder[index]
 
 	char := " "
-	if d.perm|perm == d.perm {
+	if d.perm&perm == perm {
 		char = "*"
 	}
 	drawString(x, y, "["+char+"] "+PermStrings[perm])
