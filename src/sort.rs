@@ -31,16 +31,9 @@ pub fn sort_guilds(settings: &UserSettings, guilds: &mut Vec<LiveServer>) {
 	}
 
 	for guild in &new_guilds {
-		// Shut clippy up about this for loop.
-		// It cannot in fact use iter().enumerate(),
-		// since that borrows it, a.k.a. interferes
-		// with guilds.remove. Try it.
-		#[cfg_attr(feature = "cargo-clippy", allow(needless_range_loop))]
-		for i in 0..guilds.len() {
-			if guilds[i].id == guild.id {
-				guilds.remove(i);
-				break;
-			}
+		let i = guilds.iter().position(|guild2| guild2.id == guild.id);
+		if let Some(i) = i {
+			guilds.remove(i);
 		}
 	}
 
