@@ -173,6 +173,33 @@ func commandsUserMod(session *discordgo.Session, cmd string, args []string, narg
 		if err != nil {
 			stdutil.PrintErr(tl("failed.nick"), err)
 		}
+	case "status":
+		if nargs < 1 {
+			stdutil.PrintErr("status <value>", nil)
+			return
+		}
+		if userType != typeUser {
+			stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
+			return
+		}
+
+		status, ok := typeStatuses[strings.ToLower(args[0])]
+		if !ok {
+			stdutil.PrintErr(tl("invalid.value"), nil)
+			return
+		}
+
+		if status == discordgo.StatusOffline {
+			stdutil.PrintErr(tl("invalid.status.offline"), nil)
+			return
+		}
+
+		_, err := session.UserUpdateStatus(status)
+		if err != nil {
+			stdutil.PrintErr(tl("failed.status"), err)
+			return
+		}
+		writeln(w, tl("status.status"))
 	}
 	return
 }
