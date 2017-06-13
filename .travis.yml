@@ -2,7 +2,7 @@ sudo: true
 
 language: rust
 rust:
-  - nightly
+  - stable
 
 install:
 # Libsodium
@@ -24,3 +24,6 @@ script:
   - cargo fmt -- --write-mode=diff -v
   - cargo build
   - cargo test
+
+notifications:
+  webhooks: https://krake.one/travis-ci
