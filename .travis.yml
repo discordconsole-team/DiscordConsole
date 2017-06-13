@@ -26,4 +26,4 @@ script:
   - cargo test
 
 notifications:
-  webhooks: https://krake.one/travis-ci
+  webhooks: https://krake.one/travis-ci/324106242702442500/GpO7fyhZjoG4nz1KnIpUGOOLTGnvPqaTRbCxLOaFBja3xbQOJa0w-G4WvQKx1B2YJUm8
