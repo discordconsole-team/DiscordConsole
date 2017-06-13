@@ -1,20 +1,19 @@
 /* DiscordConsole is a software aiming to give you full control over
  * accounts, bots and webhooks!
- * Copyright (C) 2017  LEGOlord208
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * */
+ * Copyright (C) 2017  LEGOlord208 */
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 extern crate hlua;
 
@@ -58,43 +57,41 @@ impl CommandContext {
 		}
 		let (session, gateway, state) = conn.unwrap();
 
-		Ok(
-			CommandContext {
-				tokens: tokens,
-				selected: selected,
+		Ok(CommandContext {
+			tokens: tokens,
+			selected: selected,
 
-				session: session,
-				gateway: gateway,
-				state: state,
+			session: session,
+			gateway: gateway,
+			state: state,
 
-				guild: None,
-				channel: None,
+			guild: None,
+			channel: None,
 
-				alias: {
-					let mut map = HashMap::new();
-					map.insert(
-						"say".to_string(),
-						vec!["msg".to_string(), "normal".to_string(), "send".to_string()]
-					);
-					map.insert(
-						"tts".to_string(),
-						vec!["msg".to_string(), "tts".to_string(), "send".to_string()]
-					);
-					map.insert(
-						"embed".to_string(),
-						vec!["msg".to_string(), "embed".to_string(), "send".to_string()]
-					);
-					map.insert(
-						"edit".to_string(),
-						vec!["msg".to_string(), "normal".to_string()]
-					);
-					map.insert("silent".to_string(), vec!["to".to_string(), String::new()]);
+			alias: {
+				let mut map = HashMap::new();
+				map.insert(
+					"say".to_string(),
+					vec!["msg".to_string(), "normal".to_string(), "send".to_string()]
+				);
+				map.insert(
+					"tts".to_string(),
+					vec!["msg".to_string(), "tts".to_string(), "send".to_string()]
+				);
+				map.insert(
+					"embed".to_string(),
+					vec!["msg".to_string(), "embed".to_string(), "send".to_string()]
+				);
+				map.insert(
+					"edit".to_string(),
+					vec!["msg".to_string(), "normal".to_string()]
+				);
+				map.insert("silent".to_string(), vec!["to".to_string(), String::new()]);
 
-					map
-				},
-				using: None
-			}
-		)
+				map
+			},
+			using: None
+		})
 	}
 }
 pub struct CommandResult {
@@ -266,9 +263,9 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			context.using = None;
 		}
 		return CommandResult {
-		           empty: true,
-		           ..Default::default()
-		       };
+			empty: true,
+			..Default::default()
+		};
 	}
 
 	// Unsure about the best approach here.
@@ -381,16 +378,12 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					if cmd.is_err() {
 						fail!(couldnt!("execute command"));
 					}
-					success!(
-						Some(
-							format!(
+					success!(Some(format!(
 								"{}Process exited with status {}{}",
 								if terminal { *COLOR_BLACK } else { "" },
 								cmd.unwrap().code().unwrap_or(1),
 								if terminal { *COLOR_RESET } else { "" },
-							)
-						)
-					);
+							)));
 				},
 				"file" => {
 					usage_max!(2, "exec file <file>");
@@ -447,15 +440,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			context.guild = Some(guild.id);
 			context.channel = Some(guild.id.main());
 
-			success!(
-				Some(
-					pretty_json!({
+			success!(Some(pretty_json!({
 						"id":       guild.id.to_string().as_str(),
 						"name":     guild.name.as_str(),
 						"owner_id": guild.owner_id.to_string().as_str(),
-					})
-				)
-			);
+					})));
 		},
 		"channel" => {
 			usage_max!(1, "channel [id/name]");
@@ -674,9 +663,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				None => Some(10),
 			};
 
-			let messages = context
-				.session
-				.get_messages(channel, GetMessages::MostRecent, limit);
+			let messages = context.session.get_messages(
+				channel,
+				GetMessages::MostRecent,
+				limit
+			);
 			let messages = attempt!(messages, couldnt!("get messages"));
 
 			let mut output = String::new();
@@ -786,14 +777,12 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: String) 
 		}
 
 		let mut first = true;
-		let tokens = ::tokenizer::tokens(
-			|| if first {
-				first = false;
-				Ok(line.clone())
-			} else {
-				Err(ErrUnclosed)
-			}
-		);
+		let tokens = ::tokenizer::tokens(|| if first {
+			first = false;
+			Ok(line.clone())
+		} else {
+			Err(ErrUnclosed)
+		});
 		let tokens = tokens?;
 		let result = execute(context, terminal, tokens);
 
@@ -828,18 +817,16 @@ fn lua_to_string(value: AnyLuaValue) -> String {
 		AnyLuaValue::LuaArray(value) => {
 			value
 				.iter()
-				.map(
-					|value| {
-						let value0 = lua_to_string(value.0.clone());
-						let value1 = lua_to_string(value.1.clone());
-						let mut string = String::with_capacity(value0.len() + 2 + value1.len());
-						string.push_str(value0.as_str());
-						string.push_str(": ");
-						string.push_str(value1.as_str());
+				.map(|value| {
+					let value0 = lua_to_string(value.0.clone());
+					let value1 = lua_to_string(value.1.clone());
+					let mut string = String::with_capacity(value0.len() + 2 + value1.len());
+					string.push_str(value0.as_str());
+					string.push_str(": ");
+					string.push_str(value1.as_str());
 
-						string
-					}
-				)
+					string
+				})
 				.collect::<Vec<_>>()
 				.join(", ")
 		},
@@ -855,14 +842,12 @@ pub fn new_lua(context: &mut CommandContext, terminal: bool) -> Lua {
 	// crashes on incorrect type; see https://github.com/tomaka/hlua/issues/149
 	lua.set(
 		"cmd",
-		hlua::function1::<_, String, Vec<AnyLuaValue>>(
-			move |args| {
-				let args = args.iter()
-					.map(|value| lua_to_string(value.clone()))
-					.collect();
-				execute(context, terminal, args).text.unwrap_or_default()
-			}
-		)
+		hlua::function1::<_, String, Vec<AnyLuaValue>>(move |args| {
+			let args = args.iter()
+				.map(|value| lua_to_string(value.clone()))
+				.collect();
+			execute(context, terminal, args).text.unwrap_or_default()
+		})
 	);
 
 	lua

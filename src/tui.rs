@@ -1,20 +1,19 @@
 /* DiscordConsole is a software aiming to give you full control over
  * accounts, bots and webhooks!
- * Copyright (C) 2017  LEGOlord208
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * */
+ * Copyright (C) 2017  LEGOlord208 */
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 extern crate cursive;
 
 use self::cursive::Cursive;
@@ -43,17 +42,18 @@ pub fn tui(context: Arc<Mutex<CommandContext>>) {
 	let mut guildtree = MenuTree::new();
 	for guild in guilds {
 		let context = context.clone();
-		guildtree.add_leaf(
-			guild.name.clone(), move |s| {
-				let context = context.clone();
-				s.screen_mut()
-					.add_layer(
-						Dialog::around(LinearLayout::vertical().child(command_field(context, "Name", guild.name.as_str(), &["echo"])))
-							.title("Guild info")
-							.dismiss_button("Close")
-					);
-			}
-		);
+		guildtree.add_leaf(guild.name.clone(), move |s| {
+			let context = context.clone();
+			s.screen_mut().add_layer(
+				Dialog::around(LinearLayout::vertical().child(command_field(
+					context,
+					"Name",
+					guild.name.as_str(),
+					&["echo"]
+				))).title("Guild info")
+					.dismiss_button("Close")
+			);
+		});
 	}
 
 	screen
@@ -61,52 +61,44 @@ pub fn tui(context: Arc<Mutex<CommandContext>>) {
 		.add_subtree(
 			"General",
 			MenuTree::new()
-				.leaf(
-					"Run command", move |s| {
-						if s.find_id::<Dialog>("cmd").is_some() {
-							s.pop_layer();
-							return;
-						}
-
-						let context = context.clone();
-
-						s.screen_mut()
-							.add_layer_at(
-								Position {
-									x: Offset::Absolute(5),
-									y: Offset::Absolute(5)
-								},
-								Dialog::around(
-									EditView::new().on_submit(
-										move |s, string| {
-											let mut first = true;
-											let tokens = ::tokenizer::tokens::<_, ()>(
-												|| if first {
-													first = false;
-													Ok(string.to_string())
-												} else {
-													Err(())
-												}
-											);
-											if tokens.is_err() {
-												s.add_layer(Dialog::info("Unclosed quote or trailing \\."));
-												return;
-											}
-
-											command(s, &mut context.lock().unwrap(), tokens.unwrap());
-										}
-									)
-								)
-										.title("Run command")
-										.with_id("cmd")
-							);
+				.leaf("Run command", move |s| {
+					if s.find_id::<Dialog>("cmd").is_some() {
+						s.pop_layer();
+						return;
 					}
-				)
+
+					let context = context.clone();
+
+					s.screen_mut().add_layer_at(
+						Position {
+							x: Offset::Absolute(5),
+							y: Offset::Absolute(5)
+						},
+						Dialog::around(EditView::new().on_submit(move |s, string| {
+							let mut first = true;
+							let tokens = ::tokenizer::tokens::<_, ()>(|| if first {
+								first = false;
+								Ok(string.to_string())
+							} else {
+								Err(())
+							});
+							if tokens.is_err() {
+								s.add_layer(Dialog::info("Unclosed quote or trailing \\."));
+								return;
+							}
+
+							command(s, &mut context.lock().unwrap(), tokens.unwrap());
+						})).title("Run command")
+							.with_id("cmd")
+					);
+				})
 				.leaf("Exit", Cursive::quit)
 		)
 		.add_subtree("Guilds", guildtree);
 
-	screen.add_layer(Dialog::text("Press <esc> to access the menu, and <q> to quit"));
+	screen.add_layer(Dialog::text(
+		"Press <esc> to access the menu, and <q> to quit"
+	));
 
 	screen.add_global_callback(Key::Esc, |s| s.select_menubar());
 	screen.set_autohide_menu(false);
@@ -121,28 +113,21 @@ fn command_field(context: Arc<Mutex<CommandContext>>, key: &str, val: &str, toke
 
 	let tokens: Rc<Vec<String>> = Rc::new(tokens.iter().map(|string| string.to_string()).collect());
 	let val = val.to_string();
-	Button::new(
-		string, move |s| {
-			let context = context.clone();
-			let tokens = tokens.clone();
-			s.add_layer(
-				Dialog::around(
-					EditView::new()
-						.content(val.clone())
-						.on_submit(
-							move |s, string| {
-								s.pop_layer();
-								let mut tokens = (*tokens).clone();
-								tokens.push(string.to_string());
-								command(s, &mut context.lock().unwrap(), tokens);
-							}
-						)
-				)
-						.title("Edit Field")
-						.dismiss_button("Cancel")
-			);
-		}
-	)
+	Button::new(string, move |s| {
+		let context = context.clone();
+		let tokens = tokens.clone();
+		s.add_layer(
+			Dialog::around(EditView::new().content(val.clone()).on_submit(
+				move |s, string| {
+					s.pop_layer();
+					let mut tokens = (*tokens).clone();
+					tokens.push(string.to_string());
+					command(s, &mut context.lock().unwrap(), tokens);
+				}
+			)).title("Edit Field")
+				.dismiss_button("Cancel")
+		);
+	})
 }
 
 fn command(s: &mut Cursive, context: &mut CommandContext, tokens: Vec<String>) -> CommandResult {

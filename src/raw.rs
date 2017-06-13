@@ -1,20 +1,19 @@
 /* DiscordConsole is a software aiming to give you full control over
  * accounts, bots and webhooks!
- * Copyright (C) 2017  LEGOlord208
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * */
+ * Copyright (C) 2017  LEGOlord208 */
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 extern crate rustyline;
 
 use self::rustyline::Editor;
@@ -39,26 +38,24 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 		let mut first = true;
 		let mut command = String::new();
 
-		let tokens = ::tokenizer::tokens(
-			|| {
-				let wasfirst = first;
-				first = false;
+		let tokens = ::tokenizer::tokens(|| {
+			let wasfirst = first;
+			first = false;
 
-				let result = rl.readline(if wasfirst { prefix } else { "" });
+			let result = rl.readline(if wasfirst { prefix } else { "" });
 
-				match result {
-					Ok(res) => {
-						if !wasfirst {
-							command.push(' ');
-						}
-						command.push_str(res.as_str());
+			match result {
+				Ok(res) => {
+					if !wasfirst {
+						command.push(' ');
+					}
+					command.push_str(res.as_str());
 
-						Ok(res)
-					},
-					Err(err) => Err(err),
-				}
+					Ok(res)
+				},
+				Err(err) => Err(err),
 			}
-		);
+		});
 		rl.add_history_entry(command.as_str());
 		let tokens = match tokens {
 			Ok(tokens) => tokens,
@@ -108,31 +105,28 @@ pub fn pointer(context: &CommandContext, terminal: bool) -> String {
 		);
 	}
 	if let Some(guild) = context.guild {
-		prefix.push_str(
-			match context.state.find_guild(guild) {
-				Some(guild) => guild.name.as_str(),
-				None => "Unknown",
-			}
-		);
+		prefix.push_str(match context.state.find_guild(guild) {
+			Some(guild) => guild.name.as_str(),
+			None => "Unknown",
+		});
 	}
 	if let Some(channel) = context.channel {
 		prefix.push_str(" (");
 		prefix.push_str(
 			match context.state.find_channel(channel) {
-					Some(channel) => {
-						match channel {
-							ChannelRef::Public(_, channel) => {
-								let mut name = channel.name.clone();
-								name.insert(0, '#');
-								name
-							},
-							ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
-							ChannelRef::Private(channel) => channel.recipient.name.clone(),
-						}
-					},
-					None => "unknown".to_string(),
-				}
-				.as_str()
+				Some(channel) => {
+					match channel {
+						ChannelRef::Public(_, channel) => {
+							let mut name = channel.name.clone();
+							name.insert(0, '#');
+							name
+						},
+						ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
+						ChannelRef::Private(channel) => channel.recipient.name.clone(),
+					}
+				},
+				None => "unknown".to_string(),
+			}.as_str()
 		);
 		prefix.push_str(")");
 	}
