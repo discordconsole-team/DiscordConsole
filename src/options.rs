@@ -13,8 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-extern crate clap;
-use self::clap::{App, Arg};
+
+use clap::{App, Arg};
 use color::*;
 
 use std::io::Write;
@@ -28,9 +28,9 @@ pub struct Options {
 }
 
 pub fn get_options() -> Option<Options> {
-	let args = App::new("discord_console")
-		.version(super::VERSION)
-		.about("Use discord in a new way")
+	let args = App::new(crate_name!())
+		.version(crate_version!())
+		.about(crate_description!())
 		.author("LEGOlord208")
 		.arg(
 			Arg::with_name("token")

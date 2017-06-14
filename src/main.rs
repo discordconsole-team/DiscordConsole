@@ -13,6 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#[macro_use]
+extern crate clap;
 extern crate discord;
 #[macro_use]
 extern crate lazy_static;
@@ -45,8 +47,6 @@ use discord::{Connection, Discord, State};
 use std::io::Write;
 use std::sync::{Arc, Mutex};
 // use std::thread;
-
-const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const LIMIT: u16 = 100;
 const LIMIT_MSG: u16 = 2000;
