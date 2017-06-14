@@ -53,10 +53,21 @@ const LIMIT: u16 = 100;
 const LIMIT_MSG: u16 = 2000;
 
 fn main() {
-	let mut options = options::get_options();
+	let options = options::get_options();
+
+	if options.is_none() {
+		return;
+	}
+	let mut options = options.unwrap();
 
 	for token in &mut options.tokens {
 		*token = token.trim().to_string();
+
+		if token.is_empty() {
+			println!("Token cannot be empty");
+			return;
+		}
+
 		let lower = token.to_lowercase();
 
 		if lower.starts_with("bot ") {

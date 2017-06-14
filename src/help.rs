@@ -24,6 +24,23 @@ pub fn about(command: &str) -> String {
 			"exec <type> <value>\n\
 				Execute <type> command/code <value>"
 		},
+		"use" => {
+			"use <command...>\n\
+				Make every command in the future automatically\n\
+				prepend <command...>.\n\
+				Send empty command to disable."
+		},
+		"to" => {
+			"to <file> <command...>\n\
+				Print the output of <command...> to <file> in case of success.\n\
+				<file> may be \"\" (empty) to discard the output.\n\
+				Also see the built-in silent alias."
+		},
+		"accounts" => {
+			"accounts [index]\n\
+				List all accounts, and switch to another account by\n\
+				specifying index."
+		},
 		"exit" => {
 			"exit\n\
 				Attempt to exit the console.\n\
@@ -59,26 +76,9 @@ pub fn about(command: &str) -> String {
 				is not \"send\", edit the message with the specified id.\n\n\
 				You might want to use the built-in say, embed, edit aliases instead."
 		},
-		"use" => {
-			"use <command...>\n\
-				Make every command in the future automatically\n\
-				prepend <command...>.\n\
-				Send empty command to disable."
-		},
-		"to" => {
-			"to <file> <command...>\n\
-				Print the output of <command...> to <file> in case of success.\n\
-				<file> may be \"\" (empty) to discard the output.\n\
-				Also see the built-in silent alias."
-		},
 		"log" => {
 			"log [n=10]\n\
 				Print the last [n] messages (default 10)"
-		},
-		"accounts" => {
-			"accounts [index]\n\
-				List all accounts, and switch to another account by\n\
-				specifying index."
 		},
 		_ => "No help available",
 	}.to_string()

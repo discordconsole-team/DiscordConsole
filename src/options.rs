@@ -28,7 +28,7 @@ pub struct Options {
 	pub notui: bool
 }
 
-pub fn get_options() -> Options {
+pub fn get_options() -> Option<Options> {
 	let args = App::new("discord_console")
 		.version(super::VERSION)
 		.about("Use discord in a new way")
@@ -69,15 +69,25 @@ pub fn get_options() -> Options {
 		flush!();
 
 		let mut token = String::new();
-		super::std::io::stdin().read_line(&mut token).unwrap();
+		match super::std::io::stdin().read_line(&mut token) {
+			Ok(n) => {
+				if n <= 0 {
+					return None;
+				}
+			},
+			Err(err) => {
+				stderr!("Couldn't read line: {}", err);
+				return None;
+			},
+		}
 
 		vec![token]
 	};
 
-	Options {
+	Some(Options {
 		tokens: tokens,
 		token: 0,
 
 		notui: args.is_present("notui")
-	}
+	})
 }

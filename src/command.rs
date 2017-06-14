@@ -30,7 +30,7 @@ use std::fmt;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::io::Write;
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 pub struct CommandContext {
 	pub tokens: Vec<String>,
@@ -361,18 +361,9 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 						Command::new("cmd")
 							.arg("/c")
 							.arg(tokens[1].clone())
-							.stdin(Stdio::inherit())
-							.stdout(Stdio::inherit())
-							.stderr(Stdio::inherit())
 							.status()
 					} else {
-						Command::new("sh")
-							.arg("-c")
-							.arg(tokens[1].clone())
-							.stdin(Stdio::inherit())
-							.stdout(Stdio::inherit())
-							.stderr(Stdio::inherit())
-							.status()
+						Command::new("sh").arg("-c").arg(tokens[1].clone()).status()
 
 					};
 					if cmd.is_err() {
@@ -411,6 +402,91 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					success!(None);
 				},
 				_ => fail!(unknown!("type (shell/file/lua/lua-inline available)")),
+			}
+		},
+		"use" => {
+			usage_min!(1, "use <command...>");
+
+			context.using = Some(tokens);
+			success!(Some(
+				"Use mode enabled.\nSend an empty command to disable."
+					.to_string()
+			));
+		},
+		"to" => {
+			usage_min!(2, "to <file> <command...>");
+
+			let file = tokens[0].clone();
+			tokens.remove(0);
+
+			if tokens[0] == "from" {
+				tokens.remove(0);
+				usage_min!(1, "to <file> from <command...>");
+			}
+
+			let mut result = execute(context, false, tokens);
+
+			if file.is_empty() {
+				if result.success {
+					result.text = None;
+				}
+			} else {
+				let file = File::create(file);
+				let mut file = attempt!(file, couldnt!("open file"));
+
+				if let Some(text) = result.text.clone() {
+					let write = file.write_all(text.as_bytes());
+					attempt!(write, couldnt!("write to file"));
+					if result.success {
+						result.text = None;
+					}
+				}
+			}
+
+			result
+		},
+		"accounts" => {
+			usage_max!(1, "accounts [index]");
+
+			match tokens.get(0) {
+				None => {
+					let mut output = String::new();
+					let mut first = true;
+
+					for (i, token) in context.tokens.iter().enumerate() {
+						if first {
+							first = false;
+						} else {
+							output.push('\n');
+						}
+
+						output.push_str(format!("{}. {}", i, token).as_str());
+					}
+
+					success!(Some(output));
+				},
+				Some(index) => {
+					let index = parse!(index, usize);
+					let token = match context.tokens.get(index) {
+						None => fail!("Out of bounds"),
+						Some(token) => token,
+					};
+
+					context.selected = index;
+
+					let conn = ::connect(token);
+					let (session, gateway, state) = attempt!(conn, "Could not connect to gateway");
+
+					// context.gateway.shutdown();
+					//
+					// The borrow checker hates me.
+
+					context.session = session;
+					context.gateway = gateway;
+					context.state = state;
+
+					success!(None);
+				},
 			}
 		},
 		"exit" => {
@@ -616,44 +692,6 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				_ => unreachable!(),
 			};
 		},
-		"use" => {
-			usage_min!(1, "use <command...>");
-
-			context.using = Some(tokens);
-			success!(Some("Use mode enabled.\nSend an empty command to disable.".to_string()));
-		},
-		"to" => {
-			usage_min!(2, "to <file> <command...>");
-
-			let file = tokens[0].clone();
-			tokens.remove(0);
-
-			if tokens[0] == "from" {
-				tokens.remove(0);
-				usage_min!(1, "to <file> from <command...>");
-			}
-
-			let mut result = execute(context, false, tokens);
-
-			if file.is_empty() {
-				if result.success {
-					result.text = None;
-				}
-			} else {
-				let file = File::create(file);
-				let mut file = attempt!(file, couldnt!("open file"));
-
-				if let Some(text) = result.text.clone() {
-					let write = file.write_all(text.as_bytes());
-					attempt!(write, couldnt!("write to file"));
-					if result.success {
-						result.text = None;
-					}
-				}
-			}
-
-			result
-		},
 		"log" => {
 			usage_max!(1, "log [n=10]");
 			let channel = require_channel!();
@@ -699,50 +737,6 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 
 			success!(Some(output));
-		},
-		"accounts" => {
-			usage_max!(1, "accounts [index]");
-
-			match tokens.get(0) {
-				None => {
-					let mut output = String::new();
-					let mut first = true;
-
-					for (i, token) in context.tokens.iter().enumerate() {
-						if first {
-							first = false;
-						} else {
-							output.push('\n');
-						}
-
-						output.push_str(format!("{}. {}", i, token).as_str());
-					}
-
-					success!(Some(output));
-				},
-				Some(index) => {
-					let index = parse!(index, usize);
-					let token = match context.tokens.get(index) {
-						None => fail!("Out of bounds"),
-						Some(token) => token,
-					};
-
-					context.selected = index;
-
-					let conn = ::connect(token);
-					let (session, gateway, state) = attempt!(conn, "Could not connect to gateway");
-
-					// context.gateway.shutdown();
-					//
-					// The borrow checker hates me.
-
-					context.session = session;
-					context.gateway = gateway;
-					context.state = state;
-
-					success!(None);
-				},
-			}
 		},
 		_ => fail!(unknown!("command")),
 	}
