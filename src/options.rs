@@ -31,7 +31,7 @@ pub fn get_options() -> Option<Options> {
 	let args = App::new(crate_name!())
 		.version(crate_version!())
 		.about(crate_description!())
-		.author("LEGOlord208")
+		.author(crate_authors!())
 		.arg(
 			Arg::with_name("token")
 				.long("token")
