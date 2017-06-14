@@ -62,10 +62,10 @@ func guildCreate(session *discordgo.Session, e *discordgo.GuildCreate) {
 	mutexCacheGuilds.Lock()
 	defer mutexCacheGuilds.Unlock()
 
-	// Fot bots, the guildcreate event triggers on startup.
 	for _, guild := range cacheGuilds {
 		if guild.ID == e.ID {
-			guild.Name = e.Name // For bots, the ready event does not send it's name
+			guild.Name = e.Name
+			// For bots, the ready event does not send it's name
 			return
 		}
 	}
@@ -84,7 +84,12 @@ func guildDelete(session *discordgo.Session, e *discordgo.GuildDelete) {
 		}
 	}
 	if index >= 0 {
-		cacheGuilds = append(cacheGuilds[:index], cacheGuilds[index+1:]...)
+		// UGH!
+		// append(cacheGuilds, cacheGuilds[:index], cacheGuilds[index+1:])
+		// would give a pointer leak because Go's garbage collector is stupid
+		copy(cacheGuilds[index:], cacheGuilds[index+1:])
+		cacheGuilds[len(cacheGuilds)-1] = nil
+		cacheGuilds = cacheGuilds[:len(cacheGuilds)-1]
 	}
 }
 
