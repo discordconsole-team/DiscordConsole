@@ -319,13 +319,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 						);
 					}
 
-					success!(
-						if output.is_empty() {
-							None
-						} else {
-							Some(output)
-						}
-					);
+					success!(if output.is_empty() {
+						None
+					} else {
+						Some(output)
+					});
 				},
 				1 => {
 					context.alias.remove(tokens[0].as_str());

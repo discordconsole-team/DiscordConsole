@@ -95,13 +95,11 @@ pub fn pointer(context: &CommandContext, terminal: bool) -> String {
 
 	let mut prefix = String::with_capacity(capacity);
 	if terminal {
-		prefix.push_str(
-			if context.using.is_some() {
-				*COLOR_CYAN
-			} else {
-				*COLOR_YELLOW
-			}
-		);
+		prefix.push_str(if context.using.is_some() {
+			*COLOR_CYAN
+		} else {
+			*COLOR_YELLOW
+		});
 	}
 	if let Some(guild) = context.guild {
 		prefix.push_str(match context.state.find_guild(guild) {
