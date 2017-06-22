@@ -858,10 +858,7 @@ impl MoreStateFunctionsSuperOriginalTraitNameExclusiveTM for State {
 		None
 	}
 
-	// Unsure what the best way to deal with this is.
-	// The function is called from a macro.
-	#[allow(unused_variables)]
-	fn find_guild_by_name<'a>(&'a self, guild: Option<ServerId>, name: &str) -> Option<&'a LiveServer> {
+	fn find_guild_by_name<'a>(&'a self, _: Option<ServerId>, name: &str) -> Option<&'a LiveServer> {
 		for guild in self.servers() {
 			if guild.name == name {
 				return Some(guild);
