@@ -20,18 +20,14 @@ pub fn about(command: &str) -> String {
 				Print out the text specified."
 		},
 		"help" => {
-			"help\n\
-				The help command shows information about a command,\n\
-				as you can see."
+			"help <command>\n\
+				The help command shows information about a command."
 		},
 		"alias" => {
 			"alias [name] [=] [command...]\n\
-				If 0 arguments,\n\
-				Print all aliases.\n\
-				If 1 argument,\n\
-				Remove alias with [name].\n\
-				If 2 or more arguments,\n\
-				Make so typing [name] would execute [command...].\n\
+				If 0 arguments, Print all aliases.\n\
+				If 1 argument, Remove alias with [name].\n\
+				If 2 or more arguments, Make so typing [name] would execute [command...].\n\
 				Anything trailing <name> would append to <command>\n\n\
 				For examples, see the built-in aliases"
 		},
@@ -41,8 +37,7 @@ pub fn about(command: &str) -> String {
 		},
 		"use" => {
 			"use <command...>\n\
-				Make every command in the future automatically\n\
-				prepend <command...>.\n\
+				Make every command in the future automatically prepend <command...>.\n\
 				Send empty command to disable."
 		},
 		"to" => {
@@ -53,8 +48,7 @@ pub fn about(command: &str) -> String {
 		},
 		"accounts" => {
 			"accounts [index]\n\
-				List all accounts, and switch to another account by\n\
-				specifying index."
+				List all accounts, and switch to another account by specifying index."
 		},
 		"exit" => {
 			"exit\n\
@@ -63,37 +57,41 @@ pub fn about(command: &str) -> String {
 		},
 		"guild" => {
 			"guild [id/name]\n\
-				Select the guild with id specified,\n\
-				or if it's a non-numerical value,\n\
+				Select the guild with id specified, or if it's a non-numerical value,\n\
 				the first it finds with that name.\n\
-				If unspecified, deselect guild."
+				If guild unspecified, deselect guild."
 		},
 		"channel" => {
 			"channel [id/name]\n\
-				Select the channel with id specified,\n\
-				or if it's a non-numerical value,\n\
-				the first it finds with that name.\n\
-				If unspecified, select general channel."
+				Select the channel with id specified, or if it's a non-numerical value,\n\
+				the first it finds with that name in the current guild.\n\
+				If no current guild, search globally.\n\
+				If channel unspecified, select general channel."
 		},
 		"guilds" => {
 			"guilds\n\
-				Sort all guilds after the user's settings\n\
-				and print them."
+				Sort all guilds after the user's settings and print them."
 		},
 		"channels" => {
 			"guilds\n\
-				Sort all channels after their position\n\
-				and print them."
+				Sort all channels after their position and print them."
 		},
 		"msg" => {
 			"msg <type> <\"send\"/existing id> <text>\n\
-				Send a <type> message, or if 2nd argument\n\
-				is not \"send\", edit the message with the specified id.\n\n\
+				Send a <type> message, or if 2nd argument is not \"send\",\n\
+				edit the message with the specified id.\n\
 				You might want to use the built-in say, embed, edit aliases instead."
 		},
 		"log" => {
 			"log [n=10]\n\
 				Print the last [n] messages (default 10)"
+		},
+		"update" => {
+			"update <property> <value>\n\
+				Update <property> on user to <value>.\n\
+				Alternatively, there may be multiple values, depending on property.\n\n\
+
+				Example: `update name test-bot`, `update status idle \"a game\"`"
 		},
 		_ => "No help available",
 	}.to_string()

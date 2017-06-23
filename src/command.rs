@@ -19,8 +19,9 @@ use self::hlua::{AnyLuaValue, Lua};
 use {LIMIT, LIMIT_MSG};
 use color::*;
 use discord::{ChannelRef, Connection, Discord, GetMessages, State};
-use discord::model::{ChannelId, ChannelType, LiveServer, MessageId, ServerId};
+use discord::model::{ChannelId, ChannelType, Game, LiveServer, MessageId, OnlineStatus, ServerId};
 use escape::escape;
+use help;
 use std::cmp;
 use std::collections::HashMap;
 use std::error::Error;
@@ -132,16 +133,16 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		}
 	}
 	macro_rules! usage_min {
-		($min:expr, $usage:expr) => {
+		($min:expr, $command:expr) => {
 			if tokens.len() < $min {
-				fail!(concat!($usage, "\nYou supplied too few arguments"));
+				fail!(format!("{}\n\nYou supplied too few arguments", help::about($command)));
 			}
 		}
 	}
 	macro_rules! usage_max {
-		($max:expr, $usage:expr) => {
+		($max:expr, $command:expr) => {
 			if tokens.len() > $max {
-				fail!(concat!($usage, "\nYou supplied too many arguments"));
+				fail!(format!("{}\n\nYou supplied too many arguments", help::about($command)));
 			}
 		}
 	}
@@ -152,10 +153,10 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		}
 	}
 	macro_rules! usage_one {
-		($usage:expr) => {
+		($command:expr) => {
 			if tokens.len() != 1 {
-				fail!(concat!($usage, "\nYou did not supply 1 argument.\n\
-								Did you mean to put quotes around the argument?"));
+				fail!(format!("{}\n\nYou did not supply 1 argument.\n\
+								Did you mean to put quotes around the argument?", help::about($command)));
 			}
 		}
 	}
@@ -181,7 +182,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 	macro_rules! attempt {
 		($result:expr, $message:expr) => {
 			match $result {
-				Err(err) => fail!(format!("{} (Details: {})", $message, err)),
+				Err(err) => fail!(format!("{} (Details: {:?})", $message, err)),
 				Ok(ok) => ok,
 			}
 		}
@@ -255,6 +256,13 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 		}
 	}
+	macro_rules! require_bot {
+		() => {
+			if !context.tokens[context.selected].starts_with("Bot ") {
+				fail!("Only bots can use this endpoint");
+			}
+		}
+	}
 
 	if tokens.len() < 1 {
 		if context.using.is_some() {
@@ -288,11 +296,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 
 	match command {
 		"echo" => {
-			usage_one!("echo <text>");
+			usage_one!("echo");
 			success!(Some(tokens[0].clone()));
 		},
 		"help" => {
-			usage_one!("help <command>");
+			usage_one!("help");
 			success!(Some(::help::about(tokens[0].as_str())))
 		},
 		"alias" => {
@@ -338,7 +346,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 
 					if tokens.len() >= 2 && tokens[0] == "=" {
 						tokens.remove(0);
-						usage_min!(1, "alias <name> = <command...>");
+						usage_min!(1, "alias");
 					}
 					context.alias.insert(name, tokens.to_vec());
 
@@ -347,11 +355,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 		},
 		"exec" => {
-			usage_min!(2, "exec <type> <value>");
+			usage_min!(2, "exec");
 
 			match tokens[0].as_str() {
 				"shell" => {
-					usage_max!(2, "exec shell <command>");
+					usage_max!(2, "exec");
 
 					let cmd = if cfg!(target_os = "windows") {
 						Command::new("cmd")
@@ -373,7 +381,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 							)));
 				},
 				"file" => {
-					usage_max!(2, "exec file <file>");
+					usage_max!(2, "exec");
 					let result = execute_file(context, terminal, tokens[1].clone());
 					let result = attempt!(result, couldnt!("run commands file"));
 
@@ -387,21 +395,24 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
 					success!(None);
+
+					// TODO: Arguments
 				},
 				"lua-inline" => {
-					usage_max!(2, "exec lua-inline <text>");
 					let mut lua = new_lua(context, terminal);
 
 					if let Err(err) = lua.execute::<()>(tokens[1].clone().as_str()) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
 					success!(None);
+
+					// TODO: Arguments
 				},
 				_ => fail!(unknown!("type (shell/file/lua/lua-inline available)")),
 			}
 		},
 		"use" => {
-			usage_min!(1, "use <command...>");
+			usage_min!(1, "use");
 
 			context.using = Some(tokens);
 			success!(Some(
@@ -410,7 +421,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			));
 		},
 		"to" => {
-			usage_min!(2, "to <file> <command...>");
+			usage_min!(2, "to");
 
 			let file = tokens[0].clone();
 			tokens.remove(0);
@@ -442,7 +453,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			result
 		},
 		"accounts" => {
-			usage_max!(1, "accounts [index]");
+			usage_max!(1, "accounts");
 
 			match tokens.get(0) {
 				None => {
@@ -493,7 +504,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 		},
 		"guild" => {
-			usage_max!(1, "guild [id/name]");
+			usage_max!(1, "guild");
 
 			if tokens.is_empty() {
 				context.guild = None;
@@ -519,7 +530,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					})));
 		},
 		"channel" => {
-			usage_max!(1, "channel [id/name]");
+			usage_max!(1, "channel");
 
 			if tokens.is_empty() {
 				if let Some(guild) = context.guild {
@@ -626,7 +637,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			success!(Some(value));
 		},
 		"msg" => {
-			usage!(3, "msg <type> <\"send\"/existing id> <text>");
+			usage!(3, "msg");
 			let channel = require_channel!();
 
 			let kind = match tokens[0].clone().as_str() {
@@ -689,7 +700,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			};
 		},
 		"log" => {
-			usage_max!(1, "log [n=10]");
+			usage_max!(1, "log");
 			let channel = require_channel!();
 
 			let limit = match tokens.get(0) {
@@ -733,6 +744,89 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 
 			success!(Some(output));
+		},
+		"update" => {
+			usage_min!(2, "update");
+
+			match tokens[0].as_str() {
+				"name" => {
+					usage_max!(2, "update");
+					require_bot!();
+
+					let result = context.session.edit_profile(|profile| {
+						profile.username(tokens[1].as_str())
+					});
+					attempt!(result, couldnt!("update name"));
+				},
+				"status" => {
+					let help = "Hey there buddy! You seem confused over how you should set status!\n\
+								Don't worry, it's not that hard once you get used to it.\n\n\
+
+								The first most important thing is: There is barely any order.\n\
+								Saying `update status stream \"a game\" \"url\"` is the same as `update status \"a game\" stream \"url\"`\n\
+								There is some order though. URL has to come after game. And \"stream\" has to come before URL.\n\n\
+
+								How did you trigger this message? You tried to set an unknown value, but both game and url is already set\n\
+								- or you're not streaming.\n\n\
+
+								There are also \"known\" values. These are: online, idle, donotdisturb, invisible, offline, stream.\n\
+								Every one of these values represent your status.\n\n\
+
+								What does this all mean in practise? Let's see!\n
+								`update status \"a game\"` sets the user to online and with that playing status.\n\
+								`update status idle` sets the user to idle and no gaming status.\n\
+								`update status \"a game\" stream \"url\"` sets the streaming status to \"a game\" and the URL to \"url\".\n\
+								`update status \"a game\" \"url\" stream` displays this message, because URL wasn't expected since stream wasn't set.\n\
+								`update status online online` sets the playing status to \"online\", since we already set status.\n\
+								`update status please help` displays this message, since we're not streaming, but a second unknown value was given."
+						.to_string();
+
+					let mut streaming = false;
+					let mut status = None;
+					let mut game = None;
+					let mut url = None;
+
+					for value in &tokens[1..] {
+						if status.is_none() && !streaming && value == "stream" {
+							streaming = true;
+						} else {
+							let parse_result = OnlineStatus::from_str(value);
+							// value.parse::<OnlineStatus>()
+							if status.is_none() && parse_result.is_some() {
+								status = parse_result;
+							} else {
+								if game.is_none() {
+									game = Some(value.clone());
+								} else if streaming && url.is_none() {
+									url = Some(value.clone())
+								} else {
+									success!(Some(help));
+								}
+							}
+						}
+					}
+
+					if streaming && url.is_none() {
+						success!(Some(help));
+					}
+
+					let game_status = game.map(|game| if streaming {
+						Game::streaming(game, url.unwrap())
+					} else {
+						Game::playing(game)
+					});
+					let status = status.unwrap_or(OnlineStatus::Online);
+
+					context.gateway.set_presence(
+						game_status,
+						status,
+						status == OnlineStatus::Idle
+					)
+				},
+				_ => fail!(unknown!("property (name, status available)")),
+			}
+
+			success!(None);
 		},
 		_ => fail!(unknown!("command")),
 	}
