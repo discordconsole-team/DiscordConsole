@@ -794,14 +794,12 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 							// value.parse::<OnlineStatus>()
 							if status.is_none() && parse_result.is_some() {
 								status = parse_result;
+							} else if game.is_none() {
+								game = Some(value.clone());
+							} else if streaming && url.is_none() {
+								url = Some(value.clone())
 							} else {
-								if game.is_none() {
-									game = Some(value.clone());
-								} else if streaming && url.is_none() {
-									url = Some(value.clone())
-								} else {
-									success!(Some(help));
-								}
+								success!(Some(help));
 							}
 						}
 					}

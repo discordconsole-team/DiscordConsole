@@ -70,7 +70,7 @@ pub fn get_options() -> Option<Options> {
 		let mut token = String::new();
 		match super::std::io::stdin().read_line(&mut token) {
 			Ok(n) => {
-				if n <= 0 {
+				if n == 0 {
 					return None;
 				}
 			},
