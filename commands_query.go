@@ -152,6 +152,10 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 			writeln(w, returnVal)
 		}
 	case "uinfo":
+		if nargs < 1 {
+			stdutil.PrintErr("uinfo <id> [property]", nil)
+			return
+		}
 		id := args[0]
 		var keyvals []*keyval
 
