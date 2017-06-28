@@ -12,7 +12,7 @@ install:
   - make check
   - sudo make install
   - sudo ldconfig
-  - sudo apt install libsodium-dev libncursesw5-dev pkg-config libssl-dev xorg-dev
+  - sudo apt install libncursesw5-dev pkg-config libssl-dev xorg-dev
 
 script:
   - cargo build
