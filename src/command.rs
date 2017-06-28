@@ -110,17 +110,17 @@ impl Default for CommandResult {
 	}
 }
 
-#[cfg_attr(feature = "cargo-clippy", allow(needless_return))]
+// Unsure if I really should split the function up. It shall be thought about.
 // Shut clippy up about my macros... for now at least
+#[cfg_attr(feature = "cargo-clippy", allow(needless_return))]
 #[cfg_attr(feature = "cargo-clippy", allow(cyclomatic_complexity))]
-// Unsure if I really should split it up. It shall be thought about.
 pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<String>) -> CommandResult {
 	macro_rules! success {
 		($val:expr) => {
 			return CommandResult{
 				text:    $val,
 				..Default::default()
-			}
+			};
 		}
 	}
 	macro_rules! fail {
@@ -129,7 +129,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				text:    Some($val.to_string()),
 				success: false,
 				..Default::default()
-			}
+			};
 		}
 	}
 	macro_rules! usage_min {
