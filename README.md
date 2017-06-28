@@ -33,4 +33,14 @@ User tokens are will now be the default, instead of bots. You can still specify 
 ### Requirements
 
 Unfortunately, this means the requirements changes.  
-They will be the same as [discord-rs](https://github.com/SpaceManiac/discord-rs)'s.
+They will only be for compiling though.  
+
+You must install everything the following libraries require:
+- Everything [discord-rs](https://github.com/SpaceManiac/discord-rs)
+- Everything [Cursive](https://github.com/gyscos/Cursive)
+- Everything [rust-clipboard](https://github.com/aweinstock314/rust-clipboard)
+
+Ubuntu example:
+```
+sudo apt install libsodium-dev libncursesw5-dev pkg-config libssl-dev libxcb-cursor-dev xorg-dev
+```

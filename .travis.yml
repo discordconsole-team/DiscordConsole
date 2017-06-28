@@ -5,15 +5,7 @@ rust:
   - stable
 
 install:
-# Libsodium
-  - wget https://download.libsodium.org/libsodium/releases/libsodium-1.0.12.tar.gz
-  - tar -xvf libsodium-1.0.12.tar.gz
-  - cd libsodium-1.0.12
-  - ./configure
-  - make
-  - make check
-  - sudo make install
-  - sudo ldconfig
+- sudo apt install libsodium-dev libncursesw5-dev pkg-config libssl-dev libxcb-cursor-dev xorg-dev
 
 script:
   - cargo build
