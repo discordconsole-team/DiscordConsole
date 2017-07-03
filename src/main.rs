@@ -84,7 +84,7 @@ fn main() {
 	let context = Arc::new(Mutex::new(context.unwrap()));
 
 	// TODO.
-	// See https://krake.one/l/20kh
+	// See https://redd.it/6e6nwu
 	//
 	// let clone = context.clone();
 	// thread::spawn(
