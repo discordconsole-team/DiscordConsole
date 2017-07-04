@@ -751,7 +751,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					output.push_str(*COLOR_CYAN);
 				}
 				output.push_str(
-					format!("{}#{}: {}", msg.author.name, msg.author.discriminator, msg.content).as_str()
+					format!("{}#{:04}: {}", msg.author.name, msg.author.discriminator, msg.content).as_str()
 				);
 				if terminal {
 					output.push_str(*COLOR_RESET);
