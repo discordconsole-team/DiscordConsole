@@ -27,8 +27,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::process::Command;
 
 pub struct CommandContext {
@@ -250,6 +249,17 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			{
 				if $num > $max {
 					fail!(format!("Too high. Max: {}", $max));
+				}
+
+				$num
+			}
+		}
+	}
+	macro_rules! min {
+		($num:expr, $min:expr) => {
+			{
+				if $num < $min {
+					fail!(format!("Too low. Min: {}", $min));
 				}
 
 				$num
@@ -703,17 +713,30 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			usage_max!(1, "log");
 			let channel = require_channel!();
 
-			let limit = match tokens.get(0) {
-				Some(num) => Some(max!(parse!(num, u16), LIMIT) as u64), // Ugh. discord-rs uses u64 even though even u16 is more than enough
-				None => Some(10),
+			let mut limit = match tokens.get(0) {
+				Some(num) => min!(parse!(num, i32), 0), // Ugh. discord-rs uses u64 even though even u16 is more than enough
+				None => 10,
 			};
 
-			let messages = context.session.get_messages(
-				channel,
-				GetMessages::MostRecent,
-				limit
-			);
-			let messages = attempt!(messages, couldnt!("get messages"));
+			let mut messages = Vec::new();
+			let mut which = GetMessages::MostRecent;
+			while limit > 0 {
+				let new_messages = context.session.get_messages(
+					channel,
+					which,
+					Some(cmp::min(limit as u64, LIMIT as u64))
+				);
+				let mut new_messages = attempt!(new_messages, couldnt!("get messages"));
+
+				limit -= LIMIT as i32;
+
+				if new_messages.is_empty() {
+					break;
+				}
+
+				which = GetMessages::Before(new_messages.last().unwrap().id);
+				messages.append(&mut new_messages);
+			}
 
 			let mut output = String::new();
 			let mut first = true;
@@ -727,20 +750,12 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				if terminal {
 					output.push_str(*COLOR_CYAN);
 				}
-
-				let name = msg.author.name.as_str();
-				let discrim = msg.author.discriminator.to_string();
-				let discrim = discrim.as_str();
-
-				output.reserve(name.len() + 1 + discrim.len());
-				output.push_str(name);
-				output.push('#');
-				output.push_str(discrim);
+				output.push_str(
+					format!("{}#{}: {}", msg.author.name, msg.author.discriminator, msg.content).as_str()
+				);
 				if terminal {
 					output.push_str(*COLOR_RESET);
 				}
-				output.push_str(": ");
-				output.push_str(msg.content.as_str())
 			}
 
 			success!(Some(output));
