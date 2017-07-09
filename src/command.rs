@@ -30,6 +30,32 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::process::Command;
 
+const UPDATE_STATUS_HELP: &str = "Hey there buddy! You seem confused over how you should set status!\n\
+					 Don't worry, it's not that hard once you get used to it.\n\n\
+
+					 The first most important thing is: There is barely any order.\n\
+					 Saying `update status stream \"a game\" \"url\"` is the same as \
+						`update status \"a game\" stream \"url\"`\n\
+					 There is some order though. URL has to come after game. And \"stream\" has to come before URL.\n\n\
+
+					 How did you trigger this message? You tried to set an unknown value, \
+						but both game and url is already set\n\
+					 - or you're not streaming.\n\n\
+
+					 There are also \"known\" values. These are: online, idle, donotdisturb, invisible, offline, stream.\n\
+					 Every one of these values represent your status.\n\n\
+
+					 What does this all mean in practise? Let's see!\n\
+					 `update status \"a game\"` sets the user to online and with that playing status.\n\
+					 `update status idle` sets the user to idle and no gaming status.\n\
+					 `update status \"a game\" stream \"url\"` sets the streaming status to \"a game\" and the \
+						URL to \"url\".\n\
+					 `update status \"a game\" \"url\" stream` displays this message, because URL wasn't \
+						expected since stream wasn't set.\n\
+					 `update status online online` sets the playing status to \"online\", since we already set status.\n\
+					 `update status please help` displays this message, since we're not streaming, but a second \
+						unknown value was given.";
+
 pub struct CommandContext {
 	pub tokens: Vec<String>,
 	pub selected: usize,
@@ -774,28 +800,6 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					attempt!(result, couldnt!("update name"));
 				},
 				"status" => {
-					let help = "Hey there buddy! You seem confused over how you should set status!\n\
-								Don't worry, it's not that hard once you get used to it.\n\n\
-
-								The first most important thing is: There is barely any order.\n\
-								Saying `update status stream \"a game\" \"url\"` is the same as `update status \"a game\" stream \"url\"`\n\
-								There is some order though. URL has to come after game. And \"stream\" has to come before URL.\n\n\
-
-								How did you trigger this message? You tried to set an unknown value, but both game and url is already set\n\
-								- or you're not streaming.\n\n\
-
-								There are also \"known\" values. These are: online, idle, donotdisturb, invisible, offline, stream.\n\
-								Every one of these values represent your status.\n\n\
-
-								What does this all mean in practise? Let's see!\n
-								`update status \"a game\"` sets the user to online and with that playing status.\n\
-								`update status idle` sets the user to idle and no gaming status.\n\
-								`update status \"a game\" stream \"url\"` sets the streaming status to \"a game\" and the URL to \"url\".\n\
-								`update status \"a game\" \"url\" stream` displays this message, because URL wasn't expected since stream wasn't set.\n\
-								`update status online online` sets the playing status to \"online\", since we already set status.\n\
-								`update status please help` displays this message, since we're not streaming, but a second unknown value was given."
-						.to_string();
-
 					let mut streaming = false;
 					let mut status = None;
 					let mut game = None;
@@ -814,13 +818,13 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 							} else if streaming && url.is_none() {
 								url = Some(value.clone())
 							} else {
-								success!(Some(help));
+								success!(Some(UPDATE_STATUS_HELP.to_string()));
 							}
 						}
 					}
 
 					if streaming && url.is_none() {
-						success!(Some(help));
+						success!(Some(UPDATE_STATUS_HELP.to_string()));
 					}
 
 					let game_status = game.map(|game| if streaming {
