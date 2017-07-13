@@ -326,14 +326,13 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		atokens.append(&mut tokens);
 		tokens = atokens;
 	}
-	let command = tokens[0].clone();
-	tokens.remove(0);
+	let command = tokens.remove(0);
 	let command = command.as_str();
 
 	match command {
 		"echo" => {
 			usage_one!("echo");
-			success!(Some(tokens[0].clone()));
+			success!(Some(tokens.remove(0)));
 		},
 		"help" => {
 			usage_one!("help");
@@ -374,8 +373,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					success!(None);
 				},
 				_ => {
-					let name = tokens[0].clone();
-					tokens.remove(0);
+					let name = tokens.remove(0);
 					if name == "alias" {
 						fail!("lol nope");
 					}
@@ -384,7 +382,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 						tokens.remove(0);
 						usage_min!(1, "alias");
 					}
-					context.alias.insert(name, tokens.to_vec());
+					context.alias.insert(name, tokens);
 
 					success!(None);
 				},
@@ -393,18 +391,14 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"exec" => {
 			usage_min!(2, "exec");
 
-			match tokens[0].as_str() {
+			match tokens.remove(0).as_str() {
 				"shell" => {
 					usage_max!(2, "exec");
 
 					let cmd = if cfg!(target_os = "windows") {
-						Command::new("cmd")
-							.arg("/c")
-							.arg(tokens[1].clone())
-							.status()
+						Command::new("cmd").arg("/c").arg(tokens.remove(0)).status()
 					} else {
-						Command::new("sh").arg("-c").arg(tokens[1].clone()).status()
-
+						Command::new("sh").arg("-c").arg(tokens.remove(0)).status()
 					};
 					if cmd.is_err() {
 						fail!(couldnt!("execute command"));
@@ -418,7 +412,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				},
 				"file" => {
 					usage_max!(2, "exec");
-					let result = execute_file(context, terminal, tokens[1].clone());
+					let result = execute_file(context, terminal, tokens.remove(0));
 					let result = attempt!(result, couldnt!("run commands file"));
 
 					success!(Some(result))
@@ -426,7 +420,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				"lua" => {
 					let mut lua = new_lua(context, terminal);
 
-					let file = attempt!(File::open(tokens[1].clone()), couldnt!("open file"));
+					let file = attempt!(File::open(tokens.remove(0)), couldnt!("open file"));
 					if let Err(err) = lua.execute_from_reader::<(), _>(file) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
@@ -437,7 +431,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				"lua-inline" => {
 					let mut lua = new_lua(context, terminal);
 
-					if let Err(err) = lua.execute::<()>(tokens[1].clone().as_str()) {
+					if let Err(err) = lua.execute::<()>(tokens.remove(0).as_str()) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
 					success!(None);
@@ -459,8 +453,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"to" => {
 			usage_min!(2, "to");
 
-			let file = tokens[0].clone();
-			tokens.remove(0);
+			let file = tokens.remove(0);
 
 			if tokens[0] == "from" {
 				tokens.remove(0);
@@ -477,12 +470,12 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				let file = File::create(file);
 				let mut file = attempt!(file, couldnt!("open file"));
 
-				if let Some(text) = result.text.clone() {
+				if let Some(ref text) = result.text {
 					let write = file.write_all(text.as_bytes());
 					attempt!(write, couldnt!("write to file"));
-					if result.success {
-						result.text = None;
-					}
+				}
+				if result.success {
+					result.text = None;
 				}
 			}
 
@@ -676,18 +669,18 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			usage!(3, "msg");
 			let channel = require_channel!();
 
-			let kind = match tokens[0].clone().as_str() {
+			let kind = match tokens.remove(0).as_str() {
 				"normal" => 0,
 				"tts" => 1,
 				"embed" => 2,
 				_ => fail!(unknown!("type (normal/tts/embed available)")),
 			};
-			let edit = match tokens[1].clone().as_str() {
+			let edit = match tokens.remove(0).as_str() {
 				"send" => None,
 				id => Some(parse!(id, u64)),
 			};
 
-			let text = tokens[2].clone();
+			let text = tokens.remove(0);
 			let mut text = text.as_str();
 
 			match kind {
