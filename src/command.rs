@@ -75,7 +75,7 @@ impl ::std::fmt::Debug for CommandContext {
 }
 impl CommandContext {
 	pub fn new(tokens: Vec<String>, selected: usize) -> Result<CommandContext, ::discord::Error> {
-		let conn = ::connect(tokens[selected].as_str());
+		let conn = ::connect(&tokens[selected]);
 		if let Err(err) = conn {
 			return Err(err);
 		}
@@ -192,11 +192,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				let mut val;
 
 				if i.is_err() {
-					val = context.state.$funcname(context.guild, $nameorid.as_str())
+					val = context.state.$funcname(context.guild, &$nameorid)
 				} else {
 					val = context.state.$funcid($type(i.unwrap()));
 					if val.is_none() {
-						val = context.state.$funcname(context.guild, $nameorid.as_str())
+						val = context.state.$funcname(context.guild, &$nameorid)
 					}
 				}
 
@@ -327,16 +327,15 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		tokens = atokens;
 	}
 	let command = tokens.remove(0);
-	let command = command.as_str();
 
-	match command {
+	match &*command {
 		"echo" => {
 			usage_one!("echo");
 			success!(Some(tokens.remove(0)));
 		},
 		"help" => {
 			usage_one!("help");
-			success!(Some(::help::about(tokens[0].as_str())))
+			success!(Some(::help::about(&tokens[0])))
 		},
 		"alias" => {
 			match tokens.len() {
@@ -351,15 +350,12 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 							output.push('\n');
 						}
 						output.push_str("alias ");
-						output.push_str(escape(key).as_str());
+						output.push_str(&escape(key));
 						output.push_str(" = ");
-						output.push_str(
-							val.iter()
-								.map(|item| escape(item))
-								.collect::<Vec<String>>()
-								.join(" ")
-								.as_str()
-						);
+						output.push_str(&val.iter()
+							.map(|item| escape(item))
+							.collect::<Vec<String>>()
+							.join(" "));
 					}
 
 					success!(if output.is_empty() {
@@ -369,7 +365,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					});
 				},
 				1 => {
-					context.alias.remove(tokens[0].as_str());
+					context.alias.remove(&tokens[0]);
 					success!(None);
 				},
 				_ => {
@@ -391,7 +387,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"exec" => {
 			usage_min!(2, "exec");
 
-			match tokens.remove(0).as_str() {
+			match &*tokens.remove(0) {
 				"shell" => {
 					usage_max!(2, "exec");
 
@@ -431,7 +427,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				"lua-inline" => {
 					let mut lua = new_lua(context, terminal);
 
-					if let Err(err) = lua.execute::<()>(tokens.remove(0).as_str()) {
+					if let Err(err) = lua.execute::<()>(&tokens.remove(0)) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
 					success!(None);
@@ -496,7 +492,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 							output.push('\n');
 						}
 
-						output.push_str(format!("{}. {}", i, token).as_str());
+						output.push_str(&format!("{}. {}", i, token));
 					}
 
 					success!(Some(output));
@@ -553,9 +549,9 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			context.channel = Some(guild.id.main());
 
 			success!(Some(pretty_json!({
-						"id":       guild.id.to_string().as_str(),
-						"name":     guild.name.as_str(),
-						"owner_id": guild.owner_id.to_string().as_str(),
+						"id":       &guild.id.to_string(),
+						"name":     &guild.name,
+						"owner_id": &guild.owner_id.to_string(),
 					})));
 		},
 		"channel" => {
@@ -584,10 +580,10 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					context.channel = Some(channel.id);
 
 					success!(Some(pretty_json!({
-						"id":        channel.id.to_string().as_str(),
+						"id":       &channel.id.to_string(),
 						"recipient": {
-							"id":   channel.recipient.id.to_string().as_str(),
-							"name": channel.recipient.name.as_str()
+							"id":   &channel.recipient.id.to_string(),
+							"name": &channel.recipient.name
 						}
 					})));
 				},
@@ -596,8 +592,8 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					context.channel = Some(channel.channel_id);
 
 					success!(Some(pretty_json!({
-						"id":       channel.channel_id.to_string().as_str(),
-						"name":     channel.name.clone().unwrap_or_default().as_str()
+						"id":       &channel.channel_id.to_string(),
+						"name":     &channel.name.clone().unwrap_or_default()
 					})));
 				},
 				ChannelRef::Public(guild, channel) => {
@@ -605,11 +601,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					context.channel = Some(channel.id);
 
 					success!(Some(pretty_json!({
-						"id":       channel.id.to_string().as_str(),
-						"name":     channel.name.as_str(),
+						"id":       &channel.id.to_string(),
+						"name":     &channel.name,
 						"guild": {
-							"id":   guild.id.to_string().as_str(),
-							"name": guild.name.as_str()
+							"id":   &guild.id.to_string(),
+							"name": &guild.name
 						}
 					})));
 				},
@@ -630,9 +626,9 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				} else {
 					value.push('\n');
 				}
-				value.push_str(guild.id.to_string().as_str());
+				value.push_str(&guild.id.to_string());
 				value.push(' ');
-				value.push_str(guild.name.as_str());
+				value.push_str(&guild.name);
 			}
 
 			success!(Some(value));
@@ -655,11 +651,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					} else {
 						value.push('\n');
 					}
-					value.push_str(channel.id.to_string().as_str());
+					value.push_str(&channel.id.to_string());
 					value.push(' ');
 					value.push_str(channel.kind.name());
 					value.push(' ');
-					value.push_str(channel.name.as_str());
+					value.push_str(&channel.name);
 				}
 			}
 
@@ -669,19 +665,18 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			usage!(3, "msg");
 			let channel = require_channel!();
 
-			let kind = match tokens.remove(0).as_str() {
+			let kind = match &*tokens.remove(0) {
 				"normal" => 0,
 				"tts" => 1,
 				"embed" => 2,
 				_ => fail!(unknown!("type (normal/tts/embed available)")),
 			};
-			let edit = match tokens.remove(0).as_str() {
+			let edit = match &*tokens.remove(0) {
 				"send" => None,
 				id => Some(parse!(id, u64)),
 			};
 
-			let text = tokens.remove(0);
-			let mut text = text.as_str();
+			let mut text = &*tokens.remove(0);
 
 			match kind {
 				0 | 1 => {
@@ -708,7 +703,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 							text = &text[amount..];
 							let msg = context.session.send_message(channel, value, "", kind == 1);
 							let msg = attempt!(msg, couldnt!("send message"));
-							output.push_str(msg!(msg.id).as_str());
+							output.push_str(&msg!(msg.id));
 						}
 
 						success!(Some(output));
@@ -770,7 +765,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					output.push_str(*COLOR_CYAN);
 				}
 				output.push_str(
-					format!("{}#{:04}: {}", msg.author.name, msg.author.discriminator, msg.content).as_str()
+					&format!("{}#{:04}: {}", msg.author.name, msg.author.discriminator, msg.content)
 				);
 				if terminal {
 					output.push_str(*COLOR_RESET);
@@ -782,14 +777,14 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"update" => {
 			usage_min!(2, "update");
 
-			match tokens[0].as_str() {
+			match &*tokens[0] {
 				"name" => {
 					usage_max!(2, "update");
 					require_bot!();
 
-					let result = context.session.edit_profile(|profile| {
-						profile.username(tokens[1].as_str())
-					});
+					let result = context.session.edit_profile(
+						|profile| profile.username(&*tokens[1])
+					);
 					attempt!(result, couldnt!("update name"));
 				},
 				"status" => {
@@ -888,16 +883,16 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: String) 
 			continue;
 		}
 
-		results.push_str(pointer.clone().as_str());
+		results.push_str(&pointer);
 		if terminal {
 			results.push_str(*COLOR_ITALIC);
 		}
-		results.push_str(line.as_str());
+		results.push_str(&line);
 		if terminal {
 			results.push_str(*COLOR_RESET);
 		}
 		results.push('\n');
-		results.push_str(result.text.unwrap_or_default().as_str())
+		results.push_str(&result.text.unwrap_or_default())
 	}
 
 	Ok(results)
@@ -915,9 +910,9 @@ fn lua_to_string(value: AnyLuaValue) -> String {
 					let value0 = lua_to_string(value.0.clone());
 					let value1 = lua_to_string(value.1.clone());
 					let mut string = String::with_capacity(value0.len() + 2 + value1.len());
-					string.push_str(value0.as_str());
+					string.push_str(&value0);
 					string.push_str(": ");
-					string.push_str(value1.as_str());
+					string.push_str(&value1);
 
 					string
 				})

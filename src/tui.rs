@@ -47,7 +47,7 @@ pub fn tui(context: Arc<Mutex<CommandContext>>) {
 				Dialog::around(LinearLayout::vertical().child(command_field(
 					context,
 					"Name",
-					guild.name.as_str(),
+					&guild.name,
 					&["echo"]
 				))).title("Guild info")
 					.dismiss_button("Close")
@@ -141,7 +141,7 @@ fn command(s: &mut Cursive, context: &mut CommandContext, tokens: Vec<String>) -
 			text.push_str("Error: ");
 		}
 		match result.text.clone() {
-			Some(string) => text.push_str(string.as_str()),
+			Some(string) => text.push_str(&string),
 			None => {
 				if result.success {
 					text.push_str("Successfully executed command.");
@@ -150,7 +150,7 @@ fn command(s: &mut Cursive, context: &mut CommandContext, tokens: Vec<String>) -
 				}
 			},
 		}
-		s.add_layer(Dialog::info(text.as_str()))
+		s.add_layer(Dialog::info(&*text))
 	}
 	result
 }

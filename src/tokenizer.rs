@@ -53,7 +53,7 @@ where
 						if clip.is_ok() {
 							let mut clip: ClipboardContext = clip.unwrap();
 							if let Ok(clip) = clip.get_contents() {
-								buffer.push_str(clip.as_str());
+								buffer.push_str(&clip);
 							}
 						}
 					},

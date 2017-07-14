@@ -32,7 +32,7 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 			pointer(&context.lock().unwrap(), true)
 		};
 		// println!("Pointer: Unlocked {:?}", context);
-		let prefix = prefix.as_str();
+		let prefix = &prefix;
 
 		let mut first = true;
 		let mut command = String::new();
@@ -48,14 +48,14 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 					if !wasfirst {
 						command.push(' ');
 					}
-					command.push_str(res.as_str());
+					command.push_str(&res);
 
 					Ok(res)
 				},
 				Err(err) => Err(err),
 			}
 		});
-		rl.add_history_entry(command.as_str());
+		rl.add_history_entry(&command);
 		let tokens = match tokens {
 			Ok(tokens) => tokens,
 			Err(ReadlineError::Eof) |
@@ -73,10 +73,10 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 		// println!("Command: Executed");
 		if result.success {
 			if let Some(text) = result.text {
-				println!("{}", text.as_str());
+				println!("{}", &text);
 			}
 		} else if let Some(text) = result.text {
-			stderr!("{}", text.as_str());
+			stderr!("{}", &text);
 		}
 
 		// println!("Command: Unlocked");
@@ -103,28 +103,26 @@ pub fn pointer(context: &CommandContext, terminal: bool) -> String {
 	}
 	if let Some(guild) = context.guild {
 		prefix.push_str(match context.state.find_guild(guild) {
-			Some(guild) => guild.name.as_str(),
+			Some(guild) => &guild.name,
 			None => "Unknown",
 		});
 	}
 	if let Some(channel) = context.channel {
 		prefix.push_str(" (");
-		prefix.push_str(
-			match context.state.find_channel(channel) {
-				Some(channel) => {
-					match channel {
-						ChannelRef::Public(_, channel) => {
-							let mut name = channel.name.clone();
-							name.insert(0, '#');
-							name
-						},
-						ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
-						ChannelRef::Private(channel) => channel.recipient.name.clone(),
-					}
-				},
-				None => "unknown".to_string(),
-			}.as_str()
-		);
+		prefix.push_str(&match context.state.find_channel(channel) {
+			Some(channel) => {
+				match channel {
+					ChannelRef::Public(_, channel) => {
+						let mut name = channel.name.clone();
+						name.insert(0, '#');
+						name
+					},
+					ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
+					ChannelRef::Private(channel) => channel.recipient.name.clone(),
+				}
+			},
+			None => "unknown".to_string(),
+		});
 		prefix.push_str(")");
 	}
 	prefix.push_str("> ");
