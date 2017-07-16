@@ -8,11 +8,11 @@ authors = ["LEGOlord208 <LEGOlord208@krake.one>"]
 
 
 [dependencies]
-cursive     = "0.5"
-discord     = "0.8"
 clap        = "2.24"
-rustyline   = "1.0"
-lazy_static = "0.2"
-serde_json  = "1.0"
 clipboard   = "0.3"
+cursive     = "0.5"
+discord     = { git = "https://github.com/SpaceManiac/discord-rs" }
 hlua        = { git = "https://github.com/tomaka/hlua" }
+lazy_static = "0.2"
+rustyline   = "1.0"
+serde_json  = "1.0"

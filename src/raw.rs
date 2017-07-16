@@ -18,7 +18,7 @@ extern crate rustyline;
 use self::rustyline::Editor;
 use self::rustyline::error::ReadlineError;
 use color::*;
-use command::{CommandContext, MoreStateFunctionsSuperOriginalTraitNameExclusiveTM};
+use command::CommandContext;
 use discord::ChannelRef;
 use std::io::Write;
 use std::sync::{Arc, Mutex};
@@ -102,7 +102,7 @@ pub fn pointer(context: &CommandContext, terminal: bool) -> String {
 		});
 	}
 	if let Some(guild) = context.guild {
-		prefix.push_str(match context.state.find_guild(guild) {
+		prefix.push_str(match context.state.find_server(guild) {
 			Some(guild) => &guild.name,
 			None => "Unknown",
 		});

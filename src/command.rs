@@ -538,7 +538,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 			let guild = from_id!(
 				ServerId,
-				find_guild,
+				find_server,
 				find_guild_by_name,
 				&mut guild,
 				tokens[0]
@@ -636,7 +636,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"channels" => {
 			usage_max!(0, "channels");
 			let guild = require_guild!();
-			let guild = unwrap_cache!(context.state.find_guild(guild));
+			let guild = unwrap_cache!(context.state.find_server(guild));
 
 			let mut value = String::new();
 			let mut first = true;
@@ -797,7 +797,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 						if status.is_none() && !streaming && value == "stream" {
 							streaming = true;
 						} else {
-							let parse_result = OnlineStatus::from_str(value);
+							let parse_result = OnlineStatus::from_name(value);
 							// value.parse::<OnlineStatus>()
 							if status.is_none() && parse_result.is_some() {
 								status = parse_result;
@@ -943,20 +943,10 @@ pub fn new_lua(context: &mut CommandContext, terminal: bool) -> Lua {
 }
 
 pub trait MoreStateFunctionsSuperOriginalTraitNameExclusiveTM {
-	fn find_guild(&self, id: ServerId) -> Option<&LiveServer>;
 	fn find_guild_by_name<'a>(&'a self, guild: Option<ServerId>, name: &str) -> Option<&'a LiveServer>;
 	fn find_channel_by_name<'a>(&'a self, guild: Option<ServerId>, name: &'a str) -> Option<ChannelRef<'a>>;
 }
 impl MoreStateFunctionsSuperOriginalTraitNameExclusiveTM for State {
-	fn find_guild(&self, id: ServerId) -> Option<&LiveServer> {
-		for guild in self.servers() {
-			if guild.id == id {
-				return Some(guild);
-			}
-		}
-		None
-	}
-
 	fn find_guild_by_name<'a>(&'a self, _: Option<ServerId>, name: &str) -> Option<&'a LiveServer> {
 		for guild in self.servers() {
 			if guild.name == name {
