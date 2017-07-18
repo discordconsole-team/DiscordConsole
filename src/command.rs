@@ -387,14 +387,14 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"exec" => {
 			usage_min!(2, "exec");
 
-			match &*tokens.remove(0) {
+			match &*tokens[0] {
 				"shell" => {
 					usage_max!(2, "exec");
 
 					let cmd = if cfg!(target_os = "windows") {
-						Command::new("cmd").arg("/c").arg(tokens.remove(0)).status()
+						Command::new("cmd").arg("/c").arg(&tokens[1]).status()
 					} else {
-						Command::new("sh").arg("-c").arg(tokens.remove(0)).status()
+						Command::new("sh").arg("-c").arg(&tokens[1]).status()
 					};
 					if cmd.is_err() {
 						fail!(couldnt!("execute command"));
@@ -408,7 +408,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				},
 				"file" => {
 					usage_max!(2, "exec");
-					let result = execute_file(context, terminal, tokens.remove(0));
+					let result = execute_file(context, terminal, &tokens[1]);
 					let result = attempt!(result, couldnt!("run commands file"));
 
 					success!(Some(result))
@@ -416,7 +416,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				"lua" => {
 					let mut lua = new_lua(context, terminal);
 
-					let file = attempt!(File::open(tokens.remove(0)), couldnt!("open file"));
+					let file = attempt!(File::open(&tokens[1]), couldnt!("open file"));
 					if let Err(err) = lua.execute_from_reader::<(), _>(file) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
@@ -427,7 +427,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				"lua-inline" => {
 					let mut lua = new_lua(context, terminal);
 
-					if let Err(err) = lua.execute::<()>(&tokens.remove(0)) {
+					if let Err(err) = lua.execute::<()>(&tokens[1]) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
 					success!(None);
@@ -665,18 +665,18 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			usage!(3, "msg");
 			let channel = require_channel!();
 
-			let kind = match &*tokens.remove(0) {
+			let kind = match &*tokens[0] {
 				"normal" => 0,
 				"tts" => 1,
 				"embed" => 2,
 				_ => fail!(unknown!("type (normal/tts/embed available)")),
 			};
-			let edit = match &*tokens.remove(0) {
+			let edit = match &*tokens[1] {
 				"send" => None,
 				id => Some(parse!(id, u64)),
 			};
 
-			let mut text = &*tokens.remove(0);
+			let mut text = &*tokens[2];
 
 			match kind {
 				0 | 1 => {
@@ -847,7 +847,7 @@ impl fmt::Display for ErrUnclosed {
 	fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result { write!(fmt, "{}", self.description()) }
 }
 
-pub fn execute_file(context: &mut CommandContext, terminal: bool, file: String) -> Result<String, Box<Error>> {
+pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) -> Result<String, Box<Error>> {
 	let file = File::open(file)?;
 	let bufreader = BufReader::new(file);
 
