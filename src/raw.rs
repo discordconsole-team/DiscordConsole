@@ -20,7 +20,6 @@ use self::rustyline::error::ReadlineError;
 use color::*;
 use command::CommandContext;
 use discord::ChannelRef;
-use std::io::Write;
 use std::sync::{Arc, Mutex};
 
 pub fn raw(context: Arc<Mutex<CommandContext>>) {
@@ -63,7 +62,7 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 				break;
 			},
 			Err(err) => {
-				stderr!("Error reading line: {}", err);
+				eprintln!("Error reading line: {}", err);
 				break;
 			},
 		};
@@ -76,7 +75,7 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 				println!("{}", &text);
 			}
 		} else if let Some(text) = result.text {
-			stderr!("{}", &text);
+			eprintln!("{}{}{}", *COLOR_RED, &text, *COLOR_RESET);
 		}
 
 		// println!("Command: Unlocked");

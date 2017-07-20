@@ -75,7 +75,7 @@ pub fn get_options() -> Option<Options> {
 				}
 			},
 			Err(err) => {
-				stderr!("Couldn't read line: {}", err);
+				eprintln!("Couldn't read line: {}", err);
 				return None;
 			},
 		}

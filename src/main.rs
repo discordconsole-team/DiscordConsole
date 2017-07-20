@@ -22,11 +22,6 @@ extern crate lazy_static;
 extern crate serde_json;
 extern crate clipboard;
 
-#[macro_export]
-macro_rules! stderr {
-	($fmt:expr)              => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}"), *COLOR_RED, *COLOR_RESET).unwrap(); };
-	($fmt:expr, $($arg:tt)*) => { writeln!(::std::io::stderr(), concat!("{}", $fmt, "{}"), *COLOR_RED, $($arg)*, *COLOR_RESET).unwrap(); };
-}
 macro_rules! flush {
 	() => { ::std::io::stdout().flush().unwrap(); }
 }
@@ -44,7 +39,6 @@ mod tui;
 use color::*;
 use command::CommandContext;
 use discord::{Connection, Discord, State};
-use std::io::Write;
 use std::sync::{Arc, Mutex};
 // use std::thread;
 
@@ -78,7 +72,7 @@ fn main() {
 
 	let context = CommandContext::new(options.tokens, 0);
 	if let Err(err) = context {
-		stderr!("Could not connect to gateway: {}", err);
+		eprintln!("Could not connect to gateway: {}", err);
 		return;
 	}
 	let context = Arc::new(Mutex::new(context.unwrap()));
@@ -100,7 +94,7 @@ fn main() {
 	// 				clone.lock().unwrap().state.update(&event)
 	// 			},
 	// 			Err(err) => {
-	// 				stderr!("Error receiving: {}", err);
+	// 				eprintln!("Error receiving: {}", err);
 	// 			},
 	// 		}
 	// 	}
