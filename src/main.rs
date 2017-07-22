@@ -34,7 +34,6 @@ mod options;
 mod raw;
 mod sort;
 mod tokenizer;
-mod tui;
 
 use color::*;
 use command::CommandContext;
@@ -100,12 +99,7 @@ fn main() {
 	// 	}
 	// );
 
-	if options.notui {
-		raw::raw(context);
-	} else {
-		tui::tui(context);
-	}
-
+	raw::raw(context);
 	print!("{}", *COLOR_RESET);
 }
 

@@ -22,9 +22,7 @@ use std::io::Write;
 #[derive(Debug)]
 pub struct Options {
 	pub tokens: Vec<String>,
-	pub token: usize,
-
-	pub notui: bool
+	pub token: usize
 }
 
 pub fn get_options() -> Option<Options> {
@@ -40,9 +38,6 @@ pub fn get_options() -> Option<Options> {
 				.multiple(true)
 				.takes_value(true)
 		)
-		.arg(Arg::with_name("notui").long("notui").help(
-			"No Text UI will be used. Pure command mode."
-		))
 		.get_matches();
 
 	let tokens = args.values_of("token");
@@ -63,7 +58,7 @@ pub fn get_options() -> Option<Options> {
 			*COLOR_RESET
 		);
 		println!();
-		println!("Care to let us highjack your session?");
+		println!("Care to let us hijack your session?");
 		print!("Token: ");
 		flush!();
 
@@ -85,8 +80,6 @@ pub fn get_options() -> Option<Options> {
 
 	Some(Options {
 		tokens: tokens,
-		token: 0,
-
-		notui: args.is_present("notui")
+		token: 0
 	})
 }

@@ -7,12 +7,15 @@ Don't worry, the old version will still be supported.
 
 ## Changes
 
-First big change:  
-**You will be navigating in a UI.**  
+~~First big change: You will be navigating in a UI.
 That said, the commands system will still exist, and it is how it all functions behind the scenes.  
-You will also be able to disable the UI and get a normal commands dialog.  
-Speaking of that, commands will also use quotes to separate arguments.  
-*Example: `nick @me "some good nickname"`*
+You will also be able to disable the UI and get a normal commands dialog.~~
+
+**Text-UI was cancelled.**  
+There could still be extension programs using the TUI, but no built-in support.  
+
+Commands will also use quotes to separate arguments.  
+*Example: `user @me nick "some good nickname"`*
 
 Secondly,
 you will be able to pass multiple `-t` or `--token` (long option is also new) parameters at startup, to be able to  
