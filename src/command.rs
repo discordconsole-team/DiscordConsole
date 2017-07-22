@@ -19,7 +19,7 @@ use self::hlua::{AnyLuaValue, Lua};
 use {LIMIT, LIMIT_MSG};
 use color::*;
 use discord::{ChannelRef, Connection, Discord, GetMessages, State};
-use discord::model::{ChannelId, ChannelType, Game, LiveServer, MessageId, OnlineStatus, ServerId};
+use discord::model::{ChannelId, ChannelType, Game, LiveServer, MessageId, OnlineStatus, ServerId, UserId};
 use escape::escape;
 use help;
 use std::cmp;
@@ -263,6 +263,17 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			}
 		}
 	}
+	macro_rules! parse_user {
+		($str:expr) => {
+			{
+				if $str == "@me" {
+					unimplemented!();
+				} else {
+					UserId(parse!($str, u64))
+				}
+			}
+		}
+	}
 	macro_rules! msg {
 		($id:expr) => {
 			{
@@ -396,15 +407,13 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					} else {
 						Command::new("sh").arg("-c").arg(&tokens[1]).status()
 					};
-					if cmd.is_err() {
-						fail!(couldnt!("execute command"));
-					}
+					attempt!(cmd, couldnt!("execute command"));
 					success!(Some(format!(
-								"{}Process exited with status {}{}",
-								if terminal { *COLOR_BLACK } else { "" },
-								cmd.unwrap().code().unwrap_or(1),
-								if terminal { *COLOR_RESET } else { "" },
-							)));
+						"{}Process exited with status {}{}",
+						if terminal { *COLOR_BLACK } else { "" },
+						cmd.unwrap().code().unwrap_or(1),
+						if terminal { *COLOR_RESET } else { "" },
+					)));
 				},
 				"file" => {
 					usage_max!(2, "exec");
@@ -829,6 +838,23 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					)
 				},
 				_ => fail!(unknown!("property (name, status available)")),
+			}
+
+			success!(None);
+		},
+		"user" => {
+			usage!(3, "user");
+
+			let guild = require_guild!();
+			let user = parse_user!(tokens[0]);
+
+			if tokens[1] == "nick" {
+				let member = context.session.edit_member(guild, user, |builder| {
+					builder.nickname(&tokens[2])
+				});
+				attempt!(member, couldnt!("edit member"));
+			} else {
+				fail!(unknown!("property (nick available)"));
 			}
 
 			success!(None);

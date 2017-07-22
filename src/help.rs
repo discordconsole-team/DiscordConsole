@@ -93,6 +93,12 @@ pub fn about(command: &str) -> String {
 
 				Example: `update name test-bot`, `update status idle \"a game\"`"
 		},
+		"user" => {
+			"user <user id> <property> <value>\n\
+				Update <property> on <user id> to <value> within the current server.\n\
+
+				Example: `user @me nick \"Hello World\"`"
+		},
 		_ => "No help available",
 	}.to_string()
 }
