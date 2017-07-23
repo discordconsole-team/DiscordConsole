@@ -139,7 +139,7 @@ impl Default for CommandResult {
 // Shut clippy up about my macros... for now at least
 #[cfg_attr(feature = "cargo-clippy", allow(needless_return))]
 #[cfg_attr(feature = "cargo-clippy", allow(cyclomatic_complexity))]
-pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<String>) -> CommandResult {
+pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<String>) -> CommandResult {
 	macro_rules! success {
 		($val:expr) => {
 			return CommandResult{
@@ -159,14 +159,14 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 	}
 	macro_rules! usage_min {
 		($min:expr, $command:expr) => {
-			if tokens.len() < $min {
+			if args.len() < $min {
 				fail!(format!("{}\n\nYou supplied too few arguments", help::about($command)));
 			}
 		}
 	}
 	macro_rules! usage_max {
 		($max:expr, $command:expr) => {
-			if tokens.len() > $max {
+			if args.len() > $max {
 				fail!(format!("{}\n\nYou supplied too many arguments", help::about($command)));
 			}
 		}
@@ -179,7 +179,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 	}
 	macro_rules! usage_one {
 		($command:expr) => {
-			if tokens.len() != 1 {
+			if args.len() != 1 {
 				fail!(format!("{}\n\nYou did not supply 1 argument.\n\
 								Did you mean to put quotes around the argument?", help::about($command)));
 			}
@@ -311,7 +311,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		}
 	}
 
-	if tokens.len() < 1 {
+	if args.len() < 1 {
 		if context.using.is_some() {
 			context.using = None;
 		}
@@ -327,29 +327,29 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 	if let Some(ref using) = context.using {
 		let mut using = using.clone();
 
-		using.append(&mut tokens);
-		tokens = using;
+		using.append(&mut args);
+		args = using;
 	}
-	if let Some(atokens) = context.alias.get(&tokens[0]) {
+	if let Some(atokens) = context.alias.get(&args[0]) {
 		let mut atokens = atokens.clone();
 
-		tokens.remove(0);
-		atokens.append(&mut tokens);
-		tokens = atokens;
+		args.remove(0);
+		atokens.append(&mut args);
+		args = atokens;
 	}
-	let command = tokens.remove(0);
+	let command = args.remove(0);
 
 	match &*command {
 		"echo" => {
 			usage_one!("echo");
-			success!(Some(tokens.remove(0)));
+			success!(Some(args.remove(0)));
 		},
 		"help" => {
 			usage_one!("help");
-			success!(Some(::help::about(&tokens[0])))
+			success!(Some(::help::about(&args[0])))
 		},
 		"alias" => {
-			match tokens.len() {
+			match args.len() {
 				0 => {
 					let mut output = String::new();
 					let mut first = true;
@@ -376,20 +376,20 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					});
 				},
 				1 => {
-					context.alias.remove(&tokens[0]);
+					context.alias.remove(&args[0]);
 					success!(None);
 				},
 				_ => {
-					let name = tokens.remove(0);
+					let name = args.remove(0);
 					if name == "alias" {
 						fail!("lol nope");
 					}
 
-					if tokens.len() >= 2 && tokens[0] == "=" {
-						tokens.remove(0);
+					if args.len() >= 2 && args[0] == "=" {
+						args.remove(0);
 						usage_min!(1, "alias");
 					}
-					context.alias.insert(name, tokens);
+					context.alias.insert(name, args);
 
 					success!(None);
 				},
@@ -398,14 +398,14 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"exec" => {
 			usage_min!(2, "exec");
 
-			match &*tokens[0] {
+			match &*args[0] {
 				"shell" => {
 					usage_max!(2, "exec");
 
 					let cmd = if cfg!(target_os = "windows") {
-						Command::new("cmd").arg("/c").arg(&tokens[1]).status()
+						Command::new("cmd").arg("/c").arg(&args[1]).status()
 					} else {
-						Command::new("sh").arg("-c").arg(&tokens[1]).status()
+						Command::new("sh").arg("-c").arg(&args[1]).status()
 					};
 					attempt!(cmd, couldnt!("execute command"));
 					success!(Some(format!(
@@ -417,7 +417,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				},
 				"file" => {
 					usage_max!(2, "exec");
-					let result = execute_file(context, terminal, &tokens[1]);
+					let result = execute_file(context, terminal, &args[1]);
 					let result = attempt!(result, couldnt!("run commands file"));
 
 					success!(Some(result))
@@ -425,7 +425,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				"lua" => {
 					let mut lua = new_lua(context, terminal);
 
-					let file = attempt!(File::open(&tokens[1]), couldnt!("open file"));
+					let file = attempt!(File::open(&args[1]), couldnt!("open file"));
 					if let Err(err) = lua.execute_from_reader::<(), _>(file) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
@@ -436,7 +436,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				"lua-inline" => {
 					let mut lua = new_lua(context, terminal);
 
-					if let Err(err) = lua.execute::<()>(&tokens[1]) {
+					if let Err(err) = lua.execute::<()>(&args[1]) {
 						fail!(format!("Error trying to execute: {:?}", err));
 					}
 					success!(None);
@@ -449,7 +449,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"use" => {
 			usage_min!(1, "use");
 
-			context.using = Some(tokens);
+			context.using = Some(args);
 			success!(Some(
 				"Use mode enabled.\nSend an empty command to disable."
 					.to_string()
@@ -458,14 +458,14 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"to" => {
 			usage_min!(2, "to");
 
-			let file = tokens.remove(0);
+			let file = args.remove(0);
 
-			if tokens[0] == "from" {
-				tokens.remove(0);
+			if args[0] == "from" {
+				args.remove(0);
 				usage_min!(1, "to <file> from <command...>");
 			}
 
-			let mut result = execute(context, false, tokens);
+			let mut result = execute(context, false, args);
 
 			if file.is_empty() {
 				if result.success {
@@ -489,7 +489,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"accounts" => {
 			usage_max!(1, "accounts");
 
-			match tokens.get(0) {
+			match args.get(0) {
 				None => {
 					let mut output = String::new();
 					let mut first = true;
@@ -540,7 +540,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"guild" => {
 			usage_max!(1, "guild");
 
-			if tokens.is_empty() {
+			if args.is_empty() {
 				context.guild = None;
 				context.channel = None;
 				success!(None);
@@ -550,7 +550,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				find_server,
 				find_guild_by_name,
 				&mut guild,
-				tokens[0]
+				args[0]
 			);
 
 			let guild = unwrap_cache!(guild);
@@ -566,7 +566,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"channel" => {
 			usage_max!(1, "channel");
 
-			if tokens.is_empty() {
+			if args.is_empty() {
 				if let Some(guild) = context.guild {
 					context.channel = Some(guild.main());
 				} else {
@@ -579,7 +579,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 				find_channel,
 				find_channel_by_name,
 				&mut channel,
-				tokens[0]
+				args[0]
 			);
 			let channel = unwrap_cache!(channel);
 
@@ -674,18 +674,18 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			usage!(3, "msg");
 			let channel = require_channel!();
 
-			let kind = match &*tokens[0] {
+			let kind = match &*args[0] {
 				"normal" => 0,
 				"tts" => 1,
 				"embed" => 2,
 				_ => fail!(unknown!("type (normal/tts/embed available)")),
 			};
-			let edit = match &*tokens[1] {
+			let edit = match &*args[1] {
 				"send" => None,
 				id => Some(parse!(id, u64)),
 			};
 
-			let mut text = &*tokens[2];
+			let mut text = &*args[2];
 
 			match kind {
 				0 | 1 => {
@@ -736,7 +736,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			usage_max!(1, "log");
 			let channel = require_channel!();
 
-			let mut limit = match tokens.get(0) {
+			let mut limit = match args.get(0) {
 				Some(num) => min!(parse!(num, i32), 0), // Ugh. discord-rs uses u64 even though even u16 is more than enough
 				None => 10,
 			};
@@ -786,13 +786,13 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 		"update" => {
 			usage_min!(2, "update");
 
-			match &*tokens[0] {
+			match &*args[0] {
 				"name" => {
 					usage_max!(2, "update");
 					require_bot!();
 
 					let result = context.session.edit_profile(
-						|profile| profile.username(&*tokens[1])
+						|profile| profile.username(&*args[1])
 					);
 					attempt!(result, couldnt!("update name"));
 				},
@@ -802,7 +802,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 					let mut game = None;
 					let mut url = None;
 
-					for value in &tokens[1..] {
+					for value in &args[1..] {
 						if status.is_none() && !streaming && value == "stream" {
 							streaming = true;
 						} else {
@@ -846,11 +846,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut tokens: Vec<Str
 			usage!(3, "user");
 
 			let guild = require_guild!();
-			let user = parse_user!(tokens[0]);
+			let user = parse_user!(args[0]);
 
-			if tokens[1] == "nick" {
+			if args[1] == "nick" {
 				let member = context.session.edit_member(guild, user, |builder| {
-					builder.nickname(&tokens[2])
+					builder.nickname(&args[2])
 				});
 				attempt!(member, couldnt!("edit member"));
 			} else {
@@ -894,7 +894,7 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 		}
 
 		let mut first = true;
-		let tokens = ::tokenizer::tokens::<_, Box<Error>>(|| if first {
+		let args = ::parser::parse::<_, Box<Error>>(|| if first {
 			first = false;
 			Ok(line.clone())
 		} else {
@@ -908,7 +908,7 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 				None => Err(Box::new(ErrUnclosed)),
 			}
 		})?;
-		let result = execute(context, terminal, tokens);
+		let result = execute(context, terminal, args);
 
 		if result.empty {
 			continue;

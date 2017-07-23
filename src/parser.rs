@@ -16,7 +16,7 @@
 
 use clipboard::{ClipboardContext, ClipboardProvider};
 
-pub fn tokens<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
+pub fn parse<GET, ERR>(mut input: GET) -> Result<Vec<String>, ERR>
 where
 	GET: FnMut() -> Result<String, ERR>,
 {

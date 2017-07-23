@@ -36,7 +36,7 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 		let mut first = true;
 		let mut command = String::new();
 
-		let tokens = ::tokenizer::tokens(|| {
+		let tokens = ::parser::parse(|| {
 			let wasfirst = first;
 			first = false;
 

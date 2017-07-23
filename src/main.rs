@@ -33,7 +33,7 @@ mod help;
 mod options;
 mod raw;
 mod sort;
-mod tokenizer;
+mod parser;
 
 use color::*;
 use command::CommandContext;
