@@ -882,8 +882,10 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 	let mut results = String::new();
 	let mut first = true;
 
-	for line in bufreader.lines() {
-		let line = line?;
+	let mut lines = bufreader.lines();
+
+	while let Some(line) = lines.next() {
+		let mut line = line?;
 
 		if first {
 			first = false;
@@ -892,13 +894,20 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 		}
 
 		let mut first = true;
-		let tokens = ::tokenizer::tokens(|| if first {
+		let tokens = ::tokenizer::tokens::<_, Box<Error>>(|| if first {
 			first = false;
 			Ok(line.clone())
 		} else {
-			Err(ErrUnclosed)
-		});
-		let tokens = tokens?;
+			match lines.next() {
+				Some(line2) => {
+					let line2 = line2?;
+					line.push(' ');
+					line.push_str(&line2);
+					Ok(line2)
+				}
+				None => Err(Box::new(ErrUnclosed)),
+			}
+		})?;
 		let result = execute(context, terminal, tokens);
 
 		if result.empty {

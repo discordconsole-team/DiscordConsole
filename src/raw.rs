@@ -43,13 +43,13 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 			let result = rl.readline(if wasfirst { prefix } else { "" });
 
 			match result {
-				Ok(res) => {
+				Ok(result) => {
 					if !wasfirst {
 						command.push(' ');
 					}
-					command.push_str(&res);
+					command.push_str(&result);
 
-					Ok(res)
+					Ok(result)
 				},
 				Err(err) => Err(err),
 			}
