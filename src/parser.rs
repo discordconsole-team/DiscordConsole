@@ -96,7 +96,7 @@ where
 mod test {
 	macro_rules! test {
 		($str:expr, $vec:expr) => {
-			assert_eq!(super::tokens::<_, ()>(|| Ok($str.to_string())).unwrap(), $vec);
+			assert_eq!(super::parse::<_, ()>(|| Ok($str.to_string())).unwrap(), $vec);
 		}
 	}
 
