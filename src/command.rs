@@ -186,7 +186,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 		}
 	}
 	macro_rules! from_id {
-		($type:expr, $funcid:ident, $funcname:ident, $ref:expr, $nameorid:expr) => {
+		(kind: $type:expr, funcid: $funcid:ident, funcname: $funcname:ident, name_or_id: $nameorid:expr) => {
 			{
 				let i = $nameorid.parse();
 				let mut val;
@@ -256,7 +256,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 		}
 	}
 	macro_rules! parse {
-		($str:expr, $type:tt) => {
+		($str:expr, $type:ty) => {
 			{
 				let num = $str.parse::<$type>();
 				attempt!(num, "Not a number")
@@ -546,11 +546,10 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 				success!(None);
 			}
 			let guild = from_id!(
-				ServerId,
-				find_server,
-				find_guild_by_name,
-				&mut guild,
-				args[0]
+				kind: ServerId,
+				funcid: find_server,
+				funcname: find_guild_by_name,
+				name_or_id: args[0]
 			);
 
 			let guild = unwrap_cache!(guild);
@@ -575,11 +574,10 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 				success!(None);
 			}
 			let channel = from_id!(
-				ChannelId,
-				find_channel,
-				find_channel_by_name,
-				&mut channel,
-				args[0]
+				kind: ChannelId,
+				funcid: find_channel,
+				funcname: find_channel_by_name,
+				name_or_id: args[0]
 			);
 			let channel = unwrap_cache!(channel);
 
