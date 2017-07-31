@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 pub fn escape(token: &str) -> String {
-	let mut escaped = String::new();
+	let mut escaped = String::with_capacity(token.len());
 	let mut found = false;
 	let mut empty = true;
 
