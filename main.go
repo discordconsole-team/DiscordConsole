@@ -374,7 +374,7 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 	}
 	s += "("
 
-	if channel.IsPrivate {
+	if isPrivate(channel) {
 		s += "Private"
 	} else {
 		s += guild.Name + " " + "#" + channel.Name
@@ -429,10 +429,10 @@ func pointer(session *discordgo.Session) string {
 
 	s := ""
 
-	if loc.channel.IsPrivate {
+	if isPrivate(loc.channel) {
 		recipient := tl("pointer.unknown")
-		if loc.channel.Recipient != nil {
-			recipient = loc.channel.Recipient.Username
+		if len(loc.channel.Recipients) < 1 {
+			recipient = loc.channel.Recipients[0].Username
 		}
 		s += tl("pointer.private") + " (" + recipient + ")"
 	} else {
@@ -468,4 +468,8 @@ func say(session *discordgo.Session, w io.Writer, channel, str string) (*discord
 	writeln(w, tl("status.msg.create")+" "+msg.ID)
 
 	return msg, true
+}
+
+func isPrivate(channel *discordgo.Channel) bool {
+	return channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM
 }

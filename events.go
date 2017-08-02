@@ -26,7 +26,7 @@ import (
 var mutexCacheGuilds sync.RWMutex
 var cacheGuilds []*discordgo.UserGuild
 var cacheChannels []*discordgo.Channel
-var cachedChannelType string
+var cachedChannelType discordgo.ChannelType
 
 var chanReady = make(chan []*discordgo.UserGuild)
 

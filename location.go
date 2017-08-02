@@ -49,7 +49,7 @@ func (loc *location) push(guild *discordgo.Guild, channel *discordgo.Channel) {
 	var err error
 	if vc != nil {
 		playing = ""
-		if channel != nil && channel.Type == typeChannelVoice {
+		if channel != nil && channel.Type == discordgo.ChannelTypeGuildVoice {
 			err = vc.ChangeChannel(channel.ID, false, false)
 		} else {
 			err = vc.Disconnect()
@@ -58,7 +58,7 @@ func (loc *location) push(guild *discordgo.Guild, channel *discordgo.Channel) {
 		if err != nil {
 			stdutil.PrintErr(tl("failed.voice.disconnect"), err)
 		}
-	} else if guild != nil && channel != nil && channel.Type == typeChannelVoice {
+	} else if guild != nil && channel != nil && channel.Type == discordgo.ChannelTypeGuildVoice {
 		vc, err = session.ChannelVoiceJoin(guild.ID, channel.ID, false, false)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.voice.connect"), err)

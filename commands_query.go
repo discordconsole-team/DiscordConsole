@@ -219,7 +219,7 @@ func chan2array(channel *discordgo.Channel) []*keyval {
 		&keyval{"Guild", channel.GuildID},
 		&keyval{"Name", channel.Name},
 		&keyval{"Topic", channel.Topic},
-		&keyval{"Type", channel.Type},
+		&keyval{"Type", typeChannel[channel.Type]},
 	}
 }
 

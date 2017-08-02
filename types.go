@@ -72,11 +72,13 @@ var typeStatuses = map[string]discordgo.Status{
 	"dnd":       discordgo.StatusDoNotDisturb,
 	"invisible": discordgo.StatusInvisible,
 }
-
-const (
-	typeChannelText  = "text"
-	typeChannelVoice = "voice"
-)
+var typeChannel = map[discordgo.ChannelType]string{
+	discordgo.ChannelTypeDM:            "DM",
+	discordgo.ChannelTypeGroupDM:       "Group",
+	discordgo.ChannelTypeGuildCategory: "Category",
+	discordgo.ChannelTypeGuildText:     "Text",
+	discordgo.ChannelTypeGuildVoice:    "Voice",
+}
 
 const (
 	messagesNone = iota

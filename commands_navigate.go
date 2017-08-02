@@ -99,9 +99,9 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 		}
 		loc.push(guild, channel)
 	case "channels":
-		channels(session, typeChannelText, w)
+		channels(session, discordgo.ChannelTypeGuildText, w)
 	case "vchannels":
-		channels(session, typeChannelVoice, w)
+		channels(session, discordgo.ChannelTypeGuildVoice, w)
 	case "pchannels":
 		channels, err := session.UserChannels()
 		if err != nil {
@@ -110,15 +110,19 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 		}
 
 		table := gtable.NewStringTable()
-		table.AddStrings("ID", "Recipient")
+		table.AddStrings("ID", "Type", "Recipient")
 
 		for _, channel := range channels {
 			table.AddRow()
 			recipient := ""
-			if channel.Recipient != nil {
-				recipient = channel.Recipient.Username
+			if len(channel.Recipients) < 1 {
+				recipient = channel.Recipients[0].Username
 			}
-			table.AddStrings(channel.ID, recipient)
+			kind := "DM"
+			if channel.Type == discordgo.ChannelTypeGroupDM {
+				kind = "Group"
+			}
+			table.AddStrings(channel.ID, kind, recipient)
 		}
 		writeln(w, table.String())
 	case "channel":
@@ -144,7 +148,7 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 			}
 		}
 
-		if channel.IsPrivate {
+		if isPrivate(channel) {
 			loc.push(nil, channel)
 		} else {
 			if loc.guild == nil || channel.GuildID != loc.guild.ID {
@@ -225,7 +229,7 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 			}
 		}
 
-		if channel != nil && !channel.IsPrivate {
+		if channel != nil && !isPrivate(channel) {
 			guild, err = session.Guild(channel.GuildID)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.guild"), err)
@@ -243,7 +247,7 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 	return
 }
 
-func channels(session *discordgo.Session, kind string, w io.Writer) {
+func channels(session *discordgo.Session, kind discordgo.ChannelType, w io.Writer) {
 	var channels []*discordgo.Channel
 	if cacheChannels != nil && cachedChannelType == kind {
 		channels = cacheChannels

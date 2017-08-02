@@ -54,7 +54,7 @@ func messageCreate(session *discordgo.Session, e *discordgo.MessageCreate) {
 	}
 
 	var guild *discordgo.Guild
-	if !channel.IsPrivate {
+	if !isPrivate(channel) {
 		// Can't use cache. It's of user guild
 		guild, err = session.Guild(channel.GuildID)
 		if err != nil {
@@ -75,11 +75,11 @@ outer:
 	case messagesAll:
 		print = true
 	case messagesPrivate:
-		if channel.IsPrivate {
+		if isPrivate(channel) {
 			print = true
 		}
 	case messagesMentions:
-		if channel.IsPrivate || e.MentionEveryone {
+		if isPrivate(channel) || e.MentionEveryone {
 			print = true
 			break
 		}
