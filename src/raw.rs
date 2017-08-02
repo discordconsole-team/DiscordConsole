@@ -26,12 +26,10 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 	let mut rl = Editor::<()>::new();
 
 	loop {
-		// println!("Pointer: Locking {:?}", context);
-		let prefix = {
+		let pointer = {
 			pointer(&context.lock().unwrap(), true)
 		};
-		// println!("Pointer: Unlocked {:?}", context);
-		let prefix = &prefix;
+		let pointer = &pointer;
 
 		let mut first = true;
 		let mut command = String::new();
@@ -40,7 +38,7 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 			let wasfirst = first;
 			first = false;
 
-			let result = rl.readline(if wasfirst { prefix } else { "" });
+			let result = rl.readline(if wasfirst { pointer } else { "" });
 
 			match result {
 				Ok(result) => {
@@ -86,47 +84,85 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 }
 
 pub fn pointer(context: &CommandContext, terminal: bool) -> String {
-	let mut capacity = 2; // Minimum capacity
+	let mut capacity = 0; // Color capacity
 	if terminal {
 		capacity += COLOR_YELLOW.len();
 		capacity += COLOR_RESET.len();
 	}
 
-	let mut prefix = String::with_capacity(capacity);
+	let mut result = String::with_capacity(capacity);
 	if terminal {
-		prefix.push_str(if context.using.is_some() {
+		result.push_str(if context.using.is_some() {
 			*COLOR_CYAN
 		} else {
 			*COLOR_YELLOW
 		});
 	}
-	if let Some(guild) = context.guild {
-		prefix.push_str(match context.state.find_server(guild) {
-			Some(guild) => &guild.name,
-			None => "Unknown",
-		});
+	let guild = match context.guild {
+		Some(guild) => {
+			match context.state.find_server(guild) {
+				Some(guild) => guild.name.clone(),
+				None => "Unknown".to_string(),
+			}
+		},
+		None => "".to_string(),
+	};
+	let channel = match context.channel {
+		Some(channel) => {
+			match context.state.find_channel(channel) {
+				Some(channel) => {
+					match channel {
+						ChannelRef::Public(_, channel) => {
+							let mut name = String::with_capacity(channel.name.len() + 1);
+							name.push('#');
+							name.push_str(&channel.name);
+							name
+						},
+						ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
+						ChannelRef::Private(channel) => channel.recipient.name.clone(),
+					}
+				},
+				None => "unknown".to_string(),
+			}
+		},
+		None => "".to_string(),
+	};
+
+	let format_str = match (context.guild, context.channel) {
+		(None, None) => &context.ptr0,
+		(Some(_), None) => unreachable!(),
+		(None, Some(_)) => &context.ptr1,
+		(Some(_), Some(_)) => &context.ptr2,
+	};
+
+	result.reserve(format_str.len());
+
+	let mut escape = false;
+	for c in format_str.chars() {
+		if escape {
+			escape = false;
+
+			let expanded = match c {
+				'%' => "%",
+				'g' => &guild,
+				'c' => &channel,
+				'e' => "\x1b",
+				_ => {
+					result.push('%');
+					result.push(c);
+					continue;
+				},
+			};
+			result.push_str(expanded);
+		} else if c == '%' {
+			escape = true;
+		} else {
+			result.push(c);
+		}
 	}
-	if let Some(channel) = context.channel {
-		prefix.push_str(" (");
-		prefix.push_str(&match context.state.find_channel(channel) {
-			Some(channel) => {
-				match channel {
-					ChannelRef::Public(_, channel) => {
-						let mut name = channel.name.clone();
-						name.insert(0, '#');
-						name
-					},
-					ChannelRef::Group(channel) => channel.name.clone().unwrap_or_default(),
-					ChannelRef::Private(channel) => channel.recipient.name.clone(),
-				}
-			},
-			None => "unknown".to_string(),
-		});
-		prefix.push_str(")");
-	}
-	prefix.push_str("> ");
+
 	if terminal {
-		prefix.push_str(*COLOR_RESET);
+		result.push_str(*COLOR_RESET);
 	}
-	prefix
+	result
 }

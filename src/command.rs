@@ -68,7 +68,11 @@ pub struct CommandContext {
 	pub channel: Option<ChannelId>,
 
 	pub alias: HashMap<String, Vec<String>>,
-	pub using: Option<Vec<String>>
+	pub using: Option<Vec<String>>,
+
+	pub ptr0: String,
+	pub ptr1: String,
+	pub ptr2: String
 }
 impl ::std::fmt::Debug for CommandContext {
 	fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result { write!(fmt, "context here") }
@@ -114,7 +118,11 @@ impl CommandContext {
 
 				map
 			},
-			using: None
+			using: None,
+
+			ptr0: "> ".to_string(),
+			ptr1: "%c> ".to_string(),
+			ptr2: "%g (%c)> ".to_string()
 		})
 	}
 }
@@ -545,7 +553,8 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 				context.channel = None;
 				success!(None);
 			}
-			let guild = from_id!(
+			let guild =
+				from_id!(
 				kind: ServerId,
 				funcid: find_server,
 				funcname: find_guild_by_name,
@@ -847,15 +856,42 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 			let user = parse_user!(args[0]);
 
 			if args[1] == "nick" {
-				let member = context.session.edit_member(guild, user, |builder| {
-					builder.nickname(&args[2])
-				});
+				let member = context.session.edit_member(
+					guild,
+					user,
+					|builder| builder.nickname(&args[2])
+				);
 				attempt!(member, couldnt!("edit member"));
 			} else {
 				fail!(unknown!("property (nick available)"));
 			}
 
 			success!(None);
+		},
+		"set" => {
+			usage!(2, "set");
+
+			let val = args.remove(1);
+			let key = &*args[0];
+
+			match key {
+				"ptr0" => context.ptr0 = val,
+				"ptr1" => context.ptr1 = val,
+				"ptr2" => context.ptr2 = val,
+				_ => fail!(unknown!("property")),
+			}
+
+			success!(None);
+		},
+		"get" => {
+			usage!(1, "get");
+
+			success!(Some(match &*args[0] {
+				"ptr0" => context.ptr0.clone(),
+				"ptr1" => context.ptr1.clone(),
+				"ptr2" => context.ptr2.clone(),
+				_ => fail!(unknown!("property")),
+			}));
 		},
 		_ => fail!(unknown!("command")),
 	}
@@ -902,7 +938,7 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 					line.push(' ');
 					line.push_str(&line2);
 					Ok(line2)
-				}
+				},
 				None => Err(Box::new(ErrUnclosed)),
 			}
 		})?;
