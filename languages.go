@@ -198,7 +198,7 @@ invalid.api.started=API already started
 invalid.api.notstarted=API not started
 invalid.source.terminal=You must be in terminal to do this.
 
-login.token=Please paste your bot 'token' here, or leave blank for a username/password prompt.
+login.token=Please paste your 'token' here.
 login.token.user=User tokens are prefixed with 'user '
 login.token.webhook=Webhook tokens are prefixed with 'webhook ', and their URL or id/token
 login.starting=Authenticating...
@@ -304,7 +304,7 @@ invalid.music.playing=Spelar redan något
 invalid.bookmark=Bokmärket finns inte
 invalid.status.offline=Offline-statusen finns men kan inte ställas in via API:n
 invalid.command=Okänt kommando. Körhelp 'hjälp' för att få hjälp
-login.token=Vänligen klistra in en bot-'token' här, eller lämna tomt för användarnamn/lösenord-prompt.
+login.token=Vänligen klistra in en 'token' här.
 login.token.user=Användar-'tokens' har prefixet 'user '
 login.token.webhook=Webhook-'tokens' har prefixet 'webhook ', och deras URL eller id/token
 login.starting=Autentiserar...

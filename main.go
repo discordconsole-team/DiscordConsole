@@ -101,8 +101,6 @@ func main() {
 	}()
 
 	var token string
-	var email string
-	var pass string
 	var langfile string
 	var help string
 	var commands stringArr
@@ -111,8 +109,6 @@ func main() {
 	var noautorun bool
 
 	flag.StringVar(&token, "t", "", "Set token. Ignored if -e and/or -p are set.")
-	flag.StringVar(&email, "e", "", "Set email.")
-	flag.StringVar(&pass, "p", "", "Set password.")
 	flag.StringVar(&langfile, "lang", "en", "Set language. Either a file path, or any of the following: en")
 	flag.StringVar(&help, "lookup", "", "Search in `help` without starting the console")
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.")
@@ -191,7 +187,7 @@ under certain conditions.
 	fmt.Println(tl("login.token.user"))
 	fmt.Println(tl("login.token.webhook"))
 	fmt.Print("> ")
-	if token == "" && email == "" && pass == "" {
+	if token == "" {
 		token, err = rl.Readline()
 		if err != nil {
 			if err != io.EOF && err != readline.ErrInterrupt {
@@ -200,75 +196,41 @@ under certain conditions.
 			return
 		}
 	} else {
-		if email != "" || pass != "" {
-			token = ""
-		}
 		fmt.Println("[HIDDEN]")
 	}
 
-	if token == "" {
-		userType = typeUser
+	fmt.Println(tl("login.starting"))
 
-		rl.SetPrompt("Email: ")
-		if email == "" {
-			email, err = rl.Readline()
+	lower := strings.ToLower(token)
+
+	if strings.HasPrefix(lower, "webhook ") {
+		token = token[len("webhook "):]
+
+		parts := strings.Split(token, "/")
+
+		len := len(parts)
+		if len >= 2 {
+			userID = parts[len-2]
+			userToken = parts[len-1]
 		} else {
-			fmt.Println(email)
-		}
-
-		if pass == "" {
-			pass2, err := rl.ReadPassword("Password: ")
-			fmt.Println()
-
-			if err != nil {
-				if err != io.EOF && err != readline.ErrInterrupt {
-					stdutil.PrintErr(tl("failed.readline.read"), err)
-				}
-				return
-			}
-			pass = string(pass2)
-		}
-
-		fmt.Println(tl("login.starting"))
-		session, err = discordgo.New(email, pass)
-		if err == discordgo.ErrMFA {
-			stdutil.PrintErr(tl("failed.mfa"), nil)
+			stdutil.PrintErr(tl("invalid.webhook"), nil)
 			return
 		}
+
+		userType = typeWebhook
+		session, _ = discordgo.New(userToken)
 	} else {
-		fmt.Println(tl("login.starting"))
-
-		lower := strings.ToLower(token)
-
-		if strings.HasPrefix(lower, "webhook ") {
-			token = token[len("webhook "):]
-
-			parts := strings.Split(token, "/")
-
-			len := len(parts)
-			if len >= 2 {
-				userID = parts[len-2]
-				userToken = parts[len-1]
-			} else {
-				stdutil.PrintErr(tl("invalid.webhook"), nil)
-				return
-			}
-
-			userType = typeWebhook
-			session, _ = discordgo.New(userToken)
+		if strings.HasPrefix(lower, "user ") {
+			token = token[len("user "):]
+			userType = typeUser
 		} else {
-			if strings.HasPrefix(lower, "user ") {
-				token = token[len("user "):]
-				userType = typeUser
-			} else {
-				if !strings.HasPrefix(token, "Bot ") {
-					token = "Bot " + token
-				}
-				userType = typeBot
-				intercept = false
+			if !strings.HasPrefix(token, "Bot ") {
+				token = "Bot " + token
 			}
-			session, _ = discordgo.New(token)
+			userType = typeBot
+			intercept = false
 		}
+		session, _ = discordgo.New(token)
 	}
 
 	if userType != typeWebhook {
