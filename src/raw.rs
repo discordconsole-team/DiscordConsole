@@ -26,10 +26,10 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 	let mut rl = Editor::<()>::new();
 
 	loop {
-		let pointer = {
-			pointer(&context.lock().unwrap(), true)
+		let prompt = {
+			prompt(&context.lock().unwrap(), true)
 		};
-		let pointer = &pointer;
+		let prompt = &prompt;
 
 		let mut first = true;
 		let mut command = String::new();
@@ -38,7 +38,7 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 			let wasfirst = first;
 			first = false;
 
-			let result = rl.readline(if wasfirst { pointer } else { "" });
+			let result = rl.readline(if wasfirst { prompt } else { "" });
 
 			match result {
 				Ok(result) => {
@@ -83,7 +83,7 @@ pub fn raw(context: Arc<Mutex<CommandContext>>) {
 	}
 }
 
-pub fn pointer(context: &CommandContext, terminal: bool) -> String {
+pub fn prompt(context: &CommandContext, terminal: bool) -> String {
 	let mut capacity = 0; // Color capacity
 	if terminal {
 		capacity += COLOR_YELLOW.len();

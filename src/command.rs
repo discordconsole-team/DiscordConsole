@@ -911,7 +911,7 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 	let file = File::open(file)?;
 	let bufreader = BufReader::new(file);
 
-	let pointer = ::raw::pointer(context, terminal);
+	let prompt = ::raw::prompt(context, terminal);
 
 	let mut results = String::new();
 	let mut first = true;
@@ -952,7 +952,7 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 			continue;
 		}
 
-		results.push_str(&pointer);
+		results.push_str(&prompt);
 		if terminal {
 			results.push_str(*COLOR_ITALIC);
 		}
