@@ -2,6 +2,9 @@
 
 > DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
 
+**Note: Current version of DiscordConsole is messy and is therefor being rewritten.  
+Sadly the rewrite is stuck because of an upstream dependency.**
+
 ### Table of Contents
 
 - [Install](#install)
