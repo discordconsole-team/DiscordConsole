@@ -95,9 +95,24 @@ pub fn about(command: &str) -> String {
 		},
 		"user" => {
 			"user <user id> <property> <value>\n\
-				Update <property> on <user id> to <value> within the current server.\n\
+				Update <property> on <user id> to <value> within the current server.\n\n\
 
 				Example: `user @me nick \"Hello World\"`"
+		},
+		"set" => {
+			"set <property> <value>\n\
+				Configure DiscordConsole variables, such as the prompt.\n\n\
+
+				ptr0, ptr1, ptr2 - Variables related to the prompt.\n\
+				\tSpecial variables in string:\n\
+				\t%% = %\n\
+				\t%e = \\033 (aka the escape character)\n\
+				\t%g = The guild\n\
+				\t%c = The channel"
+		},
+		"get" => {
+			"get <property>\n\
+				Get the value of a DiscordConsole variable, such as the prompt."
 		},
 		_ => "No help available",
 	}.to_string()
