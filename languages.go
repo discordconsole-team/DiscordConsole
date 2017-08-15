@@ -174,8 +174,9 @@ failed.webrequest=Could not make web request
 failed.avatar=Couldn't set avatar
 failed.status=Could not set status
 failed.api.start=Couldn't start API
-failed.mfa=The account has 2FA enabled. Consider using a user token instead.
+failed.mfa=The account has 2FA enabled. Consider using a user token instead
 failed.permcalc=Could not open permission calculator
+failed.nochannel=Server does not have a channel
 
 invalid.yn=Please type either 'y' or 'n'.
 invalid.webhook=Webhook format invalid. Format: id/token

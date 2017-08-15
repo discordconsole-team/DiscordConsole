@@ -92,11 +92,23 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 			return
 		}
 
-		channel, err := session.Channel(guildID)
+		channels, err := session.GuildChannels(guildID)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.channel"), err)
 			return
 		}
+
+		var channel *discordgo.Channel
+		for _, channel2 := range channels {
+			if channel2.Position == 0 {
+				channel = channel2
+			}
+		}
+		if channel == nil {
+			stdutil.PrintErr(tl("failed.nochannel"), err)
+			return
+		}
+
 		loc.push(guild, channel)
 	case "channels":
 		channels(session, discordgo.ChannelTypeGuildText, w)
