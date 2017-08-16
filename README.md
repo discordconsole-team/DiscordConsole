@@ -45,5 +45,5 @@ You must install everything the following libraries require:
 
 Ubuntu example:
 ```
-sudo apt install /*libsodium-dev*/ libncursesw5-dev pkg-config libssl-dev xorg-dev
+sudo apt install libssl-dev xorg-dev
 ```

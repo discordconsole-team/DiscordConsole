@@ -563,13 +563,22 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 
 			let guild = unwrap_cache!(guild);
 			context.guild = Some(guild.id);
-			context.channel = Some(guild.id.main());
+			let mut main = None;
+			for channel in &guild.channels {
+				if channel.kind == ChannelType::Text && channel.position == 0 {
+					main = Some(channel);
+					break;
+				}
+			}
+			if let Some(main) = main {
+				context.channel = Some(main.id);
+			}
 
 			success!(Some(pretty_json!({
-						"id":       &guild.id.to_string(),
-						"name":     &guild.name,
-						"owner_id": &guild.owner_id.to_string(),
-					})));
+				"id":       &guild.id.to_string(),
+				"name":     &guild.name,
+				"owner_id": &guild.owner_id.to_string(),
+			})));
 		},
 		"channel" => {
 			usage_max!(1, "channel");

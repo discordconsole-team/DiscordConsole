@@ -125,13 +125,13 @@ pub fn prompt(context: &CommandContext, terminal: bool) -> String {
 				None => "unknown".to_string(),
 			}
 		},
-		None => "".to_string(),
+		None => "<no channel>".to_string(),
 	};
 
 	let format_str = match (context.guild, context.channel) {
 		(None, None) => &context.ptr0,
-		(Some(_), None) => unreachable!(),
 		(None, Some(_)) => &context.ptr1,
+		(Some(_), None) |
 		(Some(_), Some(_)) => &context.ptr2,
 	};
 
