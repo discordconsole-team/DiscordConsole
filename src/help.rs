@@ -82,6 +82,14 @@ pub fn about(command: &str) -> String {
 				edit the message with the specified id.\n\
 				You might want to use the built-in say, embed, edit aliases instead."
 		},
+		"del" => {
+			"del <messge id>\n\
+				Deletes the specified message.\n\
+				ID may be `..` or prefixed/suffixed by it to specify a range.\n\\n\
+				.. means all recent messages\n\
+				123.. means all messages after 123\n\
+				..123 means all messages before 123"
+		},
 		"log" => {
 			"log [n=10]\n\
 				Print the last [n] messages (default 10)"

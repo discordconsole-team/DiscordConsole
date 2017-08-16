@@ -748,12 +748,52 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 				_ => unreachable!(),
 			};
 		},
+		"del" => {
+			usage!(1, "del");
+			let channel = require_channel!();
+
+			let message_str = &args[0];
+			let message;
+			let which;
+
+			if message_str == ".." {
+				message = None;
+				which = Some(GetMessages::MostRecent);
+			} else if message_str.starts_with("..") {
+				message = Some(MessageId(parse!(message_str[2..], u64)));
+				which = Some(GetMessages::Before(message.unwrap()));
+			} else if message_str.ends_with("..") {
+				message = Some(MessageId(parse!(message_str[..message_str.len() - 2], u64)));
+				which = Some(GetMessages::After(message.unwrap()));
+			} else {
+				message = Some(MessageId(parse!(message_str, u64)));
+				which = None;
+			}
+
+			if let Some(which) = which {
+				let messages = context.session.get_messages(
+					channel,
+					which,
+					Some(LIMIT as u64)
+				);
+				let messages = attempt!(messages, couldnt!("get messages"));
+				if !messages.is_empty() {
+					let ids: Vec<_> = messages.iter().map(|msg| msg.id).collect();
+					let delete = context.session.delete_messages(channel, &ids);
+					attempt!(delete, couldnt!("delete messages"));
+				}
+			} else {
+				let delete = context.session.delete_message(channel, message.unwrap());
+				attempt!(delete, couldnt!("delete message"));
+			}
+			success!(None);
+		},
 		"log" => {
 			usage_max!(1, "log");
 			let channel = require_channel!();
 
 			let mut limit = match args.get(0) {
-				Some(num) => min!(parse!(num, i32), 0), // Ugh. discord-rs uses u64 even though even u16 is more than enough
+				Some(num) => min!(parse!(num, i32), 1),
 				None => 10,
 			};
 
@@ -790,7 +830,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 					output.push_str(*COLOR_CYAN);
 				}
 				output.push_str(
-					&format!("{}#{:04}: {}", msg.author.name, msg.author.discriminator, msg.content)
+					&format!("(ID: {}) {}#{:04}: {}", msg.id, msg.author.name, msg.author.discriminator, msg.content)
 				);
 				if terminal {
 					output.push_str(*COLOR_RESET);
