@@ -93,25 +93,22 @@ where
 }
 
 #[cfg(test)]
-mod test {
+#[test]
+fn test() {
 	macro_rules! test {
 		($str:expr, $vec:expr) => {
-			assert_eq!(super::parse::<_, ()>(|| Ok($str.to_string())).unwrap(), $vec);
+			assert_eq!(parse::<_, ()>(|| Ok($str.to_string())).unwrap(), $vec);
 		}
 	}
+	// General test.
+	test!(
+		"hello `world \\` lol` l\\ o\\ l",
+		vec!["hello", "world ` lol", "l o l"]
+	);
 
-	#[test]
-	fn test_tokens() {
-		// General test.
-		test!(
-			"hello `world \\` lol` l\\ o\\ l",
-			vec!["hello", "world ` lol", "l o l"]
-		);
+	// More escaping.
+	test!("hello\" world\\\\\"", vec!["hello world\\"]);
 
-		// More escaping.
-		test!("hello\" world\\\\\"", vec!["hello world\\"]);
-
-		// Calls again and if quote is unclosed
-		test!("hello\"", vec!["hello hello"]);
-	}
+	// Calls again and if quote is unclosed
+	test!("hello\"", vec!["hello hello"]);
 }

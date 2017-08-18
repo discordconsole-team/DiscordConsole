@@ -40,11 +40,9 @@ pub fn escape(token: &str) -> String {
 }
 
 #[cfg(test)]
-mod test {
-	#[test]
-	fn test_escape() {
-		assert_eq!(super::escape("hello world"), "\"hello world\"");
-		assert_eq!(super::escape("=)"), "=)");
-		assert_eq!(super::escape("\\"), "\\\\");
-	}
+#[test]
+fn test() {
+	assert_eq!(escape("hello world"), "\"hello world\"");
+	assert_eq!(escape("=)"), "=)");
+	assert_eq!(escape("\\"), "\\\\");
 }
