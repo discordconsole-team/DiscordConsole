@@ -393,7 +393,7 @@ func pointer(session *discordgo.Session) string {
 
 	if isPrivate(loc.channel) {
 		recipient := tl("pointer.unknown")
-		if len(loc.channel.Recipients) < 1 {
+		if len(loc.channel.Recipients) > 0 {
 			recipient = loc.channel.Recipients[0].Username
 		}
 		s += tl("pointer.private") + " (" + recipient + ")"
