@@ -66,14 +66,12 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 	    if loc.guild != nil {
 	        args[i] = strings.Replace(args[i], "{s.id}", loc.guild.ID, -1);
 	    } else {
-	    	stdutil.PrintErr(tl("invalid.id"), nil)
 	    	args[i] = strings.Replace(args[i], "{s.id}", "nil", -1);
 	    }
 	    if loc.channel != nil {
 
 	        args[i] = strings.Replace(args[i], "{c.id}", loc.channel.ID, -1);
 	    } else {
-	    	stdutil.PrintErr(tl("invalid.id"), nil)
 	    	args[i] = strings.Replace(args[i], "{c.id}", "nil", -1);
 	    }
 	}
