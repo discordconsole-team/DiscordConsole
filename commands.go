@@ -69,7 +69,6 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 	    	args[i] = strings.Replace(args[i], "{s.id}", "nil", -1);
 	    }
 	    if loc.channel != nil {
-
 	        args[i] = strings.Replace(args[i], "{c.id}", loc.channel.ID, -1);
 	    } else {
 	    	args[i] = strings.Replace(args[i], "{c.id}", "nil", -1);

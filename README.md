@@ -1,8 +1,8 @@
-# DiscordConsole ![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
+# DiscordConsole [![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
 
 > DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
 
-**Note: Current version of DiscordConsole is messy and is therefore being rewritten.  
+**Note: Current version of DiscordConsole is messy and is therefore being rewritten.
 Sadly the rewrite is stuck because of an upstream dependency.**
 
 ### Table of Contents
@@ -15,7 +15,7 @@ Sadly the rewrite is stuck because of an upstream dependency.**
 
 ### Install
 
-To get started, simply [download the console from releases](https://github.com/LEGOlord208/DiscordConsole/releases).
+To get started, simply [download the console from releases](https://github.com/discordconsole-team/DiscordConsole/releases).
 
 Or compile it yourself: `go get github.com/discord-team/DiscordConsole`, you'll also need the DiscordGo development version; to get that type `make dgo`. Finally, just type `go install`
 
@@ -37,7 +37,7 @@ Try to type something like `help` and let the magic happen! For a detailed revie
 
 ### Credits
 
-DiscordConsole founded and written by [LEGOlord208](https://github.com/legolord208), maintained by [Mnpn](https://github.com/mnpn03), and has gotten documentation improvments by [Parallaχ](https://github.com/Doyouwanttomakeacake).
+DiscordConsole founded and written by [LEGOlord208/jD91mZM2](https://github.com/jD91mZM2), maintained by [Mnpn](https://github.com/mnpn03) since Mid-September, and has gotten documentation improvments by [Parallaχ](https://github.com/NegativeCoffee).
 
 ### Contribute
 
