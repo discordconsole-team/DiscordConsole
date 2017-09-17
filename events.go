@@ -1,6 +1,6 @@
 /*
 DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
-Copyright (C) 2017  LEGOlord208
+Copyright (C) 2017 Mnpn
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -86,7 +86,8 @@ func guildDelete(session *discordgo.Session, e *discordgo.GuildDelete) {
 	if index >= 0 {
 		// UGH!
 		// append(cacheGuilds, cacheGuilds[:index], cacheGuilds[index+1:])
-		// would give a pointer leak because Go's garbage collector is stupid
+		// would give a pointer leak because Go's garbage collector is ~~stupid~~
+		// Garbage* //Mnpn ( ͡° ͜ʖ ͡°)
 		copy(cacheGuilds[index:], cacheGuilds[index+1:])
 		cacheGuilds[len(cacheGuilds)-1] = nil
 		cacheGuilds = cacheGuilds[:len(cacheGuilds)-1]

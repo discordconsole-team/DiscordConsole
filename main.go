@@ -1,6 +1,6 @@
 /*
 DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
-Copyright (C) 2017  LEGOlord208
+Copyright (C) 2017 Mnpn
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.3.9"
+const version = "2.4.0"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -126,8 +126,8 @@ func main() {
 	fmt.Println("DiscordConsole " + version)
 
 	fmt.Println(`
-DiscordConsole  Copyright (C) 2017  LEGOlord208
-This program comes with ABSOLUTELY NO WARRANTY
+Copyright (C) 2017 Mnpn
+This program comes with absolutely no warranty.
 This is free software, and you are welcome to redistribute it
 under certain conditions.
 `)
@@ -196,7 +196,7 @@ under certain conditions.
 			return
 		}
 	} else {
-		fmt.Println("[HIDDEN]")
+		fmt.Println(tl("login.hidden"))
 	}
 
 	fmt.Println(tl("login.starting"))
@@ -339,7 +339,7 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 	if isPrivate(channel) {
 		s += "Private"
 	} else {
-		s += guild.Name + " " + "#" + channel.Name
+		s += guild.Name + " #" + channel.Name
 	}
 
 	s += ") " + msg.Author.Username + ": " + msg.Content
@@ -365,10 +365,10 @@ func handleCrash() {
 		if val == "die" {
 			panic(val)
 		}
-		// No translations here. We wanna be as safe as possible
+		// No translations here. We want to be as safe as possible
 		stdutil.PrintErr("DiscordConsole has crashed.", nil)
-		stdutil.PrintErr("Please tell LEGOlord208 what you did to cause this.", nil)
-		stdutil.PrintErr("https://legolord208.github.io/contact", nil)
+		stdutil.PrintErr("Please tell Mnpn what you did to cause this.", nil)
+		stdutil.PrintErr("https://mnpn.me/contact", nil)
 		stdutil.PrintErr("Error Details: "+fmt.Sprint(val), nil)
 	}
 }

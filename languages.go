@@ -1,6 +1,6 @@
 /*
 DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
-Copyright (C) 2017  LEGOlord208
+Copyright (C) 2017 Mnpn
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -203,6 +203,7 @@ login.token=Please paste your 'token' here.
 login.token.user=User tokens are prefixed with 'user '
 login.token.webhook=Webhook tokens are prefixed with 'webhook ', and their URL or id/token
 login.starting=Authenticating...
+login.hidden=[Hidden]
 login.finish=Logged in with user ID
 intro.help=Write 'help' for help
 intro.exit=Press Ctrl+D or type 'exit' to exit.
@@ -304,7 +305,7 @@ invalid.onlyfor.bots=Detta kommandot fungerar endast för bot-användare.
 invalid.music.playing=Spelar redan något
 invalid.bookmark=Bokmärket finns inte
 invalid.status.offline=Offline-statusen finns men kan inte ställas in via API:n
-invalid.command=Okänt kommando. Körhelp 'hjälp' för att få hjälp
+invalid.command=Okänt kommando. Kör 'help' för att få hjälp
 login.token=Vänligen klistra in en 'token' här.
 login.token.user=Användar-'tokens' har prefixet 'user '
 login.token.webhook=Webhook-'tokens' har prefixet 'webhook ', och deras URL eller id/token
@@ -315,7 +316,7 @@ intro.exit=Tryck Ctrl+D eller kör 'exit' för att avsluta.
 pointer.unknown=Okänd
 pointer.private=Privat
 status.msg.create=Skapade meddelande med ID
-status.channel=Valde kanalen med ID
+status.channel=Valde kanal med ID
 status.invite.accept=Accepterade inbjudan.
 status.invite.create=Skapade en inbjudan med kod:
 status.cache=Meddelande cache-at!
@@ -325,7 +326,7 @@ status.name=Namn satt!
 status.status=Status satt!
 rl.session=Startar om session...
 rl.cache.loc=Laddar om plats-cache...
-rl.cache.vars=Tar boft cache-variablar...
+rl.cache.vars=Tar bort cache-variablar...
 
 console.=konsoll.
 `
