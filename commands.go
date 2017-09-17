@@ -62,6 +62,15 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 
+	for i := range args {
+	    if loc.guild != nil {
+	        args[i] = strings.Replace(args[i], "{s.id}", loc.guild.ID, -1);
+	    }
+	    if loc.channel != nil {
+	        args[i] = strings.Replace(args[i], "{c.id}", loc.channel.ID, -1);
+	    }
+	}
+
 	returnVal = commandRaw(session, source, cmd, args, w)
 	return
 }
@@ -802,7 +811,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 		panic("triggered crash")
 	default:
-		stdutil.PrintErr(tl("invalid.command"), nil)
+		stdutil.PrintErr(tl("invalid.command") + " '" + cmd + "'. " + tl("invalid.command2"), nil)
 	}
 	return
 }
