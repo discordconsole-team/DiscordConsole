@@ -64,14 +64,24 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 
 	for i := range args {
 	    if loc.guild != nil {
-	        args[i] = strings.Replace(args[i], "{s.id}", loc.guild.ID, -1);
+	        replacer := strings.NewReplacer(
+	        	"{s.id}", loc.guild.ID,
+	        	"{s.owner.id}", loc.guild.OwnerID,
+	        	"{s.owner.mention}", "<@" + loc.guild.OwnerID + ">")
+			args[i] = replacer.Replace(args[i])
 	    } else {
-	    	args[i] = strings.Replace(args[i], "{s.id}", "nil", -1);
+	        replacer := strings.NewReplacer(
+	        	"{s.id}", "nil",
+	        	"{s.owner.id}", "nil",
+	        	"{s.owner.mention}", "<@nil>")
+			args[i] = replacer.Replace(args[i])
 	    }
 	    if loc.channel != nil {
-	        args[i] = strings.Replace(args[i], "{c.id}", loc.channel.ID, -1);
+	        replacer := strings.NewReplacer("{c.id}", loc.channel.ID)
+			args[i] = replacer.Replace(args[i])
 	    } else {
-	    	args[i] = strings.Replace(args[i], "{c.id}", "nil", -1);
+	    	replacer := strings.NewReplacer("{c.id}", "nil")
+			args[i] = replacer.Replace(args[i])
 	    }
 	}
 
