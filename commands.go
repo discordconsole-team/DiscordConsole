@@ -68,6 +68,8 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 	        	"{s.id}", loc.guild.ID,
 	        	"{s.owner.id}", loc.guild.OwnerID,
 	        	"{s.owner.mention}", "<@" + loc.guild.OwnerID + ">")
+	        	//"{s.owner.name}", loc.guild.Owner.Name,
+	        	//"{s.owner.discrim}", loc.guild.Owner.Discrim)
 			args[i] = replacer.Replace(args[i])
 	    } else {
 	        replacer := strings.NewReplacer(

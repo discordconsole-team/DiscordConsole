@@ -260,7 +260,7 @@ under certain conditions.
 			return
 		}
 
-		fmt.Println(tl("login.finish") + " " + userID)
+		fmt.Println(tl("login.finish") + " " + userID + " (" + user.Username + "#" + user.Discriminator + ").")
 	}
 	fmt.Println(tl("intro.help"))
 	fmt.Println(tl("intro.exit"))
