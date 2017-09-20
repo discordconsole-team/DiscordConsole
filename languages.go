@@ -175,8 +175,15 @@ failed.avatar=Couldn't set avatar
 failed.status=Could not set status
 failed.api.start=Couldn't start API
 failed.mfa=The account has 2FA enabled. Consider using a user token instead
-failed.permcalc=Could not open permission calculator
+failed.permcalc=Could not open PermCalc (permission calculator)
 failed.nochannel=Server does not have a channel
+failed.transfer=Couldn't transfer ownership
+
+information.wait=Wait a second!
+information.warning=Warning!
+information.give.ownership=This will give server ownership to 
+information.irreversible=This action is irreversible!
+information.confirmation=Are you really sure you want to do this?
 
 invalid.yn=Please type either 'y' or 'n'.
 invalid.webhook=Webhook format invalid. Format: id/token
@@ -200,6 +207,7 @@ invalid.command2=Do 'help' for help.
 invalid.api.started=API already started
 invalid.api.notstarted=API not started
 invalid.source.terminal=You must be in terminal to do this.
+invalid.not.owner=You're not the server owner!
 
 login.token=Please paste your 'token' here.
 login.token.user=User tokens are prefixed with 'user '
@@ -292,6 +300,17 @@ failed.react.used=Emoji redan använd, hoppar
 failed.webrequest=Det gick inte att göra webbegäran
 failed.avatar=Kunde inte sätta avatar
 failed.status=Kunde inte sätta status
+failed.mfa=Kontot har 2FA på. Fundera på att använda en token istället
+failed.permcalc=Kunde inte öppna PermCalc
+failed.nochannel=Servern har ingen kanal
+failed.transfer=Kunde inte överföra ägarskap
+
+information.wait=Vänta en sekund!
+information.warning=Varning!
+information.give.ownership=Detta kommer att ge server-ägarskap till
+information.irreversible=Denna åtgärd kan inte ångras!
+information.confirmation=Vill du verkligen göra detta?
+
 invalid.yn=Vänligen skriv antigen 'y' eller 'n'.
 invalid.webhook=Webhook-formatet är ogiltit. Format: id/token
 invalid.webhook.command=Inte ett tillåtet Webhook-commando
@@ -305,11 +324,13 @@ invalid.number=Inte ett nummer
 invalid.cache=Ingen cache tillgänglig!
 invalid.onlyfor.users=Detta kommandot fungerar endast för användare
 invalid.onlyfor.bots=Detta kommandot fungerar endast för bot-användare.
+invalid.not.owner=Du är inte server-ägaren!
 invalid.music.playing=Spelar redan något
 invalid.bookmark=Bokmärket finns inte
 invalid.status.offline=Offline-statusen finns men kan inte ställas in via API:n
 invalid.command=Okänt kommando:
 invalid.command2=Kör 'help' för att få hjälp.
+
 login.token=Vänligen klistra in en 'token' här.
 login.token.user=Användar-'tokens' har prefixet 'user '
 login.token.webhook=Webhook-'tokens' har prefixet 'webhook ', och deras URL eller id/token

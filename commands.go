@@ -19,6 +19,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -47,6 +48,7 @@ var intercept = true
 var output = false
 
 var aliases map[string]string
+var clear map[string]func()
 
 var webhookCommands = []string{"help", "big", "say", "sayfile", "embed", "name", "avatar", "exit", "exec", "run", "lang"}
 
@@ -62,30 +64,7 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 
-	for i := range args {
-	    if loc.guild != nil {
-	        replacer := strings.NewReplacer(
-	        	"{s.id}", loc.guild.ID,
-	        	"{s.owner.id}", loc.guild.OwnerID,
-	        	"{s.owner.mention}", "<@" + loc.guild.OwnerID + ">")
-	        	//"{s.owner.name}", loc.guild.Owner.Name,
-	        	//"{s.owner.discrim}", loc.guild.Owner.Discrim)
-			args[i] = replacer.Replace(args[i])
-	    } else {
-	        replacer := strings.NewReplacer(
-	        	"{s.id}", "nil",
-	        	"{s.owner.id}", "nil",
-	        	"{s.owner.mention}", "<@nil>")
-			args[i] = replacer.Replace(args[i])
-	    }
-	    if loc.channel != nil {
-	        replacer := strings.NewReplacer("{c.id}", loc.channel.ID)
-			args[i] = replacer.Replace(args[i])
-	    } else {
-	    	replacer := strings.NewReplacer("{c.id}", "nil")
-			args[i] = replacer.Replace(args[i])
-	    }
-	}
+	replace(args)
 
 	returnVal = commandRaw(session, source, cmd, args, w)
 	return
@@ -794,6 +773,52 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 
 			aliases[strings.ToLower(args[0])] = strings.Join(args[1:], " ")
 		}
+	case "ownership":
+		id := args[0]
+		if nargs < 1 {
+			stdutil.PrintErr("ownership <user id>", nil)
+			return
+		}
+		user, err := session.User("@me")
+		if err != nil {
+			stdutil.PrintErr(tl("failed.user"), err)
+			return
+		}
+		newowner, err := session.User(id)
+		if err != nil {
+			stdutil.PrintErr(tl("failed.user"), err)
+			return
+		}
+		if loc.guild == nil {
+			stdutil.PrintErr(tl("invalid.guild"), nil)
+			return
+		}
+		if loc.guild.OwnerID != user.ID {
+			stdutil.PrintErr(tl("invalid.not.owner"), nil)
+			return
+		}
+		if userType == typeBot {
+			stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
+			return
+		}
+        execerr := execute("clear")
+     	if execerr != nil {
+			stdutil.PrintErr(tl("failed.exec"), err)
+		}
+		// We're Microsoft, and we're special!
+    	// We need our own damn part, because fuck you!
+    	// Windows is being a donkey. We'll only be clearing on Unix.
+
+	    c := color.New(color.FgRed)
+		c.Println(tl("information.wait"))
+		fmt.Println(tl("information.give.ownership") + newowner.Username + "#" + newowner.Discriminator + ". " + tl("information.irreversible"))
+		fmt.Println(tl("information.confirmation") + " (y/n)")
+
+		_, oerr := session.GuildEdit(loc.guild.ID, discordgo.GuildParams{ OwnerID: id })
+		if oerr != nil {
+			stdutil.PrintErr(tl("failed.transfer"), err)
+			return
+		}
 	case "permcalc":
 		if !source.Terminal {
 			stdutil.PrintErr(tl("invalid.source.terminal"), nil)
@@ -807,7 +832,6 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				stdutil.PrintErr(tl("invalid.number"), nil)
 				return
 			}
-
 			pm.Perm = i
 		}
 
@@ -839,4 +863,46 @@ func parseBool(str string) (bool, error) {
 		return false, nil
 	}
 	return false, errors.New(tl("invalid.yn"))
+}
+
+func replace(str []string) {
+	user, err := session.User("@me")
+	if err != nil {
+		stdutil.PrintErr(tl("failed.user"), err)
+		return
+	}
+	args := str
+	for i := range args {
+		if loc.guild != nil {
+	       replacer := strings.NewReplacer(
+	 	      	"{s.id}", loc.guild.ID,
+	    	   	"{s.owner.id}", loc.guild.OwnerID,
+	       		"{s.owner.mention}", "<@" + loc.guild.OwnerID + ">")
+			args[i] = replacer.Replace(args[i])
+	    } else {
+	        replacer := strings.NewReplacer(
+	        	"{s.id}", "nil",
+	        	"{s.owner.id}", "nil",
+	        	"{s.owner.mention}", "<@nil>")
+			args[i] = replacer.Replace(args[i])
+	    }
+	    if loc.channel != nil {
+	        replacer := strings.NewReplacer(
+	        	"{c.id}", loc.channel.ID,
+	        	"{u.name}", user.Username,
+	        	"{u.discrim}", user.Discriminator,
+	        	"{u.id}", user.ID,
+	        	"{u.mention}", "<@" + user.ID + ">")
+			args[i] = replacer.Replace(args[i])
+	    } else {
+	    	replacer := strings.NewReplacer(
+	    		"{c.id}", "nil",
+	        	"{u.name}", "nil",
+	        	"{u.discrim}", "nil",
+	        	"{u.id}", "nil",
+	        	"{u.mention}", "<@nil>")
+			args[i] = replacer.Replace(args[i])
+	    }
+	}
+	return
 }
