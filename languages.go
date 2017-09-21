@@ -184,6 +184,7 @@ information.warning=Warning!
 information.give.ownership=This will give server ownership to 
 information.irreversible=This action is irreversible!
 information.confirmation=Are you really sure you want to do this?
+information.aborted=Aborted.
 
 invalid.yn=Please type either 'y' or 'n'.
 invalid.webhook=Webhook format invalid. Format: id/token
@@ -310,6 +311,7 @@ information.warning=Varning!
 information.give.ownership=Detta kommer att ge server-ägarskap till
 information.irreversible=Denna åtgärd kan inte ångras!
 information.confirmation=Vill du verkligen göra detta?
+information.aborted=Avbrutet.
 
 invalid.yn=Vänligen skriv antigen 'y' eller 'n'.
 invalid.webhook=Webhook-formatet är ogiltit. Format: id/token

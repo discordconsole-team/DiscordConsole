@@ -53,6 +53,7 @@ var userID string
 var userToken string
 var userType int
 var session *discordgo.Session
+var userObj *discordgo.User
 
 var rl *readline.Instance
 var colorDefault = color.New(color.Bold)
@@ -238,7 +239,6 @@ under certain conditions.
 			stdutil.PrintErr(tl("failed.auth"), err)
 			return
 		}
-		session.StateEnabled = false
 
 		userToken = session.Token
 
@@ -249,6 +249,7 @@ under certain conditions.
 		}
 
 		userID = user.ID
+		userObj = user
 
 		session.AddHandler(ready)
 		session.AddHandler(guildCreate)

@@ -774,49 +774,67 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			aliases[strings.ToLower(args[0])] = strings.Join(args[1:], " ")
 		}
 	case "ownership":
-		id := args[0]
 		if nargs < 1 {
 			stdutil.PrintErr("ownership <user id>", nil)
 			return
 		}
-		user, err := session.User("@me")
+		id := args[0]
+
+		if loc.guild.OwnerID != userObj.ID {
+			stdutil.PrintErr(tl("invalid.not.owner"), nil)
+			return
+		}
+
+		member, err := session.State.Member(loc.guild.ID, id)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.user"), err)
 			return
 		}
-		newowner, err := session.User(id)
-		if err != nil {
-			stdutil.PrintErr(tl("failed.user"), err)
-			return
-		}
+
 		if loc.guild == nil {
 			stdutil.PrintErr(tl("invalid.guild"), nil)
 			return
 		}
-		if loc.guild.OwnerID != user.ID {
-			stdutil.PrintErr(tl("invalid.not.owner"), nil)
-			return
-		}
+
 		if userType == typeBot {
 			stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
 			return
 		}
+
         execerr := execute("clear")
      	if execerr != nil {
-			stdutil.PrintErr(tl("failed.exec"), err)
+			stdutil.PrintErr("", err)
 		}
 		// We're Microsoft, and we're special!
     	// We need our own damn part, because fuck you!
     	// Windows is being a donkey. We'll only be clearing on Unix.
 
-	    c := color.New(color.FgRed)
+
+	    c := color.New(color.FgHiRed)
 		c.Println(tl("information.wait"))
-		fmt.Println(tl("information.give.ownership") + newowner.Username + "#" + newowner.Discriminator + ". " + tl("information.irreversible"))
+		fmt.Println(tl("information.give.ownership") + member.User.Username + "#" + member.User.Discriminator + ". " + tl("information.irreversible"))
 		fmt.Println(tl("information.confirmation") + " (y/n)")
 
-		_, oerr := session.GuildEdit(loc.guild.ID, discordgo.GuildParams{ OwnerID: id })
-		if oerr != nil {
-			stdutil.PrintErr(tl("failed.transfer"), err)
+		var response string
+		_, err1 := fmt.Scanln(&response)
+		if err1 != nil {
+			stdutil.PrintErr("", err1)
+		}
+
+		state, err := parseBool(response)
+		if err != nil {
+			stdutil.PrintErr("", err)
+			return
+		}
+
+		if state == true {
+			_, oerr := session.GuildEdit(loc.guild.ID, discordgo.GuildParams{ OwnerID: id })
+			if oerr != nil {
+				stdutil.PrintErr(tl("failed.transfer"), oerr)
+				return
+			}
+		} else {
+			fmt.Println(tl("information.aborted"))
 			return
 		}
 	case "permcalc":
@@ -866,11 +884,6 @@ func parseBool(str string) (bool, error) {
 }
 
 func replace(str []string) {
-	user, err := session.User("@me")
-	if err != nil {
-		stdutil.PrintErr(tl("failed.user"), err)
-		return
-	}
 	args := str
 	for i := range args {
 		if loc.guild != nil {
@@ -889,10 +902,10 @@ func replace(str []string) {
 	    if loc.channel != nil {
 	        replacer := strings.NewReplacer(
 	        	"{c.id}", loc.channel.ID,
-	        	"{u.name}", user.Username,
-	        	"{u.discrim}", user.Discriminator,
-	        	"{u.id}", user.ID,
-	        	"{u.mention}", "<@" + user.ID + ">")
+	        	"{u.name}", userObj.Username,
+	        	"{u.discrim}", userObj.Discriminator,
+	        	"{u.id}", userObj.ID,
+	        	"{u.mention}", "<@" + userObj.ID + ">")
 			args[i] = replacer.Replace(args[i])
 	    } else {
 	    	replacer := strings.NewReplacer(
