@@ -801,16 +801,15 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 
-        execerr := execute("clear")
-     	if execerr != nil {
+		execerr := execute("clear")
+		if execerr != nil {
 			stdutil.PrintErr("", err)
 		}
 		// We're Microsoft, and we're special!
-    	// We need our own damn part, because fuck you!
-    	// Windows is being a donkey. We'll only be clearing on Unix.
+		// We need our own damn part, because fuck you!
+		// Windows is being a donkey. We'll only be clearing on Unix.
 
-
-	    c := color.New(color.FgHiRed)
+		c := color.New(color.FgHiRed)
 		c.Println(tl("information.wait"))
 		fmt.Println(tl("information.give.ownership") + member.User.Username + "#" + member.User.Discriminator + ". " + tl("information.irreversible"))
 		fmt.Println(tl("information.confirmation") + " (y/n)")
@@ -828,7 +827,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 
 		if state == true {
-			_, oerr := session.GuildEdit(loc.guild.ID, discordgo.GuildParams{ OwnerID: id })
+			_, oerr := session.GuildEdit(loc.guild.ID, discordgo.GuildParams{OwnerID: id})
 			if oerr != nil {
 				stdutil.PrintErr(tl("failed.transfer"), oerr)
 				return
@@ -869,7 +868,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 		panic("triggered crash")
 	default:
-		stdutil.PrintErr(tl("invalid.command") + " '" + cmd + "'. " + tl("invalid.command2"), nil)
+		stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 	}
 	return
 }
@@ -887,35 +886,35 @@ func replace(str []string) {
 	args := str
 	for i := range args {
 		if loc.guild != nil {
-	       replacer := strings.NewReplacer(
-	 	      	"{s.id}", loc.guild.ID,
-	    	   	"{s.owner.id}", loc.guild.OwnerID,
-	       		"{s.owner.mention}", "<@" + loc.guild.OwnerID + ">")
+			replacer := strings.NewReplacer(
+				"{s.id}", loc.guild.ID,
+				"{s.owner.id}", loc.guild.OwnerID,
+				"{s.owner.mention}", "<@"+loc.guild.OwnerID+">")
 			args[i] = replacer.Replace(args[i])
-	    } else {
-	        replacer := strings.NewReplacer(
-	        	"{s.id}", "nil",
-	        	"{s.owner.id}", "nil",
-	        	"{s.owner.mention}", "<@nil>")
+		} else {
+			replacer := strings.NewReplacer(
+				"{s.id}", "nil",
+				"{s.owner.id}", "nil",
+				"{s.owner.mention}", "<@nil>")
 			args[i] = replacer.Replace(args[i])
-	    }
-	    if loc.channel != nil {
-	        replacer := strings.NewReplacer(
-	        	"{c.id}", loc.channel.ID,
-	        	"{u.name}", userObj.Username,
-	        	"{u.discrim}", userObj.Discriminator,
-	        	"{u.id}", userObj.ID,
-	        	"{u.mention}", "<@" + userObj.ID + ">")
+		}
+		if loc.channel != nil {
+			replacer := strings.NewReplacer(
+				"{c.id}", loc.channel.ID,
+				"{u.name}", userObj.Username,
+				"{u.discrim}", userObj.Discriminator,
+				"{u.id}", userObj.ID,
+				"{u.mention}", "<@"+userObj.ID+">")
 			args[i] = replacer.Replace(args[i])
-	    } else {
-	    	replacer := strings.NewReplacer(
-	    		"{c.id}", "nil",
-	        	"{u.name}", "nil",
-	        	"{u.discrim}", "nil",
-	        	"{u.id}", "nil",
-	        	"{u.mention}", "<@nil>")
+		} else {
+			replacer := strings.NewReplacer(
+				"{c.id}", "nil",
+				"{u.name}", "nil",
+				"{u.discrim}", "nil",
+				"{u.id}", "nil",
+				"{u.mention}", "<@nil>")
 			args[i] = replacer.Replace(args[i])
-	    }
+		}
 	}
 	return
 }
