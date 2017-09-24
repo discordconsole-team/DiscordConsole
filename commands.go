@@ -883,8 +883,7 @@ func parseBool(str string) (bool, error) {
 	return false, errors.New(tl("invalid.yn"))
 }
 
-func replace(str []string) {
-	args := str
+func replace(args []string) {
 	for i := range args {
 		if loc.guild != nil {
 			replacer := strings.NewReplacer(
