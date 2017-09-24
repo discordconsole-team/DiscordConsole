@@ -73,6 +73,7 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 func commandRaw(session *discordgo.Session, source commandSource, cmd string, args []string, w io.Writer) (returnVal string) {
 	defer handleCrash()
 	nargs := len(args)
+	replace(args[1:])
 
 	if !source.NoMutex {
 		mutexCommand.Lock()

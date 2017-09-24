@@ -80,6 +80,7 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 
 	outer:
 		for {
+			replace(parts)
 			msgStr := strings.Join(parts, " ")
 			if source.Terminal && msgStr == "toggle" {
 				toggle = !toggle
