@@ -64,8 +64,6 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 	cmd = strings.ToLower(parts[0])
 	args := parts[1:]
 
-	replace(args)
-
 	returnVal = commandRaw(session, source, cmd, args, w)
 	return
 }
