@@ -170,7 +170,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 		if in.Nanoseconds() >= 0 {
 			text += "Incoming: `" + in.String() + "`"
 		} else {
-			text += "Message was received earlier than timestamp. Discord bug."
+			text += "The message was recieved earlier than the timestamp. This is a Discord bug."
 		}
 
 		middle := time.Now().UTC()
