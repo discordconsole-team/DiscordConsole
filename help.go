@@ -53,6 +53,7 @@ func printHelp(search string) {
 		help = append(help, "")
 	}
 	help = append(help, "say <stuff>\tSend a message in your selected channel. `say toggle` starts chat-mode, and `toggle` ends it.")
+	help = append(help, "{Placeholders}:\tReplaces e.g. {u.name} with " + userObj.Username +".")
 	help = append(help, "sayfile <path>\tSend the contents of a file (auto-splitted).")
 	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!")
 	help = append(help, "embed <json>\tSend an embed! (ADVANCED!) See https://discordapp.com/developers/docs/resources/channel#embed-object")
@@ -96,6 +97,7 @@ func printHelp(search string) {
 		help = append(help, "unban <user id>\tUnban user")
 		help = append(help, "kick <user id>\tKick user")
 		help = append(help, "leave\tLeave selected guild!")
+		help = append(help, "ownership\tTransfer ownership.")
 		help = append(help, "")
 		help = append(help, "play <dca audio file>\tPlays a song in the selected voice channel")
 		help = append(help, "stop\tStops playing any song.")
