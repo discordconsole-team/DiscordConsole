@@ -185,7 +185,7 @@ func messageCommand(session *discordgo.Session, e *discordgo.Message, guild *dis
 
 		text += "\nOutgoing: `" + last.Sub(middle).String() + "`"
 		text += "\n\n\nIncoming is the time it takes for the message to reach DiscordConsole."
-		text += "\nOutgoing is the time it takes for DiscordConsole to reach discord."
+		text += "\nOutgoing is the time it takes for DiscordConsole to reach Discord."
 
 		_, err = session.ChannelMessageEditComplex(discordgo.NewMessageEdit(e.ChannelID, e.ID).
 			SetContent("Pong! 2/2").
