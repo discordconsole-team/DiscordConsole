@@ -866,6 +866,21 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		panic("triggered crash")
+	// Easter eggs! Commodore and Microsoft stuff.
+	case "wait":
+		if nargs == 2 && args[0] == "6502," {
+			am := args[1]
+			if am, err := strconv.Atoi(am); err == nil {
+				if am >= 500 { am = 500 }
+				i := 0;
+				for i < am {
+					fmt.Println("Microsoft!")
+					i += 1
+				}
+			}
+		} else {
+			stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
+		}
 	default:
 		stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 	}
