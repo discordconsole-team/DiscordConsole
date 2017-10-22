@@ -871,8 +871,10 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		if nargs == 2 && args[0] == "6502," {
 			am := args[1]
 			if am, err := strconv.Atoi(am); err == nil {
-				if am >= 500 { am = 500 }
-				i := 0;
+				if am >= 500 {
+					am = 500
+				}
+				i := 0
 				for i < am {
 					fmt.Println("Microsoft!")
 					i += 1
