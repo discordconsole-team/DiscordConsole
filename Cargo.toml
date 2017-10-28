@@ -4,7 +4,7 @@ description = "DiscordConsole is a software aiming to give you full control over
 license     = "GPL-3.0+"
 
 version = "0.1.0"
-authors = ["LEGOlord208 <LEGOlord208@krake.one>"]
+authors = ["jD91mZM2 <me@krake.one>"]
 
 
 [dependencies]
