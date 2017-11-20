@@ -29,6 +29,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/atotto/clipboard"
 	"github.com/bwmarrin/discordgo"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
@@ -198,6 +199,16 @@ under certain conditions.
 		}
 	} else {
 		fmt.Println(tl("login.hidden"))
+	}
+
+	if strings.Contains(token, "{paste}") {
+		clipboardcontent, err := clipboard.ReadAll()
+		if err != nil {
+			stdutil.PrintErr((tl("failed.paste") + err.Error()), nil)
+			return
+		}
+		replacer := strings.NewReplacer("{paste}", clipboardcontent)
+		token = replacer.Replace(token)
 	}
 
 	fmt.Println(tl("login.starting"))

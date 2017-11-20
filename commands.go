@@ -27,6 +27,7 @@ import (
 	"sync"
 	"unicode"
 
+	"github.com/atotto/clipboard"
 	"github.com/bwmarrin/discordgo"
 	"github.com/discordconsole-team/DiscordConsole/PermCalc"
 	"github.com/fatih/color"
@@ -900,6 +901,15 @@ func parseBool(str string) (bool, error) {
 
 func replace(args []string) {
 	for i := range args {
+		if strings.Contains(args[i], "{paste}") {
+			clipboardcontent, err := clipboard.ReadAll()
+			if err != nil {
+				stdutil.PrintErr((tl("failed.paste") + err.Error()), nil)
+				return
+			}
+			replacer := strings.NewReplacer("{paste}", clipboardcontent)
+			args[i] = replacer.Replace(args[i])
+		}
 		if loc.guild != nil {
 			replacer := strings.NewReplacer(
 				"{s.id}", loc.guild.ID,

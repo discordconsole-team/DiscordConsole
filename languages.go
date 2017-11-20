@@ -103,6 +103,7 @@ func loadLangDefault() {
 // Here is just some long data.
 // This comment is a separator, btw.
 
+// English by jD91mZM2
 var langEn = `
 update.checking=Checking for updates...
 update.error=Error checking for updates
@@ -178,6 +179,7 @@ failed.mfa=The account has 2FA enabled. Consider using a user token instead
 failed.permcalc=Could not open PermCalc (permission calculator)
 failed.nochannel=Server does not have a channel
 failed.transfer=Couldn't transfer ownership
+failed.paste=Failed to paste clipboard: 
 
 information.wait=Wait a second!
 information.warning=Warning!
@@ -239,6 +241,7 @@ rl.cache.loc=Reloading location cache...
 rl.cache.vars=Deleting cache variables...
 `
 
+// Swedish by Mnpn
 var langSv = `
 update.checking=Letar efter uppdateringar...
 update.error=Ett fel inträffade under letandet efter nya uppdateringar.
@@ -305,6 +308,7 @@ failed.mfa=Kontot har 2FA på. Fundera på att använda en token istället
 failed.permcalc=Kunde inte öppna PermCalc
 failed.nochannel=Servern har ingen kanal
 failed.transfer=Kunde inte överföra ägarskap
+failed.paste=Kunde inte klista in: 
 
 information.wait=Vänta en sekund!
 information.warning=Varning!
@@ -356,4 +360,9 @@ rl.cache.loc=Laddar om plats-cache...
 rl.cache.vars=Tar bort cache-variablar...
 
 console.=konsoll.
+`
+
+// Spanish by ArceCreeper
+var langSp = `
+
 `
