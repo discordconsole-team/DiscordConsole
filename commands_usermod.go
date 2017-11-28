@@ -164,9 +164,7 @@ func commandsUserMod(session *discordgo.Session, cmd string, args []string, narg
 
 		who := args[0]
 		if strings.EqualFold(who, "@me") {
-			who = "@me/nick"
-			// Should hopefully only be @me in the future.
-			// See https://github.com/bwmarrin/discordgo/issues/318
+			who = "@me"
 		}
 
 		err := session.GuildMemberNickname(loc.guild.ID, who, strings.Join(args[1:], " "))
