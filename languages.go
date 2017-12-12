@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 // TRANSLATORS:
 // - Swedish, Mnpn03
+// - Spanish, ArceCreeper
 package main
 
 import (
@@ -88,10 +89,7 @@ func loadLang(reader io.Reader) error {
 		lang[key] = val
 	}
 
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-	return nil
+	return scanner.Err()
 }
 func loadLangString(lang string) error {
 	return loadLang(strings.NewReader(lang))
