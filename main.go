@@ -131,8 +131,7 @@ func main() {
 Copyright (C) 2017 Mnpn
 This program comes with absolutely no warranty.
 This is free software, and you are welcome to redistribute it
-under certain conditions.
-`)
+under certain conditions.`)
 
 	loadLangAuto(langfile)
 
