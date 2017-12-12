@@ -29,7 +29,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/chzyer/readline"
 	"github.com/fatih/color"
-	"github.com/legolord208/stdutil"
+	"github.com/jD91mZM2/stdutil"
 )
 
 func commandsSay(session *discordgo.Session, source commandSource, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {

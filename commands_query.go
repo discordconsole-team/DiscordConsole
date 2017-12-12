@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/legolord208/stdutil"
+	"github.com/jD91mZM2/stdutil"
 )
 
 func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {

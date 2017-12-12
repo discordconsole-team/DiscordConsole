@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
-	"github.com/legolord208/stdutil"
+	"github.com/jD91mZM2/stdutil"
 	"github.com/mattn/go-colorable"
 )
 

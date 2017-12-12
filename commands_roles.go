@@ -24,8 +24,8 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/legolord208/gtable"
-	"github.com/legolord208/stdutil"
+	"github.com/jD91mZM2/gtable"
+	"github.com/jD91mZM2/stdutil"
 )
 
 func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
