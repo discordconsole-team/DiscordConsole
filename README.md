@@ -1,4 +1,4 @@
-# DiscordConsole [![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
+# DiscordConsole [![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://paypal.me/mnpn03/)
 
 > DiscordConsole is software aiming to give you full control over accounts, bots and webhooks!
 
