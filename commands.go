@@ -899,7 +899,7 @@ func parseBool(str string) (bool, error) {
 	return false, errors.New(tl("invalid.yn"))
 }
 
-func replace(args []string) {
+func replace(args []string) { // We need a way to escape these.
 	for i := range args {
 		if strings.Contains(args[i], "{paste}") {
 			clipboardcontent, err := clipboard.ReadAll()
@@ -908,6 +908,10 @@ func replace(args []string) {
 				return
 			}
 			replacer := strings.NewReplacer("{paste}", clipboardcontent)
+			args[i] = replacer.Replace(args[i])
+		}
+		if strings.Contains(args[i], "{nl}") {
+			replacer := strings.NewReplacer("{nl}", "\n")
 			args[i] = replacer.Replace(args[i])
 		}
 		if loc.guild != nil {
