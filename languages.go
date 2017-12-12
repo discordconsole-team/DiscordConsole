@@ -27,7 +27,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/legolord208/stdutil"
+	"github.com/jD91mZM2/stdutil"
 )
 
 var errLangCorrupt = errors.New("corrupt language file")
