@@ -878,7 +878,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				i := 0
 				for i < am {
 					fmt.Println("Microsoft!")
-					i += 1
+					i++
 				}
 			}
 		} else {
