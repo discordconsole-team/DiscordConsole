@@ -51,6 +51,8 @@ func loadLangAuto(langfile string) {
 		loadLangDefault()
 	case "sv":
 		loadLangString(langSv)
+	case "sp":
+		loadLangString(langSp)
 	default:
 		reader, err := os.Open(langfile)
 		if err != nil {
@@ -337,7 +339,8 @@ invalid.command2=Kör 'help' för att få hjälp.
 
 login.token=Vänligen klistra in en 'token' här.
 login.token.user=Användar-'tokens' har prefixet 'user '
-login.token.webhook=Webhook-'tokens' har prefixet 'webhook ', och deras URL eller id/token
+login.token.webhook=Webhook-'tokmkfs.vfat /dev/sdb1
+ens' har prefixet 'webhook ', och deras URL eller id/token
 login.starting=Autentiserar...
 login.finish=Loggade in med användar-ID:t
 intro.help=Kör 'help' för hjälp
