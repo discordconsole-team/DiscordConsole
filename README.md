@@ -17,7 +17,7 @@ Sadly the rewrite is stuck because of an upstream dependency.**
 
 To get started, simply [download the console from releases](https://github.com/discordconsole-team/DiscordConsole/releases).
 
-Or compile it yourself: `go get github.com/discord-team/DiscordConsole`, you'll also need the DiscordGo development version; to get that type `make dgo`. Finally, just type `go install`
+Or compile it yourself: `go get github.com/discordconsole-team/DiscordConsole`, you'll also need the DiscordGo development version; to get that type `make dgo`. Finally, just type `go install`
 
 ### Usage
 
