@@ -13,9 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
-extern crate hlua;
+extern crate rlua;
 
-use self::hlua::{AnyLuaValue, Lua};
+use self::rlua::{Lua, Error as LuaError};
 use {LIMIT, LIMIT_MSG};
 use color::*;
 use discord::{ChannelRef, Connection, Discord, GetMessages, State};
@@ -27,7 +27,7 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fmt;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, Read, Write};
 use std::process::Command;
 
 const UPDATE_STATUS_HELP: &str = "Hey there buddy! You seem confused over how you should set status!\n\
@@ -215,7 +215,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 	macro_rules! attempt {
 		($result:expr, $message:expr) => {
 			match $result {
-				Err(err) => fail!(format!("{} (Details: {:?})", $message, err)),
+				Err(err) => fail!(format!("{} (Details: {})", $message, err)),
 				Ok(ok) => ok,
 			}
 		}
@@ -431,22 +431,20 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 					success!(Some(result))
 				},
 				"lua" => {
-					let mut lua = new_lua(context, terminal);
+                    let mut code = String::new();
+                    {
+                        let mut file = attempt!(File::open(&args[1]), couldnt!("open file"));
+                        attempt!(file.read_to_string(&mut code), couldnt!("read file"));
+                    }
 
-					let file = attempt!(File::open(&args[1]), couldnt!("open file"));
-					if let Err(err) = lua.execute_from_reader::<(), _>(file) {
-						fail!(format!("Error trying to execute: {:?}", err));
-					}
+					attempt!(lua_exec(context, terminal, &code), couldnt!("run lua"));
+
 					success!(None);
 
 					// TODO: Arguments
 				},
 				"lua-inline" => {
-					let mut lua = new_lua(context, terminal);
-
-					if let Err(err) = lua.execute::<()>(&args[1]) {
-						fail!(format!("Error trying to execute: {:?}", err));
-					}
+					attempt!(lua_exec(context, terminal, &args[1]), couldnt!("run lua"));
 					success!(None);
 
 					// TODO: Arguments
@@ -1016,48 +1014,26 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 	Ok(results)
 }
 
-fn lua_to_string(value: AnyLuaValue) -> String {
-	match value {
-		AnyLuaValue::LuaString(value) => value,
-		AnyLuaValue::LuaNumber(value) => (value.round() as u64).to_string(),
-		AnyLuaValue::LuaBoolean(value) => value.to_string(),
-		AnyLuaValue::LuaArray(value) => {
-			value
-				.iter()
-				.map(|value| {
-					let value0 = lua_to_string(value.0.clone());
-					let value1 = lua_to_string(value.1.clone());
-					let mut string = String::with_capacity(value0.len() + 2 + value1.len());
-					string.push_str(&value0);
-					string.push_str(": ");
-					string.push_str(&value1);
+pub fn lua_exec(context: &mut CommandContext, terminal: bool, code: &str) -> Result<(), LuaError> {
+	let lua = Lua::new();
 
-					string
-				})
-				.collect::<Vec<_>>()
-				.join(", ")
-		},
-		_ => String::new(),
-	}
+    lua.scope(|scope| {
+        // Example: `cmd({"echo", "Hello World"})`
+        lua.globals().set(
+            "cmd",
+            scope.create_function_mut(|_, args: (Vec<String>)| {
+                let result = execute(context, terminal, args);
+                let text = result.text.unwrap_or_default();
+                if result.success {
+                    Ok(text)
+                } else {
+                    Err(LuaError::RuntimeError(text))
+                }
+            })?
+        )?;
 
-}
-pub fn new_lua(context: &mut CommandContext, terminal: bool) -> Lua {
-	let mut lua = Lua::new();
-	lua.openlibs();
-
-	// Example: `cmd({"echo", "Hello World"})`
-	// crashes on incorrect type; see https://github.com/tomaka/hlua/issues/149
-	lua.set(
-		"cmd",
-		hlua::function1::<_, String, Vec<AnyLuaValue>>(move |args| {
-			let args = args.iter()
-				.map(|value| lua_to_string(value.clone()))
-				.collect();
-			execute(context, terminal, args).text.unwrap_or_default()
-		})
-	);
-
-	lua
+        lua.exec(code, None)
+    })
 }
 
 pub trait MoreStateFunctionsSuperOriginalTraitNameExclusiveTM {

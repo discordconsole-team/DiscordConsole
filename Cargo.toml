@@ -8,12 +8,10 @@ version = "0.1.0"
 clap = "2.30.0"
 clipboard = "0.4.6"
 lazy_static = "1.0.0"
+rlua = "0.13.0"
 rustyline = "1.0.0"
 serde_json = "1.0.10"
 
 [dependencies.discord]
 default-features = false
 git = "https://github.com/SpaceManiac/discord-rs"
-
-[dependencies.hlua]
-git = "https://github.com/tomaka/hlua"
