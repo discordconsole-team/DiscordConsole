@@ -151,7 +151,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 	macro_rules! success {
 		($val:expr) => {
 			return CommandResult{
-				text:    $val,
+				text:	 $val,
 				..Default::default()
 			};
 		}
@@ -159,7 +159,7 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 	macro_rules! fail {
 		($val:expr) => {
 			return CommandResult{
-				text:    Some($val.to_string()),
+				text:	 Some($val.to_string()),
 				success: false,
 				..Default::default()
 			};
@@ -431,11 +431,11 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 					success!(Some(result))
 				},
 				"lua" => {
-                    let mut code = String::new();
-                    {
-                        let mut file = attempt!(File::open(&args[1]), couldnt!("open file"));
-                        attempt!(file.read_to_string(&mut code), couldnt!("read file"));
-                    }
+					let mut code = String::new();
+					{
+						let mut file = attempt!(File::open(&args[1]), couldnt!("open file"));
+						attempt!(file.read_to_string(&mut code), couldnt!("read file"));
+					}
 
 					attempt!(lua_exec(context, terminal, &code), couldnt!("run lua"));
 
@@ -573,8 +573,8 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 			}
 
 			success!(Some(pretty_json!({
-				"id":       &guild.id.to_string(),
-				"name":     &guild.name,
+				"id":		&guild.id.to_string(),
+				"name":		&guild.name,
 				"owner_id": &guild.owner_id.to_string(),
 			})));
 		},
@@ -603,9 +603,9 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 					context.channel = Some(channel.id);
 
 					success!(Some(pretty_json!({
-						"id":       &channel.id.to_string(),
+						"id":		&channel.id.to_string(),
 						"recipient": {
-							"id":   &channel.recipient.id.to_string(),
+							"id":	&channel.recipient.id.to_string(),
 							"name": &channel.recipient.name
 						}
 					})));
@@ -615,8 +615,8 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 					context.channel = Some(channel.channel_id);
 
 					success!(Some(pretty_json!({
-						"id":       &channel.channel_id.to_string(),
-						"name":     &channel.name.clone().unwrap_or_default()
+						"id":		&channel.channel_id.to_string(),
+						"name":		&channel.name.clone().unwrap_or_default()
 					})));
 				},
 				ChannelRef::Public(guild, channel) => {
@@ -624,10 +624,10 @@ pub fn execute(context: &mut CommandContext, terminal: bool, mut args: Vec<Strin
 					context.channel = Some(channel.id);
 
 					success!(Some(pretty_json!({
-						"id":       &channel.id.to_string(),
-						"name":     &channel.name,
+						"id":		&channel.id.to_string(),
+						"name":		&channel.name,
 						"guild": {
-							"id":   &guild.id.to_string(),
+							"id":	&guild.id.to_string(),
 							"name": &guild.name
 						}
 					})));
@@ -1017,23 +1017,23 @@ pub fn execute_file(context: &mut CommandContext, terminal: bool, file: &str) ->
 pub fn lua_exec(context: &mut CommandContext, terminal: bool, code: &str) -> Result<(), LuaError> {
 	let lua = Lua::new();
 
-    lua.scope(|scope| {
-        // Example: `cmd({"echo", "Hello World"})`
-        lua.globals().set(
-            "cmd",
-            scope.create_function_mut(|_, args: (Vec<String>)| {
-                let result = execute(context, terminal, args);
-                let text = result.text.unwrap_or_default();
-                if result.success {
-                    Ok(text)
-                } else {
-                    Err(LuaError::RuntimeError(text))
-                }
-            })?
-        )?;
+	lua.scope(|scope| {
+		// Example: `cmd({"echo", "Hello World"})`
+		lua.globals().set(
+			"cmd",
+			scope.create_function_mut(|_, args: (Vec<String>)| {
+				let result = execute(context, terminal, args);
+				let text = result.text.unwrap_or_default();
+				if result.success {
+					Ok(text)
+				} else {
+					Err(LuaError::RuntimeError(text))
+				}
+			})?
+		)?;
 
-        lua.exec(code, None)
-    })
+		lua.exec(code, None)
+	})
 }
 
 pub trait MoreStateFunctionsSuperOriginalTraitNameExclusiveTM {
