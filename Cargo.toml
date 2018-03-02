@@ -1,5 +1,5 @@
 [package]
-authors = ["jD91mZM2 <me@krake.one>"]
+authors = ["Mnpn <mnpn03@gmail.com>"]
 description = "DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!"
 license = "GPL-3.0+"
 name = "discord_console"
