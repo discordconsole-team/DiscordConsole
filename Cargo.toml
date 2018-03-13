@@ -1,20 +1,17 @@
 [package]
-name        = "discord_console"
+authors = ["Mnpn <mnpn03@gmail.com>"]
 description = "DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!"
-license     = "GPL-3.0+"
-
+license = "GPL-3.0+"
+name = "discord_console"
 version = "0.1.0"
-authors = ["LEGOlord208 <LEGOlord208@krake.one>"]
-
-
 [dependencies]
-clap        = "2.24"
-clipboard   = "0.3"
-hlua        = { git = "https://github.com/tomaka/hlua" }
-lazy_static = "0.2"
-rustyline   = "1.0"
-serde_json  = "1.0"
+clap = "2.30.0"
+clipboard = "0.4.6"
+lazy_static = "1.0.0"
+rlua = "0.13.0"
+rustyline = "1.0.0"
+serde_json = "1.0.10"
 
 [dependencies.discord]
-git = "https://github.com/SpaceManiac/discord-rs"
 default-features = false
+git = "https://github.com/SpaceManiac/discord-rs"
