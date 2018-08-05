@@ -37,7 +37,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.4.3"
+const version = "2.4.4"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -376,7 +376,7 @@ func handleCrash() {
 		if val == "die" {
 			panic(val)
 		}
-		
+
 		// No translations here. We want to be as safe as possible.
 		stdutil.PrintErr("DiscordConsole has crashed.", nil)
 		stdutil.PrintErr("Please tell the DiscordConsole team what you did to cause this.", nil)
