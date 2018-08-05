@@ -784,15 +784,15 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("invalid.not.owner"), nil)
 			return
 		}
+		
+		if loc.guild == nil {
+			stdutil.PrintErr(tl("invalid.guild"), nil)
+			return
+		}
 
 		member, err := session.State.Member(loc.guild.ID, id)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.user"), err)
-			return
-		}
-
-		if loc.guild == nil {
-			stdutil.PrintErr(tl("invalid.guild"), nil)
 			return
 		}
 
