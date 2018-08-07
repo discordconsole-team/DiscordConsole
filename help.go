@@ -50,6 +50,7 @@ func printHelp(search string) {
 		help = append(help, "uinfo <id> [property]\tGet information about user. Properties: id, email, name, avatar, bot; 'cache' may be used as message ID")
 		help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, channel, timestamp, author, "+
 			"author_email, author_name, author_avatar, author_bot, embed; 'cache' may be used as message ID.")
+		help = append(help, "pin <message id>\tPin a message to the current channel.")
 		help = append(help, "")
 	}
 	help = append(help, "say <stuff>\tSend a message in your selected channel. `say toggle` starts chat-mode, and `toggle` ends it.")
