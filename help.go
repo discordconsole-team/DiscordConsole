@@ -79,7 +79,7 @@ func printHelp(search string) {
 		help = append(help, "typing\tSimulate typing in selected channel...")
 		help = append(help, "")
 		help = append(help, "members\tList (max 100) members in selected guild")
-		help = append(help, "invite create <code> [expires] [max uses] ['temp'] OR invite accept <code>\tCreate an invite, or accept an existing one")
+		help = append(help, "invite create <code> [expires] [max uses] ['temp'] OR invite accept <code> OR invite read <code>\tCreate an invite, accept an existing one or see invite information.")
 		help = append(help, "")
 		help = append(help, "roles\tList all roles in selected guild.")
 		help = append(help, "roleadd <user id> <role id>\tAdd role to user")
