@@ -180,6 +180,7 @@ failed.permcalc=Could not open PermCalc (permission calculator)
 failed.nochannel=Server does not have a channel
 failed.transfer=Couldn't transfer ownership
 failed.paste=Failed to paste clipboard: 
+failed.pin=Couldn't pin the message
 
 information.wait=Wait a second!
 information.warning=Warning!
@@ -309,6 +310,7 @@ failed.permcalc=Kunde inte öppna PermCalc
 failed.nochannel=Servern har ingen kanal
 failed.transfer=Kunde inte överföra ägarskap
 failed.paste=Kunde inte klista in: 
+failed.pin=Kunde inte fästa meddelandet
 
 information.wait=Vänta en sekund!
 information.warning=Varning!
