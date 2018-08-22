@@ -778,7 +778,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("invalid.guild"), nil)
 			return
 		}
-		
+
 		if nargs < 1 {
 			stdutil.PrintErr("ownership <user id>", nil)
 			return
@@ -894,7 +894,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr("pin <message id>", nil)
 			return
 		}
-		
+
 		err := session.ChannelMessagePin(loc.channel.ID, args[0])
 		if err != nil {
 			stdutil.PrintErr(tl("failed.pin"), err)

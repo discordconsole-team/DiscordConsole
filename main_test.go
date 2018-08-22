@@ -10,12 +10,12 @@ func TestAlias(t *testing.T) {
 	// Alias known to use map
 	go func() {
 		command(nil, commandSource{
-		//	NoMutex: true,
+			//	NoMutex: true,
 		}, "alias test exec echo hi", color.Output)
 	}()
 	go func() {
 		command(nil, commandSource{
-		//	NoMutex: true,
+			//	NoMutex: true,
 		}, "test", color.Output)
 	}()
 }
