@@ -885,10 +885,16 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 		}
 	case "pin":
+		if loc.channel == nil {
+			stdutil.PrintErr(tl("invalid.channel"), nil)
+			return
+		}
+
 		if nargs < 1 {
 			stdutil.PrintErr("pin <message id>", nil)
 			return
 		}
+		
 		err := session.ChannelMessagePin(loc.channel.ID, args[0])
 		if err != nil {
 			stdutil.PrintErr(tl("failed.pin"), err)
