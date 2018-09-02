@@ -774,6 +774,11 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			aliases[strings.ToLower(args[0])] = strings.Join(args[1:], " ")
 		}
 	case "ownership":
+		if loc.guild == nil {
+			stdutil.PrintErr(tl("invalid.guild"), nil)
+			return
+		}
+
 		if nargs < 1 {
 			stdutil.PrintErr("ownership <user id>", nil)
 			return
@@ -782,11 +787,6 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 
 		if loc.guild.OwnerID != userObj.ID {
 			stdutil.PrintErr(tl("invalid.not.owner"), nil)
-			return
-		}
-		
-		if loc.guild == nil {
-			stdutil.PrintErr(tl("invalid.guild"), nil)
 			return
 		}
 
@@ -885,10 +885,16 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 		}
 	case "pin":
+		if loc.channel == nil {
+			stdutil.PrintErr(tl("invalid.channel"), nil)
+			return
+		}
+
 		if nargs < 1 {
 			stdutil.PrintErr("pin <message id>", nil)
 			return
 		}
+
 		err := session.ChannelMessagePin(loc.channel.ID, args[0])
 		if err != nil {
 			stdutil.PrintErr(tl("failed.pin"), err)

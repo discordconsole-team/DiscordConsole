@@ -37,7 +37,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.4.4"
+const version = "2.4.5"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -382,7 +382,7 @@ func handleCrash() {
 		stdutil.PrintErr("Please tell the DiscordConsole team what you did to cause this.", nil)
 		stdutil.PrintErr("https://mnpn.hisses-at.me/contact, https://discord.gg/xvQV8bT,", nil)
 		stdutil.PrintErr("https://github.com/discordconsole-team/discordconsole/issues", nil)
-		stdutil.PrintErr("Error Details: "+fmt.Sprint(val), nil)
+		stdutil.PrintErr("Error Details: "+fmt.Sprint(val)+", version "+version, nil)
 	}
 }
 
