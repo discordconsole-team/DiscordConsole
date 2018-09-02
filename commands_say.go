@@ -178,10 +178,13 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 		for _, c := range strings.Join(args, " ") {
 			str := toEmojiString(c)
 			if len(buffer)+len(str) > msgLimit {
-				msg, ok := say(session, w, loc.channel.ID, buffer)
-				if !ok {
-					return
+				var msg *discordgo.Message
+				if userType == typeWebhook { // Webhook checking.
+					msg, _ = say(session, w, "", buffer)
+				} else {
+					msg, _ = say(session, w, loc.channel.ID, buffer)
 				}
+
 				if msg != nil {
 					lastUsedMsg = msg.ID
 					returnVal = msg.ID
@@ -192,7 +195,12 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 			buffer += str
 		}
 		if buffer != "" {
-			msg, _ := say(session, w, loc.channel.ID, buffer)
+			var msg *discordgo.Message
+			if userType == typeWebhook { // Webhook checking.
+				msg, _ = say(session, w, "", buffer)
+			} else {
+				msg, _ = say(session, w, loc.channel.ID, buffer)
+			}
 
 			if msg != nil {
 				lastUsedMsg = msg.ID
