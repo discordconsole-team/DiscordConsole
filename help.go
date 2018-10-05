@@ -97,6 +97,7 @@ func printHelp(search string) {
 		help = append(help, "output [yes/no]\tToggle showing 'console.' outputs directly in Discord.")
 		help = append(help, "back\tJump to previous guild and/or channel.")
 		help = append(help, "")
+		help = append(help, "new <guild name>\tCreate a new guild")
 		help = append(help, "bans\tList all bans")
 		help = append(help, "ban <user id>\tBan user")
 		help = append(help, "unban <user id>\tUnban user")

@@ -900,6 +900,21 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("failed.pin"), err)
 			return
 		}
+	case "new":
+			if userType != typeUser {
+				stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
+				return
+			}
+			if nargs < 1 {
+				stdutil.PrintErr("new <guild name>", nil)
+				return
+			}
+			_, err := session.GuildCreate(args[0])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.guild.create"), err)
+				return
+			}
+			fmt.Println(tl("information.guild.created")+args[0]+tl("information.guild.created2"))
 	default:
 		stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 	}
