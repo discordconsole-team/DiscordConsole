@@ -353,7 +353,7 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 		s += guild.Name + " #" + channel.Name
 	}
 
-	s += ") " + msg.Author.Username + ": " + msg.Content
+	s += ") " + msg.Author.Username + ": " + msgToString(msg)
 	s += strings.Repeat(" ", 5)
 
 	color.Unset()
