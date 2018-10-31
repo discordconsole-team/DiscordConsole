@@ -180,37 +180,48 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		"editembed", "sayfile", "del", "delall":
 		returnVal = commandsSay(session, source, cmd, args, nargs, w)
 	case "log":
+		if nargs < 2 {
+			stdutil.PrintErr("log <directly/file> <number OR filename>", nil)
+			return
+		}
+
 		if loc.channel == nil {
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
 
-		directly := nargs < 1
-
 		var file io.Writer
+		directly := false
+		limit := 100 // 100 is Discord's limit.
 
-		if directly {
-			file = w
-		} else {
-			name := strings.Join(args, " ")
-			err := fixPath(&name)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.fixpath"), err)
-			}
+		switch strings.ToLower(args[0]) {
+			case "directly":
+				directly = true
+				file = w
+				var err error
+				limit, err = strconv.Atoi(args[1])
+				if err != nil {
+					stdutil.PrintErr(tl("invalid.number"), nil)
+					return
+				}
+			case "file":
+				name := strings.Join(args[1:], " ")
+				err := fixPath(&name)
+				if err != nil {
+					stdutil.PrintErr(tl("failed.fixpath"), err)
+				}
 
-			file2, err := os.Create(name)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.file.open"), err)
+				file2, err := os.Create(name)
+				if err != nil {
+					stdutil.PrintErr(tl("failed.file.open"), err)
+					return
+				}
+				defer file2.Close()
+
+				file = file2
+			default:
+				stdutil.PrintErr("log <directly/file> <number OR filename>", nil)
 				return
-			}
-			defer file2.Close()
-
-			file = file2
-		}
-
-		limit := 100
-		if directly {
-			limit = 10
 		}
 
 		msgs, err := session.ChannelMessages(loc.channel.ID, limit, "", "", "")
