@@ -239,7 +239,8 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			if directly {
 				s = "(ID " + msg.ID + ") "
 			}
-			err = writeln(file, s+msg.Author.Username+": "+msg.Content)
+			
+			err = writeln(file, s+msg.Author.Username+": "+msgToString(msg))
 			if err != nil && !directly {
 				stdutil.PrintErr(tl("failed.msg.write"), err)
 				return
@@ -984,6 +985,17 @@ func parseBool(str string) (bool, error) {
 		return false, nil
 	}
 	return false, errors.New(tl("invalid.yn"))
+}
+
+func msgToString(msg *discordgo.Message) (string) {
+	msgc := msg.Content
+	for _, attachment := range msg.Attachments {
+		if len(msgc) > 0 {
+			msgc += " "
+		}
+		msgc += attachment.URL
+	}
+	return msgc
 }
 
 func replace(args []string) { // We need a way to escape these.
