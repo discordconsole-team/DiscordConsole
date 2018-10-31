@@ -195,33 +195,33 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		limit := 100 // 100 is Discord's limit.
 
 		switch strings.ToLower(args[0]) {
-			case "directly":
-				directly = true
-				file = w
-				var err error
-				limit, err = strconv.Atoi(args[1])
-				if err != nil {
-					stdutil.PrintErr(tl("invalid.number"), nil)
-					return
-				}
-			case "file":
-				name := strings.Join(args[1:], " ")
-				err := fixPath(&name)
-				if err != nil {
-					stdutil.PrintErr(tl("failed.fixpath"), err)
-				}
-
-				file2, err := os.Create(name)
-				if err != nil {
-					stdutil.PrintErr(tl("failed.file.open"), err)
-					return
-				}
-				defer file2.Close()
-
-				file = file2
-			default:
-				stdutil.PrintErr("log <directly/file> <number OR filename>", nil)
+		case "directly":
+			directly = true
+			file = w
+			var err error
+			limit, err = strconv.Atoi(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("invalid.number"), nil)
 				return
+			}
+		case "file":
+			name := strings.Join(args[1:], " ")
+			err := fixPath(&name)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.fixpath"), err)
+			}
+
+			file2, err := os.Create(name)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.file.open"), err)
+				return
+			}
+			defer file2.Close()
+
+			file = file2
+		default:
+			stdutil.PrintErr("log <directly/file> <number OR filename>", nil)
+			return
 		}
 
 		msgs, err := session.ChannelMessages(loc.channel.ID, limit, "", "", "")
@@ -239,7 +239,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			if directly {
 				s = "(ID " + msg.ID + ") "
 			}
-			
+
 			err = writeln(file, s+msg.Author.Username+": "+msgToString(msg))
 			if err != nil && !directly {
 				stdutil.PrintErr(tl("failed.msg.write"), err)
@@ -913,65 +913,65 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 	case "new":
-			if nargs < 2 {
-				stdutil.PrintErr("new <channel/vchannel/guild> <name>", nil)
+		if nargs < 2 {
+			stdutil.PrintErr("new <channel/vchannel/guild> <name>", nil)
+			return
+		}
+		switch strings.ToLower(args[0]) {
+		case "guild":
+			g, err := session.GuildCreate(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.guild.create"), err)
 				return
 			}
-			switch strings.ToLower(args[0]) {
-			case "guild":
-				g, err := session.GuildCreate(args[1])
-				if err != nil {
-					stdutil.PrintErr(tl("failed.guild.create"), err)
-					return
-				}
-				fmt.Println(tl("information.guild")+args[1]+tl("information.created.successfully")+g.ID+".")
-			case "channel":
-				if loc.channel == nil {
-					stdutil.PrintErr(tl("invalid.guild"), nil)
-					return
-				}
-				c, err := session.GuildChannelCreate(loc.guild.ID, args[1], "text")
-				if err != nil {
-					stdutil.PrintErr(tl("failed.channel.create"), err)
-					return
-				}
-				fmt.Println(tl("information.channel")+args[1]+tl("information.created.successfully")+c.ID+".")
-			case "vchannel":
-				if loc.channel == nil {
-					stdutil.PrintErr(tl("invalid.guild"), nil)
-					return
-				}
-				vc, err := session.GuildChannelCreate(loc.guild.ID, args[1], "voice")
-				if err != nil {
-					stdutil.PrintErr(tl("failed.channel.create"), err)
-					return
-				}
-				fmt.Println(tl("information.channel")+args[1]+tl("information.created.successfully")+vc.ID+".")
-			default:
-				stdutil.PrintErr("new <channel/vchannel/guild> <name>", nil)
+			fmt.Println(tl("information.guild") + args[1] + tl("information.created.successfully") + g.ID + ".")
+		case "channel":
+			if loc.channel == nil {
+				stdutil.PrintErr(tl("invalid.guild"), nil)
+				return
 			}
+			c, err := session.GuildChannelCreate(loc.guild.ID, args[1], "text")
+			if err != nil {
+				stdutil.PrintErr(tl("failed.channel.create"), err)
+				return
+			}
+			fmt.Println(tl("information.channel") + args[1] + tl("information.created.successfully") + c.ID + ".")
+		case "vchannel":
+			if loc.channel == nil {
+				stdutil.PrintErr(tl("invalid.guild"), nil)
+				return
+			}
+			vc, err := session.GuildChannelCreate(loc.guild.ID, args[1], "voice")
+			if err != nil {
+				stdutil.PrintErr(tl("failed.channel.create"), err)
+				return
+			}
+			fmt.Println(tl("information.channel") + args[1] + tl("information.created.successfully") + vc.ID + ".")
+		default:
+			stdutil.PrintErr("new <channel/vchannel/guild> <name>", nil)
+		}
 	case "channeldelete":
 		if nargs < 1 {
-				stdutil.PrintErr("channeldelete <channel id>", nil)
-				return
+			stdutil.PrintErr("channeldelete <channel id>", nil)
+			return
 		}
 		_, err := session.ChannelDelete(args[0])
 		if err != nil {
 			stdutil.PrintErr(tl("failed.channel.delete"), err)
 			return
 		}
-		fmt.Println(tl("information.channel")+args[0]+tl("information.deleted.successfully"))
+		fmt.Println(tl("information.channel") + args[0] + tl("information.deleted.successfully"))
 	case "guilddelete":
 		if nargs < 1 {
-				stdutil.PrintErr("guilddelete <guild id>", nil)
-				return
+			stdutil.PrintErr("guilddelete <guild id>", nil)
+			return
 		}
 		_, err := session.GuildDelete(args[0])
 		if err != nil {
 			stdutil.PrintErr(tl("failed.guild.delete"), err)
 			return
 		}
-		fmt.Println(tl("information.channel")+args[0]+tl("information.deleted.successfully"))
+		fmt.Println(tl("information.channel") + args[0] + tl("information.deleted.successfully"))
 	default:
 		stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 	}
@@ -987,7 +987,7 @@ func parseBool(str string) (bool, error) {
 	return false, errors.New(tl("invalid.yn"))
 }
 
-func msgToString(msg *discordgo.Message) (string) {
+func msgToString(msg *discordgo.Message) string {
 	msgc := msg.Content
 	for _, attachment := range msg.Attachments {
 		if len(msgc) > 0 {
