@@ -127,12 +127,10 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 		for _, channel := range channels {
 			table.AddRow()
 			recipient := ""
-			if len(channel.Recipients) < 1 {
+			if len(channel.Recipients[0].Username) > 1 {
 				if len(channel.Recipients) != 0 {
 					recipient = channel.Recipients[0].Username
 				} else {
-					// Urgh, doesn't look like Discord returns
-					// anything other than [0/0].
 					recipient = tl("pointer.unknown")
 				}
 			}
