@@ -70,7 +70,7 @@ func printHelp(search string) {
 		help = append(help, "editembed <message id> <json>\tEdit a message embed in your selected channel.")
 		help = append(help, "del <message id>\tDelete a message in the selected channel.")
 		help = append(help, "delall [since message id]\tBulk delete messages since a specific message")
-		help = append(help, "log [output file]\tLog the last few messages in console or to a file.")
+		help = append(help, "log <directly/file> <amount OR filename>\tLog the last few messages in console or to a file.")
 		help = append(help, "reactadd/reactdel <message id> <emoji unicode/id>\tReact to a message")
 		help = append(help, "reactbig <message id> <stuff>\tLike the 'big' command, but in reactions!")
 		help = append(help, "")
