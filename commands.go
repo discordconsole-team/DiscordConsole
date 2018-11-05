@@ -623,26 +623,65 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("failed.block"), err)
 			return
 		}
-	case "friends":
+	case "friend":
 		if userType != typeUser {
 			stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
 			return
 		}
-		relations, err := session.RelationshipsGet()
-		if err != nil {
-			stdutil.PrintErr(tl("failed.friends"), err)
+		if nargs < 1 {
+			stdutil.PrintErr("friend <add/accept/remove/list> <user id>", nil)
 			return
 		}
+		switch strings.ToLower(args[0]) {
+		case "list":
+			relations, err := session.RelationshipsGet()
+			if err != nil {
+				stdutil.PrintErr(tl("failed.friend.list"), err)
+				return
+			}
 
-		table := gtable.NewStringTable()
-		table.AddStrings("ID", "Type", "Name")
+			table := gtable.NewStringTable()
+			table.AddStrings("ID", "Type", "Name")
 
-		for _, relation := range relations {
-			table.AddRow()
-			table.AddStrings(relation.ID, typeRelationships[relation.Type], relation.User.Username)
+			for _, relation := range relations {
+				table.AddRow()
+				table.AddStrings(relation.ID, typeRelationships[relation.Type], relation.User.Username)
+			}
+
+			writeln(w, table.String())
+		case "add":
+			if nargs < 2 {
+				stdutil.PrintErr("friend add <user id>", nil)
+				return
+			}
+			err := session.RelationshipFriendRequestSend(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.friend.add"), err)
+				return
+			}
+		case "accept":
+			if nargs < 2 {
+				stdutil.PrintErr("friend accept <user id>", nil)
+				return
+			}
+			err := session.RelationshipFriendRequestAccept(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.friend.add"), err)
+				return
+			}
+		case "remove":
+			if nargs < 2 {
+				stdutil.PrintErr("friend remove <user id>", nil)
+				return
+			}
+			err := session.RelationshipDelete(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.friend.remove"), err)
+				return
+			}
+		default:
+			stdutil.PrintErr("friend <add/accept/remove/list> <name>", nil)
 		}
-
-		writeln(w, table.String())
 	case "reactbig":
 		if nargs < 2 {
 			stdutil.PrintErr("reactbig <message id> <text>", nil)
@@ -1005,6 +1044,21 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		fmt.Println(tl("information.channel") + args[0] + tl("information.deleted.successfully"))
+	case "move":
+		if nargs < 2 {
+			stdutil.PrintErr("move <user ID> <vchannel ID>", nil)
+			return
+		}
+		if loc.guild == nil {
+			stdutil.PrintErr(tl("invalid.guild"), nil)
+			return
+		}
+		err := session.GuildMemberMove(loc.guild.ID, args[0], args[1])
+		if err != nil {
+			stdutil.PrintErr(tl("failed.move"), err)
+			return
+		}
+		writeln(w, tl("information.moved"))
 	default:
 		stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 	}

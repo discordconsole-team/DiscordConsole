@@ -110,6 +110,7 @@ func printHelp(search string) {
 		help = append(help, "")
 		help = append(help, "play <dca audio file>\tPlays a song in the selected voice channel")
 		help = append(help, "stop\tStops playing any song.")
+		help = append(help, "move <user id> <vchannel id>\tMove a user to another voice channel.")
 		help = append(help, "")
 	}
 	help = append(help, "name <name>\tChange username completely.")
@@ -117,7 +118,7 @@ func printHelp(search string) {
 	if userType != typeWebhook {
 		help = append(help, "status <value>\tSet the user status. Possible values are: online, idle, dnd and invisible.")
 		help = append(help, "")
-		help = append(help, "friends\tList all relationships the account has.")
+		help = append(help, "friend <add/accept/remove/list> (<name>)\tManage your friends. Add, accept, remove and list them.")
 		help = append(help, "block <user id>\tBlock a user.")
 		help = append(help, "")
 		help = append(help, "bookmarks\tList all bookmarks in the console.")
