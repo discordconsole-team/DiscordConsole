@@ -926,7 +926,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			}
 			fmt.Println(tl("information.guild") + args[1] + tl("information.created.successfully") + g.ID + ".")
 		case "channel":
-			if loc.channel == nil {
+			if loc.guild == nil {
 				stdutil.PrintErr(tl("invalid.guild"), nil)
 				return
 			}
@@ -937,7 +937,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			}
 			fmt.Println(tl("information.channel") + args[1] + tl("information.created.successfully") + c.ID + ".")
 		case "vchannel":
-			if loc.channel == nil {
+			if loc.guild == nil {
 				stdutil.PrintErr(tl("invalid.guild"), nil)
 				return
 			}
