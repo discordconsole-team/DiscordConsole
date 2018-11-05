@@ -226,6 +226,7 @@ func user2array(user *discordgo.User) []*keyval {
 		&keyval{"Name", user.Username},
 		&keyval{"Discrim", user.Discriminator},
 		&keyval{"Avatar", user.Avatar},
+		&keyval{"Avatar URL", user.AvatarURL("1024")},
 		&keyval{"Verified", strconv.FormatBool(user.Verified)},
 		&keyval{"MFA Enabled", strconv.FormatBool(user.MFAEnabled)},
 		&keyval{"Bot", strconv.FormatBool(user.Bot)},
