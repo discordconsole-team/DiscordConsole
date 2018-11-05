@@ -364,6 +364,21 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			}
 			writeln(w, tl("status.invite.create")+" "+invite.Code)
 			returnVal = invite.Code
+		case "list":
+			if loc.guild == nil {
+				stdutil.PrintErr(tl("invalid.guild"), nil)
+				return
+			}
+
+			invites, err := session.GuildInvites(loc.guild.ID)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.invite"), err)
+				return
+			}
+			
+			for _, invite := range invites {
+				writeln(w, invite.Code)
+			}
 		default:
 			stdutil.PrintErr(tl("invalid.value"), nil)
 		}
