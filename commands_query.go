@@ -167,10 +167,6 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 
 			keyvals = cacheUser
 		} else {
-			if userType != typeBot && !strings.EqualFold(id, "@me") {
-				stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
-				return
-			}
 
 			user, err := session.User(id)
 			if err != nil {
@@ -228,7 +224,10 @@ func user2array(user *discordgo.User) []*keyval {
 		&keyval{"ID", user.ID},
 		&keyval{"Email", user.Email},
 		&keyval{"Name", user.Username},
+		&keyval{"Discrim", user.Discriminator},
 		&keyval{"Avatar", user.Avatar},
+		&keyval{"Verified", strconv.FormatBool(user.Verified)},
+		&keyval{"MFA Enabled", strconv.FormatBool(user.MFAEnabled)},
 		&keyval{"Bot", strconv.FormatBool(user.Bot)},
 	}
 }
