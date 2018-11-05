@@ -185,6 +185,7 @@ failed.nochannel=Server does not have a channel
 failed.transfer=Couldn't transfer ownership
 failed.paste=Failed to paste clipboard: 
 failed.pin=Couldn't pin the message
+failed.revoke=Could not revoke
 
 information.wait=Wait a second!
 information.warning=Warning!
@@ -196,6 +197,7 @@ information.guild=Guild "
 information.channel=Channel "
 information.created.successfully=" was created successfully with ID 
 information.deleted.successfully=" was deleted successfully.
+information.revoked.successfully=Revoked 
 
 invalid.yn=Please type either 'y' or 'n'.
 invalid.webhook=Webhook format invalid. Format: id/token
@@ -323,6 +325,7 @@ failed.nochannel=Servern har ingen kanal
 failed.transfer=Kunde inte överföra ägarskap
 failed.paste=Kunde inte klista in: 
 failed.pin=Kunde inte fästa meddelandet
+failed.revoke=Kunde inte återkalla
 
 information.wait=Vänta en sekund!
 information.warning=Varning!
@@ -334,6 +337,7 @@ information.guild=Servern "
 information.channel=Kanalen "
 information.created.successfully=" skapades med ID 
 information.deleted.successfully=" togs bort.
+information.revoked.successfully=Återkallade 
 
 invalid.yn=Vänligen skriv antigen 'y' eller 'n'.
 invalid.webhook=Webhook-formatet är ogiltit. Format: id/token

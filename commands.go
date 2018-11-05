@@ -268,7 +268,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		writeln(w, table.String())
 	case "invite":
 		if nargs < 1 {
-			stdutil.PrintErr("invite accept <code> OR invite create [expire] [max uses] ['temp']", nil)
+			stdutil.PrintErr("invite accept <code> OR invite create [expire] [max uses] ['temp'] OR invite list OR invite revoke <code>", nil)
 			return
 		}
 		switch strings.ToLower(args[0]) {
@@ -375,10 +375,28 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				stdutil.PrintErr(tl("failed.invite"), err)
 				return
 			}
-			
+
+			table := gtable.NewStringTable()
+			table.AddStrings("Invites")
+
 			for _, invite := range invites {
-				writeln(w, invite.Code)
+				table.AddRow()
+				table.AddStrings(invite.Code)
 			}
+
+			writeln(w, table.String())
+		case "revoke":
+			if nargs < 2 {
+				stdutil.PrintErr("invite revoke <code>", nil)
+				return
+			}
+
+			invite, err := session.InviteDelete(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.revoke"), err)
+				return
+			}
+			writeln(w, tl("information.revoked.successfully")+invite.Code)
 		default:
 			stdutil.PrintErr(tl("invalid.value"), nil)
 		}
