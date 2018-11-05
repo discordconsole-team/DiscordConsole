@@ -444,7 +444,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		loc.push(lastLoc.guild, lastLoc.channel)
 	case "ban":
 		if nargs < 1 {
-			stdutil.PrintErr("ban <user id>", nil)
+			stdutil.PrintErr("ban <user id> <optional description>", nil)
 			return
 		}
 		if loc.guild == nil {
@@ -452,7 +452,12 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 
-		err := session.GuildBanCreate(loc.guild.ID, args[0], 0)
+		var err error
+		if nargs < 2 {
+			err = session.GuildBanCreate(loc.guild.ID, args[0], 0)
+		} else {
+			err = session.GuildBanCreateWithReason(loc.guild.ID, args[0], strings.Join(args[1:], " "), 0)
+		}
 		if err != nil {
 			stdutil.PrintErr(tl("failed.ban.create"), err)
 		}
@@ -472,7 +477,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 	case "kick":
 		if nargs < 1 {
-			stdutil.PrintErr("kick <user id>", nil)
+			stdutil.PrintErr("kick <user id> <optional reason>", nil)
 			return
 		}
 		if loc.guild == nil {
@@ -480,7 +485,12 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 
-		err := session.GuildMemberDelete(loc.guild.ID, args[0])
+		var err error
+		if nargs < 2 {
+			err = session.GuildMemberDelete(loc.guild.ID, args[0])
+		} else {
+			err = session.GuildMemberDeleteWithReason(loc.guild.ID, args[0], strings.Join(args[1:], " "))
+		}
 		if err != nil {
 			stdutil.PrintErr(tl("failed.kick"), err)
 		}
