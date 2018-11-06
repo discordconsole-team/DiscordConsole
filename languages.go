@@ -187,6 +187,7 @@ failed.nochannel=Server does not have a channel
 failed.transfer=Couldn't transfer ownership
 failed.paste=Failed to paste clipboard: 
 failed.pin=Couldn't pin the message
+failed.unpin=Couldn't unpin the message
 failed.revoke=Could not revoke
 failed.move=Could not move the user
 
@@ -331,6 +332,7 @@ failed.nochannel=Servern har ingen kanal
 failed.transfer=Kunde inte överföra ägarskap
 failed.paste=Kunde inte klista in: 
 failed.pin=Kunde inte fästa meddelandet
+failed.unpin=Kunde inte ta bort det fästa meddelandet
 failed.revoke=Kunde inte återkalla
 failed.move=Kunde inte flytta användaren
 

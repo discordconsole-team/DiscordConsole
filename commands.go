@@ -983,7 +983,6 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
-
 		if nargs < 1 {
 			stdutil.PrintErr("pin <message id>", nil)
 			return
@@ -992,6 +991,21 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		err := session.ChannelMessagePin(loc.channel.ID, args[0])
 		if err != nil {
 			stdutil.PrintErr(tl("failed.pin"), err)
+			return
+		}
+	case "unpin":
+		if loc.channel == nil {
+			stdutil.PrintErr(tl("invalid.channel"), nil)
+			return
+		}
+		if nargs < 1 {
+			stdutil.PrintErr("unpin <message id>", nil)
+			return
+		}
+
+		err := session.ChannelMessageUnpin(loc.channel.ID, args[0])
+		if err != nil {
+			stdutil.PrintErr(tl("failed.unpin"), err)
 			return
 		}
 	case "new":
