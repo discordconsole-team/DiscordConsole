@@ -1012,7 +1012,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				stdutil.PrintErr(tl("invalid.guild"), nil)
 				return
 			}
-			c, err := session.GuildChannelCreate(loc.guild.ID, args[1], "text")
+			c, err := session.GuildChannelCreate(loc.guild.ID, args[1], discordgo.ChannelTypeGuildText)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.channel.create"), err)
 				return
@@ -1023,7 +1023,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				stdutil.PrintErr(tl("invalid.guild"), nil)
 				return
 			}
-			vc, err := session.GuildChannelCreate(loc.guild.ID, args[1], "voice")
+			vc, err := session.GuildChannelCreate(loc.guild.ID, args[1], discordgo.ChannelTypeGuildVoice)
 			if err != nil {
 				stdutil.PrintErr(tl("failed.channel.create"), err)
 				return
