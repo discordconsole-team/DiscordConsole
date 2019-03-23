@@ -21,7 +21,7 @@ Or compile it yourself: `go get github.com/discordconsole-team/DiscordConsole`, 
 
 ### Usage
 
-It is recommended to run DiscordConsole in a Terminal. To do that, just `cd` to the folder you extracted it and run it by typing `DiscordConsole`. There are a few launch options covered in the wiki. [Click here to go to the unfinished Wiki.](https://discordconsole-team.github.io/Wiki/wiki.html)
+It is recommended to run DiscordConsole in a Terminal. To do that, just `cd` to the folder you extracted it and run it by typing `DiscordConsole`. There are a few launch options. You can display them by running DiscordConsole with `-h`.
 
 When starting the DiscordConsole in Windows for the first time, you might get a screen saying that Windows SmartScreen prevented an unrecognized app from starting. Just click **More Info** and then **Run anyway**.
 
@@ -31,7 +31,7 @@ For the first setup, we will use an user account. Setups with bot accounts and w
 Once you got your token, just type `user <token>` in the terminal. You'll get the following screen:
 ![Picture](https://i.imgur.com/KPCVmlH.png)
 
-Try to type something like `help` and let the magic happen! For a detailed review of each command, check [this wiki page](https://discordconsole-team.github.io/Wiki/wiki.html) or type `help command`.
+Try to type something like `help` and let the magic happen! For a detailed review of each command, type `help command`.
 
 **Don't want to go through all of this? Check our [Beta Launcher](https://github.com/discordconsole-team/DConsoleLauncher)!**
 
