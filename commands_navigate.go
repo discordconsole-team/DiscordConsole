@@ -122,21 +122,28 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 		}
 
 		table := gtable.NewStringTable()
-		table.AddStrings("ID", "Type", "Recipient")
+		table.AddStrings("ID", "Type", "Recipient(s)")
 
 		for _, channel := range channels {
 			table.AddRow()
 			recipient := ""
-			if len(channel.Recipients[0].Username) > 1 {
-				if len(channel.Recipients) != 0 {
+			if len(channel.Recipients) > 0 {
+				if len(channel.Recipients[0].Username) > 1 {
 					recipient = channel.Recipients[0].Username
-				} else {
-					recipient = tl("pointer.unknown")
+					if len(channel.Recipients) > 1 {
+						for _, user := range channel.Recipients[1:] {
+							recipient += ", "+user.Username
+						}
+					}
 				}
 			}
 			kind := "DM"
 			if channel.Type == discordgo.ChannelTypeGroupDM {
-				kind = "Group"
+				if len(channel.Recipients) == 0 {
+					kind = "Empty Group"
+				} else {
+					kind = "Group"
+				}
 			}
 			table.AddStrings(channel.ID, kind, recipient)
 		}
