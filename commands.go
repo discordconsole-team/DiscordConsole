@@ -335,6 +335,14 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				return
 			}
 
+			// Restricting this to bots. Discord resends a verification email
+			// and it errors with "json unmarshal" when attempted from a user account.
+			// I'd rather not have that.
+			if userType != typeBot {
+				stdutil.PrintErr(tl("invalid.onlyfor.bots"), nil)
+				return
+			}
+
 			inviteObj := discordgo.Invite{}
 			if nargs >= 2 {
 				min, err := strconv.Atoi(args[1])
