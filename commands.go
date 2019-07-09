@@ -240,7 +240,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				s = "(ID " + msg.ID + ") "
 			}
 
-			err = writeln(file, s+msg.Author.Username+": "+msgToString(msg))
+			err = writeln(file, s+msg.Author.Username+"#"+msg.Author.Discriminator+": "+msgToString(msg))
 			if err != nil && !directly {
 				stdutil.PrintErr(tl("failed.msg.write"), err)
 				return
