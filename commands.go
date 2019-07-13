@@ -1081,6 +1081,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 }
 
 func parseBool(str string) (bool, error) {
+	str = strings.ToLower(str)
 	if str == "yes" || str == "true" || str == "y" {
 		return true, nil
 	} else if str == "no" || str == "false" || str == "n" {
