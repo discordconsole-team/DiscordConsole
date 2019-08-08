@@ -132,7 +132,7 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 					recipient = channel.Recipients[0].Username
 					if len(channel.Recipients) > 1 {
 						for _, user := range channel.Recipients[1:] {
-							recipient += ", "+user.Username
+							recipient += ", " + user.Username
 						}
 					}
 				}
