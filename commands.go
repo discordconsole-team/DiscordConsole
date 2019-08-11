@@ -605,27 +605,51 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		playing = ""
-	case "reactadd":
-		fallthrough
-	case "reactdel":
-		if nargs < 2 {
-			stdutil.PrintErr("reactadd/reactdel <message id> <emoji unicode/id>", nil)
+	case "react":
+		if nargs < 3 {
+			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react big <message id> <text>", nil)
 			return
 		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
+		switch strings.ToLower(args[0]) {
+		case "add":
+			fallthrough
+		case "del":
+			if loc.channel == nil {
+				stdutil.PrintErr(tl("invalid.channel"), nil)
+				return
+			}
+			var err error
+			if args[0] == "add" {
+				err = session.MessageReactionAdd(loc.channel.ID, args[1], args[2])
+			} else {
+				err = session.MessageReactionRemove(loc.channel.ID, args[1], args[2], "@me")
+			}
+			if err != nil {
+				stdutil.PrintErr(tl("failed.react"), err)
+				return
+			}
+		case "big":
+			if loc.channel == nil {
+				stdutil.PrintErr(tl("invalid.channel"), nil)
+				return
+			}
 
-		var err error
-		if cmd == "reactadd" {
-			err = session.MessageReactionAdd(loc.channel.ID, args[0], args[1])
-		} else {
-			err = session.MessageReactionRemove(loc.channel.ID, args[0], args[1], "@me")
-		}
-		if err != nil {
-			stdutil.PrintErr(tl("failed.react"), err)
-			return
+			used := ""
+
+			for _, c := range strings.Join(args[2:], " ") {
+				str := string(toEmoji(c))
+
+				if strings.Contains(used, str) {
+					writeln(w, tl("failed.react.used"))
+					continue
+				}
+				used += str
+
+				err := session.MessageReactionAdd(loc.channel.ID, args[1], str)
+				if err != nil {
+					stdutil.PrintErr(tl("failed.react"), err)
+				}
+			}
 		}
 	case "block":
 		if nargs < 1 {
@@ -699,32 +723,6 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			}
 		default:
 			stdutil.PrintErr("friend <add/accept/remove/list> <name>", nil)
-		}
-	case "reactbig":
-		if nargs < 2 {
-			stdutil.PrintErr("reactbig <message id> <text>", nil)
-			return
-		}
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
-			return
-		}
-
-		used := ""
-
-		for _, c := range strings.Join(args[1:], " ") {
-			str := string(toEmoji(c))
-
-			if strings.Contains(used, str) {
-				writeln(w, tl("failed.react.used"))
-				continue
-			}
-			used += str
-
-			err := session.MessageReactionAdd(loc.channel.ID, args[0], str)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.react"), err)
-			}
 		}
 	case "rl":
 		full := nargs >= 1 && strings.EqualFold(args[0], "full")
