@@ -73,7 +73,7 @@ func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs 
 			}
 
 			var err error
-			if cmd == "roleadd" {
+			if args[0] == "add" {
 				err = session.GuildMemberRoleAdd(loc.guild.ID, args[1], args[2])
 			} else {
 				err = session.GuildMemberRoleRemove(loc.guild.ID, args[1], args[2])
@@ -106,7 +106,7 @@ func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs 
 				return
 			}
 
-			value := strings.Join(args[2:], " ")
+			value := strings.Join(args[3:], " ")
 
 			roles, err := session.GuildRoles(loc.guild.ID)
 			if err != nil {
@@ -132,7 +132,7 @@ func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs 
 			perms := role.Permissions
 			mention := role.Mentionable
 
-			switch strings.ToLower(args[1]) {
+			switch strings.ToLower(args[2]) {
 			case "name":
 				name = value
 			case "color":
@@ -161,7 +161,7 @@ func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs 
 					return
 				}
 			default:
-				stdutil.PrintErr(tl("invalid.value"), nil)
+				stdutil.PrintErr(tl("invalid.value")+": "+args[2], nil)
 				return
 			}
 
