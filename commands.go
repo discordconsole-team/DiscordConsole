@@ -781,7 +781,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		returnVal = commandsUserMod(session, cmd, args, nargs, w)
 	case "read", "cinfo", "ginfo", "uinfo":
 		returnVal = commandsQuery(session, cmd, args, nargs, w)
-	case "roles", "roleadd", "roledel", "rolecreate", "roleedit", "roledelete":
+	case "role":
 		returnVal = commandsRoles(session, cmd, args, nargs, w)
 	case "api_start":
 		if apiName != "" {
