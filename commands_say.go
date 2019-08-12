@@ -80,7 +80,6 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 
 	outer:
 		for {
-			replace(parts)
 			msgStr := strings.Join(parts, " ")
 			if source.Terminal && msgStr == "toggle" {
 				toggle = !toggle
@@ -121,7 +120,7 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 
 				color.Unset()
 
-				parts = strings.Fields(text)
+				parts, err = parse(substitute, text)
 				if len(parts) >= 1 {
 					break
 				}

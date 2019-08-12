@@ -25,7 +25,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"unicode"
 
 	"github.com/atotto/clipboard"
 	"github.com/bwmarrin/discordgo"
@@ -58,11 +57,15 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 	if cmd == "" {
 		return
 	}
-	parts := strings.FieldsFunc(cmd, func(c rune) bool {
-		return c != '\n' && unicode.IsSpace(c)
-	})
 
-	cmd = strings.ToLower(parts[0])
+	parts, err := parse(substitute, cmd)
+
+	if err != nil {
+		stdutil.PrintErr(err.Error(), nil)
+		return
+	}
+
+	cmd = parts[0]
 	args := parts[1:]
 
 	returnVal = commandRaw(session, source, cmd, args, w)
@@ -72,7 +75,6 @@ func command(session *discordgo.Session, source commandSource, cmd string, w io.
 func commandRaw(session *discordgo.Session, source commandSource, cmd string, args []string, w io.Writer) (returnVal string) {
 	defer handleCrash()
 	nargs := len(args)
-	replace(args)
 
 	if !source.NoMutex {
 		mutexCommand.Lock()
@@ -1060,51 +1062,44 @@ func msgToString(msg *discordgo.Message) string {
 	return msgc
 }
 
-func replace(args []string) { // We need a way to escape these.
-	for i := range args {
-		if strings.Contains(args[i], "{paste}") {
-			clipboardcontent, err := clipboard.ReadAll()
-			if err != nil {
-				stdutil.PrintErr((tl("failed.paste") + err.Error()), nil)
-				return
-			}
-			replacer := strings.NewReplacer("{paste}", clipboardcontent)
-			args[i] = replacer.Replace(args[i])
+func substitute(args string) (string, bool) {
+	switch args {
+	case "paste":
+		clipboardcontent, err := clipboard.ReadAll()
+		if err != nil {
+			stdutil.PrintErr((tl("failed.paste") + err.Error()), nil)
+			return "", true
 		}
-		if strings.Contains(args[i], "{nl}") {
-			replacer := strings.NewReplacer("{nl}", "\n")
-			args[i] = replacer.Replace(args[i])
-		}
+		return clipboardcontent, true
+	case "s.id":
 		if loc.guild != nil {
-			replacer := strings.NewReplacer(
-				"{s.id}", loc.guild.ID,
-				"{s.owner.id}", loc.guild.OwnerID,
-				"{s.owner.mention}", "<@"+loc.guild.OwnerID+">")
-			args[i] = replacer.Replace(args[i])
-		} else {
-			replacer := strings.NewReplacer(
-				"{s.id}", "nil",
-				"{s.owner.id}", "nil",
-				"{s.owner.mention}", "<@nil>")
-			args[i] = replacer.Replace(args[i])
+			return loc.guild.ID, true
 		}
+		return "nil", true
+	case "s.owner.id":
+		if loc.guild != nil {
+			return loc.guild.OwnerID, true
+		}
+		return "nil", true
+	case "s.owner.mention":
+		if loc.guild != nil {
+			return "<@" + loc.guild.OwnerID + ">", true
+		}
+		return "nil", true
+	case "c.id":
 		if loc.channel != nil {
-			replacer := strings.NewReplacer(
-				"{c.id}", loc.channel.ID,
-				"{u.name}", userObj.Username,
-				"{u.discrim}", userObj.Discriminator,
-				"{u.id}", userObj.ID,
-				"{u.mention}", "<@"+userObj.ID+">")
-			args[i] = replacer.Replace(args[i])
-		} else {
-			replacer := strings.NewReplacer(
-				"{c.id}", "nil",
-				"{u.name}", "nil",
-				"{u.discrim}", "nil",
-				"{u.id}", "nil",
-				"{u.mention}", "<@nil>")
-			args[i] = replacer.Replace(args[i])
+			return loc.channel.ID, true
 		}
+		return "nil", true
+	case "u.name":
+		return userObj.Username, true
+	case "u.discrim":
+		return userObj.Discriminator, true
+	case "u.id":
+		return userObj.ID, true
+	case "u.mention":
+		return "<@" + userObj.ID + ">", true
+	default:
+		return "", false
 	}
-	return
 }
