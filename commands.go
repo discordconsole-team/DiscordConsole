@@ -1062,7 +1062,7 @@ func msgToString(msg *discordgo.Message) string {
 	return msgc
 }
 
-func substitute(args string) (string, bool) { // We need a way to escape these.
+func substitute(args string) (string, bool) {
 	switch args {
 	case "paste":
 		clipboardcontent, err := clipboard.ReadAll()
