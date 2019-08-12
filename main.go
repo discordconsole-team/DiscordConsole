@@ -212,6 +212,7 @@ under certain conditions.`)
 
 	fmt.Println(tl("login.starting"))
 
+	token = strings.ReplaceAll(token, "\"", "")
 	lower := strings.ToLower(token)
 
 	if strings.HasPrefix(lower, "webhook ") {
