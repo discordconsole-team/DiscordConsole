@@ -189,6 +189,7 @@ func commandsRoles(session *discordgo.Session, cmd string, args []string, nargs 
 		default:
 			stdutil.PrintErr("role list/add/rem/create/edit/delete", nil)
 			return
-		}}
+		}
+	}
 	return
 }
