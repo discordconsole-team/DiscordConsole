@@ -37,7 +37,7 @@ import (
 )
 
 const autoRunFile = ".autorun"
-const version = "2.6.0"
+const version = "3.0.0-dev"
 
 var devVersion = strings.Contains(version, "dev")
 
@@ -110,7 +110,7 @@ func main() {
 	var noupdate bool
 	var noautorun bool
 
-	flag.StringVar(&token, "t", "", "Set token. Ignored if -e and/or -p are set.")
+	flag.StringVar(&token, "t", "", "Set token.")
 	flag.StringVar(&langfile, "lang", "en", "Set language. Either a file path, or any of the following: en")
 	flag.StringVar(&help, "lookup", "", "Search in `help` without starting the console")
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.")
@@ -126,6 +126,9 @@ func main() {
 
 	doErrorHook()
 	fmt.Println("DiscordConsole " + version)
+	if devVersion {
+		fmt.Println("This is a pre-release version of DiscordConsole. Please report any bugs on GitHub.")	
+	}
 
 	fmt.Println(`
 Copyright (C) 2019 Mnpn
