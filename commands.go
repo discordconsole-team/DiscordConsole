@@ -452,7 +452,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		loc.push(lastLoc.guild, lastLoc.channel)
 	case "ban":
 		if nargs < 1 {
-			stdutil.PrintErr("ban <user id> <optional description>", nil)
+			stdutil.PrintErr("ban <user id> [description]", nil)
 			return
 		}
 		if loc.guild == nil {
@@ -485,7 +485,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 	case "kick":
 		if nargs < 1 {
-			stdutil.PrintErr("kick <user id> <optional reason>", nil)
+			stdutil.PrintErr("kick <user id> [reason]", nil)
 			return
 		}
 		if loc.guild == nil {
@@ -775,7 +775,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 
 		cacheRead = nil
 		cacheUser = nil
-	case "avatar", "name", "playing", "streaming", "typing", "nick", "status":
+	case "avatar", "name", "playing", "streaming", "typing", "nick", "status", "game":
 		returnVal = commandsUserMod(session, cmd, args, nargs, w)
 	case "read", "cinfo", "ginfo", "uinfo":
 		returnVal = commandsQuery(session, cmd, args, nargs, w)

@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jD91mZM2/stdutil"
@@ -198,6 +199,36 @@ func commandsUserMod(session *discordgo.Session, cmd string, args []string, narg
 			return
 		}
 		writeln(w, tl("status.status"))
+	case "game":
+		if nargs < 2 {
+			stdutil.PrintErr("game <streaming/watching/listening> <name> [details] [extra text]", nil)
+			return
+		}
+		status, ok := typeGames[strings.ToLower(args[0])]
+		if !ok {
+			stdutil.PrintErr(tl("invalid.value"), nil)
+			return
+		}
+		details := ""
+		lt := ""
+		if nargs == 2 {
+			details = args[2]
+		}
+		if nargs == 3 {
+			lt = args[3]
+		}
+		game := &discordgo.Game{
+			Name:       args[1],
+			Details:    details,
+			Type:       status,
+			TimeStamps: discordgo.TimeStamps{StartTimestamp: time.Now().Unix()},
+			Assets:     discordgo.Assets{LargeText: lt},
+		}
+		statusData := discordgo.UpdateStatusData{new(int), game, false, ""}
+		err := session.UpdateStatusComplex(statusData)
+		if err != nil {
+			stdutil.PrintErr(tl("failed.status"), err)
+		}
 	}
 	return
 }

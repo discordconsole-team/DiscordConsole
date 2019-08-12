@@ -72,6 +72,11 @@ var typeStatuses = map[string]discordgo.Status{
 	"dnd":       discordgo.StatusDoNotDisturb,
 	"invisible": discordgo.StatusInvisible,
 }
+var typeGames = map[string]discordgo.GameType{
+	"streaming": discordgo.GameTypeStreaming,
+	"listening": discordgo.GameTypeListening,
+	"watching":  discordgo.GameTypeWatching,
+}
 var typeChannel = map[discordgo.ChannelType]string{
 	discordgo.ChannelTypeDM:            "DM",
 	discordgo.ChannelTypeGroupDM:       "Group",
