@@ -132,8 +132,7 @@ func main() {
 	fmt.Println(`
 Copyright (C) 2019 Mnpn
 This program comes with absolutely no warranty.
-This is free software, and you are welcome to redistribute it
-under certain conditions.`)
+This is free software, and you are welcome to redistribute it under certain conditions.`)
 
 	loadLangAuto(langfile)
 
@@ -202,7 +201,8 @@ under certain conditions.`)
 		fmt.Println(tl("login.hidden"))
 	}
 
-	if strings.Contains(token, "{paste}") {
+	// Very unlikely someone's token is ever going to ever be ${paste}.
+	if strings.Contains(token, "${paste}") {
 		clipboardcontent, err := clipboard.ReadAll()
 		if err != nil {
 			stdutil.PrintErr((tl("failed.paste") + err.Error()), nil)
