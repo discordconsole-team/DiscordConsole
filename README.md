@@ -39,7 +39,7 @@ token, just type `<token>` in the terminal. If it's a user token,
 enter `user <token>`. If it's a webhook, enter `webhook <link>.`
 
 Then, just press enter! You'll get the following screen:
-![Picture](https://i.imgur.com/RySapXY.png)
+![Picture](https://i.imgur.com/tnurMPA.png)
 
 Try to type something like `help` and let the magic happen! For a
 detailed review of each command, type `help command`.
