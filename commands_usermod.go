@@ -211,10 +211,10 @@ func commandsUserMod(session *discordgo.Session, cmd string, args []string, narg
 		}
 		details := ""
 		lt := ""
-		if nargs == 2 {
+		if nargs > 2 {
 			details = args[2]
 		}
-		if nargs == 3 {
+		if nargs > 3 {
 			lt = args[3]
 		}
 		game := &discordgo.Game{
