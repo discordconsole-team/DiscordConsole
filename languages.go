@@ -224,6 +224,8 @@ invalid.command=Unknown command:
 invalid.command2=Do 'help' for help.
 invalid.source.terminal=You must be in terminal to do this.
 invalid.not.owner=You're not the server owner!
+invalid.substitute=Invalid substitute
+invalid.unmatched.quote=Unmatched quote in input string
 
 login.token=Please paste your 'token' here.
 login.token.user=User tokens are prefixed with 'user '

@@ -126,7 +126,7 @@ func main() {
 	doErrorHook()
 	fmt.Println("DiscordConsole " + version)
 	if devVersion {
-		fmt.Println("This is a pre-release version of DiscordConsole. Please report any bugs on GitHub.")	
+		fmt.Println("This is a pre-release version of DiscordConsole. Please report any bugs on GitHub.")
 	}
 
 	fmt.Println(`
