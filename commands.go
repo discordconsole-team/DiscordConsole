@@ -173,7 +173,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 
 		loadLangAuto(args[0])
-	case "guilds", "guild", "channels", "pchannels", "vchannels",
+	case "guilds", "guild", "servers", "server", "channels", "pchannels", "vchannels",
 		"channel", "dm", "bookmarks", "bookmark", "go":
 		returnVal = commandsNavigate(session, cmd, args, nargs, w)
 	case "say", "tts", "embed", "quote", "big", "file", "edit",

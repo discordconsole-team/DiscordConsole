@@ -29,7 +29,7 @@ import (
 
 func commandsNavigate(session *discordgo.Session, cmd string, args []string, nargs int, w io.Writer) (returnVal string) {
 	switch cmd {
-	case "guilds":
+	case "guilds", "servers":
 		cache, ok := <-chanReady
 		if !ok && cacheGuilds != nil {
 			mutexCacheGuilds.RLock()
@@ -72,9 +72,9 @@ func commandsNavigate(session *discordgo.Session, cmd string, args []string, nar
 		}
 
 		writeln(w, table.String())
-	case "guild":
+	case "guild", "server":
 		if nargs < 1 {
-			stdutil.PrintErr("guild <id>", nil)
+			stdutil.PrintErr(cmd+" <id>", nil)
 			return
 		}
 
