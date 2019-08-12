@@ -2,8 +2,7 @@
 
 > DiscordConsole is software aiming to give you full control over accounts, bots and webhooks!
 
-**Note: Current version of DiscordConsole is messy and is therefore being rewritten.
-Sadly the rewrite is stuck because of an upstream dependency.**
+The rewrite branch has been indefinitely put on hold. The regular Go version is still maintained.
 
 ### Table of Contents
 
@@ -21,27 +20,27 @@ Or compile it yourself: `go get github.com/discordconsole-team/DiscordConsole`, 
 
 ### Usage
 
-It is recommended to run DiscordConsole in a Terminal. To do that, just `cd` to the folder you extracted it and run it by typing `DiscordConsole`. There are a few launch options. You can display them by running DiscordConsole with `-h`.
+It is recommended to run DiscordConsole in a terminal. To do that, just `cd` to the folder you extracted it and run it by typing `DiscordConsole`. There are a few launch options. You can display them by running DiscordConsole with `-h`.
 
 When starting the DiscordConsole in Windows for the first time, you might get a screen saying that Windows SmartScreen prevented an unrecognized app from starting. Just click **More Info** and then **Run anyway**.
 
-Once started, you'll get asked to fill in your token. If you don't know how to get it, check [this wiki page](https://discordconsole-team.github.io/Wiki/wiki.html).
-For the first setup, we will use an user account. Setups with bot accounts and webhook are explained on the [wiki](https://discordconsole-team.github.io/Wiki/wiki.html) as well.
+Once started, you'll get asked to fill in your token.
+If it's a bot token, just type `<token>` in the terminal.
+If it's a user token, enter `user <token>`.
+If it's a webhook, enter `webhook <link>.`
 
-Once you got your token, just type `user <token>` in the terminal. You'll get the following screen:
-![Picture](https://i.imgur.com/KPCVmlH.png)
+Then, just press enter! You'll get the following screen:
+![Picture](https://i.imgur.com/RySapXY.png)
 
 Try to type something like `help` and let the magic happen! For a detailed review of each command, type `help command`.
 
-**Don't want to go through all of this? Check our [Beta Launcher](https://github.com/discordconsole-team/DConsoleLauncher)!**
-
 ### Credits
 
-DiscordConsole was founded and written by [LEGOlord208/jD91mZM2](https://github.com/jD91mZM2), maintained by [Mnpn](https://github.com/Mnpn03) since Mid-September of 2017, and has gotten documentation improvments by [Parallaχ](https://github.com/NegativeCoffee).
+DiscordConsole was founded and written by [LEGOlord208/jD91mZM2](https://github.com/jD91mZM2) and has seen continued development by maintainer [Mnpn](https://github.com/Mnpn03) since mid-September of 2017. You can find a full list of contributors [here](https://github.com/discordconsole-team/DiscordConsole/graphs/contributors).
 
 ### Contribute
 
-Feel free to submit a Pull Request! Not a developer, but want to be involved in the project? Send us some suggestions through issues or leave feedback on our [official Discord server](https://discord.gg/xvQV8bT).
+Feel free to submit a pull request! Not a developer, but want to be involved in the project? Send us some suggestions through issues or leave feedback on our [official Discord server](https://discord.gg/xvQV8bT).
 
 ### License
 
