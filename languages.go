@@ -103,7 +103,7 @@ func loadLangDefault() {
 // Here is just some long data.
 // This comment is a separator, btw.
 
-// English by jD91mZM2
+// English by jD91mZM2 & Mnpn
 var langEn = `
 update.checking=Checking for updates...
 update.error=Error checking for updates
@@ -180,7 +180,6 @@ failed.react.used=Emoji used already, skipping
 failed.webrequest=Could not make web request
 failed.avatar=Couldn't set avatar
 failed.status=Could not set status
-failed.api.start=Couldn't start API
 failed.mfa=The account has 2FA enabled. Consider using a user token instead
 failed.permcalc=Could not open PermCalc (permission calculator)
 failed.nochannel=Server does not have a channel
@@ -223,8 +222,6 @@ invalid.bookmark=Bookmark doesn't exist
 invalid.status.offline=The offline status exists, but cannot be set through the API
 invalid.command=Unknown command:
 invalid.command2=Do 'help' for help.
-invalid.api.started=API already started
-invalid.api.notstarted=API not started
 invalid.source.terminal=You must be in terminal to do this.
 invalid.not.owner=You're not the server owner!
 
@@ -250,7 +247,6 @@ status.loading=Loading...
 status.avatar=Avatar set!
 status.name=Name set!
 status.status=Status set!
-status.api.start=API started:
 
 rl.session=Restarting session...
 rl.cache.loc=Reloading location cache...
@@ -466,7 +462,6 @@ failed.react.used=Emoji ya usado, omitiendo
 failed.webrequest=No se ha podido hacer la solicitud de web
 failed.avatar=No se ha podido establecer el avatar.
 failed.status=No se ha podido establecer el estatus.
-failed.api.start=No se ha podido iniciar la API
 failed.mfa=La cuenta tiene la Verificación en Dos Pasos activada. Use un token de usuario en su lugar.
 failed.permcalc=No se ha podido abrir PermCalc (calculador de permisos)
 failed.nochannel=El servidor no tiene un canal.
@@ -499,8 +494,6 @@ invalid.bookmark=No existe el marcador
 invalid.status.offline=El estatus desconectado existe, pero no se puede enviar a través de la API
 invalid.command=Comando desconocido:
 invalid.command2=Escribe 'help' para obtener ayuda.
-invalid.api.started=La API ya ha sido inicializada
-invalid.api.notstarted=API no inicializada
 invalid.source.terminal=Debes estar en la terminal para hacer esto.
 invalid.not.owner=¡No eres el propietario del servidor!
 
@@ -526,7 +519,6 @@ status.loading=Cargando...
 status.avatar=¡Avatar establecido!
 status.name=¡Nombre establecido!
 status.status=¡Estatus establecido!
-status.api.start=API iniciada:
 
 rl.session=Reiniciando sesión...
 rl.cache.loc=Recargando el caché del servidor actual...

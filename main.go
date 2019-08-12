@@ -70,7 +70,6 @@ func main() {
 	defer func() {
 		closing = true
 
-		apiStop()
 		playing = ""
 		if vc != nil {
 			vc.Disconnect()

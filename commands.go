@@ -781,45 +781,6 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		returnVal = commandsQuery(session, cmd, args, nargs, w)
 	case "role":
 		returnVal = commandsRoles(session, cmd, args, nargs, w)
-	case "api_start":
-		if apiName != "" {
-			stdutil.PrintErr(tl("invalid.api.started"), nil)
-			return
-		}
-
-		var name string
-		if nargs >= 1 {
-			name = strings.Join(args, " ")
-			go apiStartName(session, name)
-		} else {
-			var err error
-			name, err = apiStart(session)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.api.start"), err)
-				return
-			}
-		}
-		writeln(w, tl("status.api.start")+" "+name)
-		returnVal = name
-	case "broadcast":
-		if nargs < 1 {
-			stdutil.PrintErr("broadcast <command>", nil)
-			return
-		}
-		if apiName == "" {
-			stdutil.PrintErr(tl("invalid.api.notstarted"), nil)
-			return
-		}
-
-		err := apiSend(strings.Join(args, " "))
-		if err != nil {
-			stdutil.PrintErr(tl("failed.generic"), err)
-			return
-		}
-		source.NoMutex = true
-		return commandRaw(session, source, args[0], args[1:], w)
-	case "api_stop":
-		apiStop()
 	case "region":
 		if nargs < 1 {
 			stdutil.PrintErr("region list OR region set <region>", nil)
