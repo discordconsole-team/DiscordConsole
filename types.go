@@ -59,6 +59,15 @@ var typeVerifications = map[discordgo.VerificationLevel]string{
 	discordgo.VerificationLevelMedium: "Medium",
 	discordgo.VerificationLevelHigh:   "High",
 }
+var typeContentFilter = map[discordgo.ExplicitContentFilterLevel]string{
+	discordgo.ExplicitContentFilterDisabled:			"Off",
+	discordgo.ExplicitContentFilterMembersWithoutRoles:	"Members without roles",
+	discordgo.ExplicitContentFilterAllMembers:			"All",
+}
+var typeMfa = map[discordgo.MfaLevel]string{
+	discordgo.MfaLevelNone:		"Off",
+	discordgo.MfaLevelElevated:	"On",
+}
 var typeMessages = map[string]int{
 	"all":      messagesAll,
 	"mentions": messagesMentions,

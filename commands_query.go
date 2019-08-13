@@ -203,9 +203,15 @@ func guild2array(guild *discordgo.Guild) []*keyval {
 		&keyval{"Icon", guild.Icon},
 		&keyval{"Region", guild.Region},
 		&keyval{"Owner", guild.OwnerID},
-		&keyval{"Splash", guild.Splash},
+		&keyval{"Join messages", guild.SystemChannelID},
+		&keyval{"Widget channel", guild.WidgetChannelID},
+		&keyval{"AFK channel", guild.AfkChannelID},
+		&keyval{"AFK timeout", strconv.Itoa(guild.AfkTimeout)},
 		&keyval{"Members", strconv.Itoa(guild.MemberCount)},
-		&keyval{"Level", typeVerifications[guild.VerificationLevel]},
+		&keyval{"Verification", typeVerifications[guild.VerificationLevel]},
+		&keyval{"Admin MFA", typeMfa[guild.MfaLevel]},
+		&keyval{"Explicit Content Filter", typeContentFilter[guild.ExplicitContentFilter]},
+		&keyval{"Unavailable", strconv.FormatBool(guild.Unavailable)},
 	}
 }
 
@@ -230,6 +236,7 @@ func user2array(user *discordgo.User) []*keyval {
 		&keyval{"Email", user.Email},
 		&keyval{"Name", user.Username},
 		&keyval{"Discrim", user.Discriminator},
+		&keyval{"Locale", user.Locale},
 		&keyval{"Avatar", user.Avatar},
 		&keyval{"Avatar URL", user.AvatarURL("1024")},
 		&keyval{"Verified", strconv.FormatBool(user.Verified)},
