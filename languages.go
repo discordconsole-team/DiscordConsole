@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 // TRANSLATORS:
-// - Swedish, Mnpn03
+// - English, jD91mZM2 & Mnpn
+// - Swedish, Mnpn
 // - Spanish, ArceCreeper
 package main
 
