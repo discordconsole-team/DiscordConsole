@@ -216,6 +216,11 @@ func chan2array(channel *discordgo.Channel) []*keyval {
 		&keyval{"Name", channel.Name},
 		&keyval{"Topic", channel.Topic},
 		&keyval{"Type", typeChannel[channel.Type]},
+		&keyval{"NSFW", strconv.FormatBool(channel.NSFW)},
+		&keyval{"Parent category", channel.ParentID},
+		&keyval{"Last message", channel.LastMessageID},
+		&keyval{"Bitrate", strconv.Itoa(channel.Bitrate)},
+		&keyval{"User limit", strconv.Itoa(channel.UserLimit)},
 	}
 }
 
