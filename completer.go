@@ -111,6 +111,11 @@ func setCompleter(rl *readline.Instance) {
 			readline.PcItem("vchannel"),
 			readline.PcItem("guild"),
 		),
+		readline.PcItem("delete",
+			readline.PcItem("guild"),
+			readline.PcItem("channel"),
+			readline.PcItem("category"),
+		),
 	)
 }
 func bookmarkTab(line string) []string {

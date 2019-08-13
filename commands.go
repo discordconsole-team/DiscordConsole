@@ -962,7 +962,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 	case "new":
 		if nargs < 2 {
-			stdutil.PrintErr("new <channel/vchannel/guild> <name>", nil)
+			stdutil.PrintErr("new <channel/vchannel/guild/category> <name>", nil)
 			return
 		}
 		switch strings.ToLower(args[0]) {
@@ -995,34 +995,44 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				return
 			}
 			fmt.Println(tl("information.channel") + args[1] + tl("information.created.successfully") + vc.ID + ".")
+		case "category":
+			if loc.guild == nil {
+				stdutil.PrintErr(tl("invalid.guild"), nil)
+				return
+			}
+			c, err := session.GuildChannelCreate(loc.guild.ID, args[1], discordgo.ChannelTypeGuildCategory)
+			if err != nil {
+				stdutil.PrintErr(tl("failed.category.create"), err)
+				return
+			}
+			fmt.Println(tl("information.category") + args[1] + tl("information.created.successfully") + c.ID + ".")
 		default:
-			stdutil.PrintErr("new <channel/vchannel/guild> <name>", nil)
+			stdutil.PrintErr("new <channel/vchannel/guild/category> <name>", nil)
 		}
-	case "channeldelete":
-		if nargs < 1 {
-			stdutil.PrintErr("channeldelete <channel id>", nil)
+	case "delete":
+		if nargs < 2 {
+			stdutil.PrintErr("delete <guild/channel/category> <id>", nil)
 			return
 		}
-		_, err := session.ChannelDelete(args[0])
-		if err != nil {
-			stdutil.PrintErr(tl("failed.channel.delete"), err)
-			return
+		switch strings.ToLower(args[0]) {
+		case "channel", "category":
+			_, err := session.ChannelDelete(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.channel.delete"), err)
+				return
+			}
+			fmt.Println(tl("information.channel") + args[1] + tl("information.deleted.successfully"))
+		case "guild":
+			_, err := session.GuildDelete(args[1])
+			if err != nil {
+				stdutil.PrintErr(tl("failed.guild.delete"), err)
+				return
+			}
+			fmt.Println(tl("information.guild") + args[1] + tl("information.deleted.successfully"))
 		}
-		fmt.Println(tl("information.channel") + args[0] + tl("information.deleted.successfully"))
-	case "guilddelete":
-		if nargs < 1 {
-			stdutil.PrintErr("guilddelete <guild id>", nil)
-			return
-		}
-		_, err := session.GuildDelete(args[0])
-		if err != nil {
-			stdutil.PrintErr(tl("failed.guild.delete"), err)
-			return
-		}
-		fmt.Println(tl("information.channel") + args[0] + tl("information.deleted.successfully"))
 	case "move":
 		if nargs < 2 {
-			stdutil.PrintErr("move <user ID> <vchannel ID>", nil)
+			stdutil.PrintErr("move <user id> <vchannel id>", nil)
 			return
 		}
 		if loc.guild == nil {
