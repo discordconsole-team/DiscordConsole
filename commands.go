@@ -652,6 +652,8 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 					stdutil.PrintErr(tl("failed.react"), err)
 				}
 			}
+		default:
+			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react big <message id> <text>", nil)
 		}
 	case "block":
 		if nargs < 1 {
@@ -779,7 +781,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		cacheUser = nil
 	case "avatar", "name", "playing", "streaming", "typing", "nick", "status", "game":
 		returnVal = commandsUserMod(session, cmd, args, nargs, w)
-	case "read", "cinfo", "ginfo", "uinfo":
+	case "read", "info":
 		returnVal = commandsQuery(session, cmd, args, nargs, w)
 	case "role":
 		returnVal = commandsRoles(session, cmd, args, nargs, w)

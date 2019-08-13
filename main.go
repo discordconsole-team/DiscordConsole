@@ -348,6 +348,10 @@ func printMessage(session *discordgo.Session, msg *discordgo.Message, prefixR bo
 	if prefixR {
 		s += "\r"
 	}
+	t, err := timestamp(msg)
+	if err == nil {
+		s += t + " - "
+	}
 	s += "("
 
 	if isPrivate(channel) {

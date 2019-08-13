@@ -107,90 +107,99 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 		if returnVal != "" {
 			writeln(w, returnVal)
 		}
-	case "cinfo":
-		if loc.channel == nil {
-			stdutil.PrintErr(tl("invalid.channel"), nil)
+	case "info":
+		if nargs < 1 {
+			stdutil.PrintErr("info <user/guild/channel> (for user: <id/@me>) [property] (or info u/g/c)", nil)
 			return
 		}
-
-		values := chan2array(loc.channel)
-
-		if nargs < 1 {
-			for _, keyval := range values {
-				writeln(w, keyval.String())
-			}
-		} else {
-			var ok bool
-			returnVal, ok = findValByKey(values, args[0])
-			if !ok {
-				stdutil.PrintErr(tl("invalid.value"), nil)
+		switch strings.ToLower(args[0]) {
+		case "channel", "c":
+			if loc.channel == nil {
+				stdutil.PrintErr(tl("invalid.channel"), nil)
 				return
 			}
 
-			writeln(w, returnVal)
-		}
-	case "ginfo":
-		if loc.guild == nil {
-			stdutil.PrintErr(tl("invalid.guild"), nil)
-			return
-		}
+			values := chan2array(loc.channel)
 
-		values := guild2array(loc.guild)
+			if nargs < 2 {
+				for _, keyval := range values {
+					writeln(w, keyval.String())
+				}
+			} else {
+				var ok bool
+				returnVal, ok = findValByKey(values, args[1])
+				if !ok {
+					stdutil.PrintErr(tl("invalid.value"), nil)
+					return
+				}
 
-		if nargs < 1 {
-			for _, keyval := range values {
-				writeln(w, keyval.String())
+				writeln(w, returnVal)
 			}
-		} else {
-			var ok bool
-			returnVal, ok = findValByKey(values, args[0])
-			if !ok {
-				stdutil.PrintErr(tl("invalid.value"), nil)
+		case "guild", "g":
+			if loc.guild == nil {
+				stdutil.PrintErr(tl("invalid.guild"), nil)
 				return
 			}
 
-			writeln(w, returnVal)
-		}
-	case "uinfo":
-		if nargs < 1 {
-			stdutil.PrintErr("uinfo <id> [property]", nil)
-			return
-		}
-		id := args[0]
-		var keyvals []*keyval
+			values := guild2array(loc.guild)
 
-		if strings.EqualFold(id, "cache") {
-			if cacheUser == nil {
-				stdutil.PrintErr(tl("invalid.cache"), nil)
+			if nargs < 2 {
+				for _, keyval := range values {
+					writeln(w, keyval.String())
+				}
+			} else {
+				var ok bool
+				returnVal, ok = findValByKey(values, args[1])
+				if !ok {
+					stdutil.PrintErr(tl("invalid.value"), nil)
+					return
+				}
+
+				writeln(w, returnVal)
+			}
+		case "user", "u":
+			if nargs < 2 {
+				stdutil.PrintErr("info user/u <id/@me> [property]", nil)
 				return
 			}
+			id := args[1]
+			var keyvals []*keyval
 
-			keyvals = cacheUser
-		} else {
+			if strings.EqualFold(id, "cache") {
+				if cacheUser == nil {
+					stdutil.PrintErr(tl("invalid.cache"), nil)
+					return
+				}
 
-			user, err := session.User(id)
-			if err != nil {
-				stdutil.PrintErr(tl("failed.user"), err)
-				return
+				keyvals = cacheUser
+			} else {
+
+				user, err := session.User(id)
+				if err != nil {
+					stdutil.PrintErr(tl("failed.user"), err)
+					return
+				}
+
+				keyvals = user2array(user)
+				cacheUser = keyvals
 			}
 
-			keyvals = user2array(user)
-			cacheUser = keyvals
-		}
+			if nargs < 3 {
+				for _, keyval := range keyvals {
+					writeln(w, keyval.String())
+				}
+			} else {
+				var ok bool
+				returnVal, ok = findValByKey(keyvals, args[2])
+				if !ok {
+					stdutil.PrintErr(tl("invalid.value"), nil)
+					return
+				}
 
-		if nargs < 2 {
-			for _, keyval := range keyvals {
-				writeln(w, keyval.String())
+				writeln(w, returnVal)
 			}
-		} else {
-			var ok bool
-			returnVal, ok = findValByKey(keyvals, args[1])
-			if !ok {
-				stdutil.PrintErr(tl("invalid.value"), nil)
-				return
-			}
-
-			writeln(w, returnVal)
+		default:
+			stdutil.PrintErr("info <user/guild/channel> (for user: <id/@me>) [property] (or info u/g/c)", nil)
 		}
 	}
 	return
