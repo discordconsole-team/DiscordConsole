@@ -1091,15 +1091,17 @@ func substitute(args string) (string, bool) {
 			return loc.channel.ID, true
 		}
 		return "nil", true
+	// Webhooks don't have access to this info and would crash the program.
 	case "u.name":
-		return userObj.Username, true
+		if userType != typeWebhook { return userObj.Username, true }
 	case "u.discrim":
-		return userObj.Discriminator, true
+		if userType != typeWebhook { return userObj.Discriminator, true }
 	case "u.id":
-		return userObj.ID, true
+		if userType != typeWebhook { return userObj.ID, true }
 	case "u.mention":
-		return "<@" + userObj.ID + ">", true
+		if userType != typeWebhook { return "<@" + userObj.ID + ">", true }
 	default:
 		return "", false
 	}
+	return "", false
 }

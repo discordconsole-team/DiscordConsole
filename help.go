@@ -56,9 +56,7 @@ func printHelp(search string) {
 	}
 	help = append(help, "say <stuff>\tSend a message in your selected channel. `say toggle` starts chat-mode, and `toggle` ends it.")
 	if userType != typeWebhook {
-		help = append(help, "{Placeholders}:\tReplaces e.g. {u.name} with "+userObj.Username+".")
-	} else {
-		help = append(help, "{Placeholders}:\tReplaces e.g. {u.name} with Webhook.")
+		help = append(help, "${Placeholders}:\tReplaces e.g. ${u.name} with "+userObj.Username+".")
 	}
 	help = append(help, "sayfile <path>\tSend the contents of a file (auto-splitted).")
 	help = append(help, "big <stuff>\tSend a message, but attempt to make it using emojis!")
