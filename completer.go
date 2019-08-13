@@ -30,6 +30,14 @@ func setCompleter(rl *readline.Instance) {
 			}
 			return names
 		})),
+		// please let me know if I can skip repeating this twice
+		readline.PcItem("server", readline.PcItemDynamic(func(name string) []string {
+			names := make([]string, len(cacheGuilds))
+			for i, g := range cacheGuilds {
+				names[i] = g.Name
+			}
+			return names
+		})),
 		readline.PcItem("channel", readline.PcItemDynamic(func(name string) []string {
 			names := make([]string, len(cacheChannels))
 			for i, c := range cacheChannels {
@@ -44,6 +52,8 @@ func setCompleter(rl *readline.Instance) {
 		readline.PcItem("react",
 			readline.PcItem("add", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
 			readline.PcItem("del", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
+			readline.PcItem("big", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
+			readline.PcItem("delall", readline.PcItemDynamic(singleValue(&lastUsedMsg))),
 		),
 
 		readline.PcItem("role",

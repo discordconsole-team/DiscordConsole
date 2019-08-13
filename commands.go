@@ -608,34 +608,42 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		}
 		playing = ""
 	case "react":
-		if nargs < 3 {
-			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react big <message id> <text>", nil)
+		if nargs < 2 {
+			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react delall <message id> OR react big <message id> <text>", nil)
+			return
+		}
+		if loc.channel == nil {
+			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
 		switch strings.ToLower(args[0]) {
 		case "add":
 			fallthrough
 		case "del":
-			if loc.channel == nil {
-				stdutil.PrintErr(tl("invalid.channel"), nil)
+			if nargs < 3 {
+				stdutil.PrintErr("react add/del <message id> <emoji unicode/id>", nil)
 				return
 			}
-			var err error
 			if args[0] == "add" {
-				err = session.MessageReactionAdd(loc.channel.ID, args[1], args[2])
+				err := session.MessageReactionAdd(loc.channel.ID, args[1], args[2])
+				if err != nil {
+					stdutil.PrintErr(tl("failed.react"), err)
+					return
+				}
 			} else {
-				err = session.MessageReactionRemove(loc.channel.ID, args[1], args[2], "@me")
+				err := session.MessageReactionRemove(loc.channel.ID, args[1], args[2], "@me")
+				if err != nil {
+					stdutil.PrintErr(tl("failed.react.del"), err)
+					return
+				}
 			}
+		case "delall":
+			err := session.MessageReactionsRemoveAll(loc.channel.ID, args[1])
 			if err != nil {
-				stdutil.PrintErr(tl("failed.react"), err)
+				stdutil.PrintErr(tl("failed.react.delall"), err)
 				return
 			}
 		case "big":
-			if loc.channel == nil {
-				stdutil.PrintErr(tl("invalid.channel"), nil)
-				return
-			}
-
 			used := ""
 
 			for _, c := range strings.Join(args[2:], " ") {
@@ -653,7 +661,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				}
 			}
 		default:
-			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react big <message id> <text>", nil)
+			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react delall <message id> OR react big <message id> <text>", nil)
 		}
 	case "block":
 		if nargs < 1 {
