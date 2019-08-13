@@ -385,11 +385,11 @@ func handleCrash() {
 		}
 
 		// No translations here. We want to be as safe as possible.
-		stdutil.PrintErr("DiscordConsole has crashed.", nil)
+		stdutil.PrintErr("DiscordConsole " + version + " has crashed.", nil)
 		stdutil.PrintErr("Please tell the DiscordConsole team what you did to cause this.", nil)
 		stdutil.PrintErr("https://mnpn.me/contact, https://discord.gg/xvQV8bT,", nil)
 		stdutil.PrintErr("https://github.com/discordconsole-team/discordconsole/issues", nil)
-		stdutil.PrintErr("Error Details: "+fmt.Sprint(val)+", version "+version, nil)
+		stdutil.PrintErr("Error Details: "+fmt.Sprint(val), nil)
 	}
 }
 
