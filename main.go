@@ -110,7 +110,7 @@ func main() {
 	var noautorun bool
 
 	flag.StringVar(&token, "t", "", "Set token.")
-	flag.StringVar(&langfile, "lang", "en", "Set language. Either a file path, or any of the following: en")
+	flag.StringVar(&langfile, "lang", "en", "Set language. Either a file path, or any of the following: en, sv, es")
 	flag.StringVar(&help, "lookup", "", "Search in `help` without starting the console")
 	flag.Var(&commands, "x", "Pre-execute command. Can use flag multiple times.")
 

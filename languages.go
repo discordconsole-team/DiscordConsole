@@ -52,8 +52,8 @@ func loadLangAuto(langfile string) {
 		loadLangDefault()
 	case "sv":
 		loadLangString(langSv)
-	case "sp":
-		loadLangString(langSp)
+	case "es":
+		loadLangString(langEs)
 	default:
 		reader, err := os.Open(langfile)
 		if err != nil {
@@ -402,7 +402,7 @@ console.=konsoll.
 `
 
 // Spanish by ArceCreeper
-var langSp = `
+var langEs = `
 update.checking=Buscando actualizaciones...
 update.error=Error al buscar actualizaciones.
 update.available=¡Actualización disponible! Versión
