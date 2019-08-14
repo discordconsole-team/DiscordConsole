@@ -208,7 +208,7 @@ This is free software, and you are welcome to redistribute it under certain cond
 			stdutil.PrintErr((tl("failed.paste") + err.Error()), nil)
 			return
 		}
-		replacer := strings.NewReplacer("{paste}", clipboardcontent)
+		replacer := strings.NewReplacer("${paste}", clipboardcontent)
 		token = replacer.Replace(token)
 	}
 
