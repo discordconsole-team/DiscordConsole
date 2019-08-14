@@ -19,8 +19,5 @@ fix-dgo:
 cross-compile:
     #!/usr/bin/env sh
 
-    # This requires a script only I, Mnpn, have.
-    # This will not work for you.
-    # pls ignore.
     cd "$GOPATH/bin"
-    ./Cross\ Compile.sh DiscordConsole discordconsole-team
+    ./CrossCompile.sh DiscordConsole discordconsole-team
