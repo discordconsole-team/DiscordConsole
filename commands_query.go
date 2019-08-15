@@ -109,7 +109,7 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 		}
 	case "info":
 		if nargs < 1 {
-			stdutil.PrintErr("info <user/guild/channel> (for user: <id/@me>) [property] (or info u/g/c)", nil)
+			stdutil.PrintErr("info <user/guild/channel/settings> (for user: <id/@me>) [property] (or info u/g/c/s)", nil)
 			return
 		}
 		switch strings.ToLower(args[0]) {
@@ -198,8 +198,34 @@ func commandsQuery(session *discordgo.Session, cmd string, args []string, nargs 
 
 				writeln(w, returnVal)
 			}
+		case "settings", "s":
+			if userType == typeBot {
+				stdutil.PrintErr(tl("invalid.onlyfor.users"), nil)
+				return
+			}
+			settings, err := session.UserSettings()
+			if err != nil {
+				stdutil.PrintErr(tl("failed.settings"), err)
+				return
+			}
+			values := settings2array(settings)
+
+			if nargs < 2 {
+				for _, keyval := range values {
+					writeln(w, keyval.String())
+				}
+			} else {
+				var ok bool
+				returnVal, ok = findValByKey(values, args[1])
+				if !ok {
+					stdutil.PrintErr(tl("invalid.value"), nil)
+					return
+				}
+
+				writeln(w, returnVal)
+			}
 		default:
-			stdutil.PrintErr("info <user/guild/channel> (for user: <id/@me>) [property] (or info u/g/c)", nil)
+			stdutil.PrintErr("info <user/guild/channel/settings> (for user: <id/@me>) [property] (or info u/g/c/s)", nil)
 		}
 	}
 	return
@@ -245,12 +271,27 @@ func user2array(user *discordgo.User) []*keyval {
 		&keyval{"Email", user.Email},
 		&keyval{"Name", user.Username},
 		&keyval{"Discrim", user.Discriminator},
-		&keyval{"Locale", user.Locale},
 		&keyval{"Avatar", user.Avatar},
 		&keyval{"Avatar URL", user.AvatarURL("1024")},
 		&keyval{"Verified", strconv.FormatBool(user.Verified)},
 		&keyval{"MFA Enabled", strconv.FormatBool(user.MFAEnabled)},
 		&keyval{"Bot", strconv.FormatBool(user.Bot)},
+	}
+}
+
+func settings2array(settings *discordgo.Settings) []*keyval {
+	return []*keyval{
+		&keyval{"Theme", settings.Theme},
+		&keyval{"Compact", strconv.FormatBool(settings.MessageDisplayCompact)},
+		&keyval{"Locale", settings.Locale},
+		&keyval{"TTS", strconv.FormatBool(settings.EnableTtsCommand)},
+		&keyval{"Convert emotes", strconv.FormatBool(settings.ConvertEmoticons)},
+		&keyval{"Attachments", strconv.FormatBool(settings.InlineAttachmentMedia)},
+		&keyval{"Media embeds", strconv.FormatBool(settings.InlineEmbedMedia)},
+		&keyval{"Show embeds", strconv.FormatBool(settings.RenderEmbeds)},
+		&keyval{"Show current game", strconv.FormatBool(settings.ShowCurrentGame)},
+		&keyval{"Dev mode", strconv.FormatBool(settings.DeveloperMode)},
+		&keyval{"Platform accounts", strconv.FormatBool(settings.DetectPlatformAccounts)},
 	}
 }
 

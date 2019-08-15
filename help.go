@@ -45,7 +45,7 @@ func printHelp(search string) {
 		help = append(help, "")
 		help = append(help, "region <list/set> (<region>)\tSet current guild region.")
 		help = append(help, "")
-		help = append(help, "info <user/guild/channel> (for user: <id/@me>) [property] (or info u/g/c)\tGet information about a user, server or channel!")
+		help = append(help, "info <user/guild/channel/settings> (for user: <id/@me>) [property] (or info u/g/c/s)\tGet information about a user, server, channel or your set Discord settings!")
 		help = append(help, "read <message id> [property]\tRead or get info from a message. Properties: (empty), text, channel, timestamp, author, "+
 			"author_email, author_name, author_avatar, author_bot, embed; 'cache' may be used as message ID.")
 		help = append(help, "pin <message id>\tPin a message to the current channel.")
