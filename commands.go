@@ -522,6 +522,14 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("invalid.guild"), nil)
 			return
 		}
+		arg := ""
+		if nargs > 0 {
+			arg = strings.ToLower(args[0])
+			if arg != "text" {
+				stdutil.PrintErr("bans [text]", nil)
+				return
+			}
+		}
 
 		bans, err := session.GuildBans(loc.guild.ID)
 		if err != nil {
@@ -529,15 +537,36 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 
-		table := gtable.NewStringTable()
-		table.AddStrings("User ID", "Username", "Reason")
+		if nargs < 1 {
+			lengthNotify := false
+			table := gtable.NewStringTable()
+			table.AddStrings("User ID", "Username", "Reason")
 
-		for _, ban := range bans {
-			table.AddRow()
-			table.AddStrings(ban.User.ID, ban.User.Username, ban.Reason)
+			for _, ban := range bans {
+				reason := ban.Reason
+				if len(reason) > 100 {
+					reason = reason[0:100] + "..."
+					lengthNotify = true
+				}
+				table.AddRow()
+				table.AddStrings(ban.User.ID, ban.User.Username, reason)
+			}
+
+			writeln(w, table.String())
+			if lengthNotify {
+				fmt.Println(tl("information.length") + " \"bans text\".")
+			}
+		} else if arg == "text" { // only reason that this exists is because gtable can break if the reason is too long
+			for _, ban := range bans {
+				reason := ""
+				if ban.Reason != "" {
+					reason = "): " + ban.Reason
+				} else {
+					reason = ")"
+				}
+				writeln(w, ban.User.Username + "#" + ban.User.Discriminator + " (" + ban.User.ID + reason + "\n")
+			}
 		}
-
-		writeln(w, table.String())
 	case "nickall":
 		if loc.guild == nil {
 			stdutil.PrintErr(tl("invalid.guild"), nil)
