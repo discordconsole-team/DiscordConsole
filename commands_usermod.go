@@ -199,7 +199,7 @@ func commandsUserMod(session *discordgo.Session, cmd string, args []string, narg
 			return
 		}
 		writeln(w, tl("status.status"))
-	case "game":
+	case "game": // if anyone has a better name for this then @ me
 		if nargs < 2 {
 			stdutil.PrintErr("game <streaming/watching/listening> <name> [details] [extra text]", nil)
 			return

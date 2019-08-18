@@ -117,7 +117,7 @@ func printHelp(search string) {
 	if userType != typeWebhook {
 		help = append(help, "status <value>\tSet the user status. Possible values are: online, idle, dnd and invisible.")
 		help = append(help, "")
-		help = append(help, "friend <add/accept/remove/list> (<name>)\tManage your friends. Add, accept, remove and list them.")
+		help = append(help, "friend <add/accept/remove/list> (<user id>)\tManage your friends. Add, accept, remove and list them.")
 		help = append(help, "block <user id>\tBlock a user.")
 		help = append(help, "")
 		help = append(help, "bookmarks\tList all bookmarks in the console.")
