@@ -171,6 +171,17 @@ func setCompleter(rl *readline.Instance) {
 			readline.PcItem("channel"),
 			readline.PcItem("category"),
 		),
+		readline.PcItem("invite",
+			readline.PcItem("create"),
+			readline.PcItem("accept"),
+			readline.PcItem("read"),
+			readline.PcItem("list"),
+			readline.PcItem("revoke"),
+		),
+		readline.PcItem("region",
+			readline.PcItem("list"),
+			readline.PcItem("set"),
+		),
 	)
 }
 func bookmarkTab(line string) []string {
