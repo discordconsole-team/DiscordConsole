@@ -35,7 +35,7 @@ func printHelp(search string) {
 	help = append(help, "permcalc [preset]\tOpen the permission calculator, and optionally with pre-set values.")
 	help = append(help, "")
 	if userType != typeWebhook {
-		help = append(help, "guilds\t\tList guilds/servers this bot is added to.")
+		help = append(help, "guilds\t\tList guilds/servers you're in.")
 		help = append(help, "guild <id>\tSelect a guild to use for further commands.")
 		help = append(help, "channels\tList channels in your selected guild.")
 		help = append(help, "channel <id>\tSelect a channel to use for further commands.")
