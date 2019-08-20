@@ -1,4 +1,4 @@
-# DiscordConsole [![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=flat-square)](https://paypal.me/mnpn03/)
+# DiscordConsole [![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
 
 > DiscordConsole is software aiming to give you full control over
 > accounts, bots and webhooks!
@@ -38,11 +38,16 @@ Once started, you'll get asked to fill in your token. If it's a bot
 token, just type `<token>` in the terminal. If it's a user token,
 enter `user <token>`. If it's a webhook, enter `webhook <link>.`
 
+If you have copied your token to your clipboard and are having troubles
+pasting it on Windows, use the substitute `${paste}` in place of your token.
+
 Then, just press enter! You'll get the following screen:
 ![Picture](https://i.imgur.com/tnurMPA.png)
 
 Try to type something like `help` and let the magic happen! For a
 detailed review of each command, type `help command`.
+
+DiscordConsole also supports the use of quotes ("") to use more than one word as an argument.
 
 ### Credits
 
