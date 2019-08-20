@@ -1084,6 +1084,17 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		writeln(w, tl("information.moved"))
+	case "note":
+		if nargs < 2 {
+			stdutil.PrintErr("note <user id> <note>", nil)
+			return
+		}
+		err := session.UserNoteSet(args[0], strings.Join(args[1:], " "))
+		if err != nil {
+			stdutil.PrintErr(tl("failed.note"), err)
+			return
+		}
+		fmt.Println(tl("information.note"))
 	default:
 		stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 	}

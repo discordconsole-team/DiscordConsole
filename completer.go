@@ -182,6 +182,9 @@ func setCompleter(rl *readline.Instance) {
 			readline.PcItem("list"),
 			readline.PcItem("set"),
 		),
+		readline.PcItem("note",
+			readline.PcItem("@me"),
+		),
 	)
 }
 func bookmarkTab(line string) []string {
