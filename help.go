@@ -97,7 +97,7 @@ func printHelp(search string) {
 		help = append(help, "back\tJump to previous guild and/or channel.")
 		help = append(help, "")
 		help = append(help, "new <channel/vchannel/guild/category> <name>\tCreate a new guild or channel")
-		help = append(help, "bans\tList all bans")
+		help = append(help, "bans [text]\tList all bans, can also be shown in text form to show full ban reasons.")
 		help = append(help, "ban <user id> <optional reason>\tBan user")
 		help = append(help, "unban <user id>\tUnban user")
 		help = append(help, "kick <user id> <optional reason>\tKick user")
