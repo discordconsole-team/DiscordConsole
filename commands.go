@@ -505,12 +505,17 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			stdutil.PrintErr(tl("failed.kick"), err)
 		}
 	case "leave":
-		if loc.guild == nil {
-			stdutil.PrintErr(tl("invalid.guild"), nil)
-			return
+		var err error
+		if nargs < 1 {
+			if loc.guild == nil {
+				stdutil.PrintErr(tl("invalid.guild"), nil)
+				return
+			}
+			err = session.GuildLeave(loc.guild.ID)
+		} else {
+			err = session.GuildLeave(args[0])
 		}
 
-		err := session.GuildLeave(loc.guild.ID)
 		if err != nil {
 			stdutil.PrintErr(tl("failed.leave"), err)
 			return

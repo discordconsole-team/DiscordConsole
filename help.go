@@ -101,7 +101,7 @@ func printHelp(search string) {
 		help = append(help, "ban <user id> <optional reason>\tBan user")
 		help = append(help, "unban <user id>\tUnban user")
 		help = append(help, "kick <user id> <optional reason>\tKick user")
-		help = append(help, "leave\tLeave selected guild!")
+		help = append(help, "leave [id]\tLeave a guild! Run with no arguments to leave the selected one.")
 		help = append(help, "ownership <id>\tTransfer ownership.")
 		help = append(help, "")
 		// Deleting a category also works when selecting channel, but this is less confusing, I hope.
