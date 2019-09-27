@@ -270,7 +270,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		writeln(w, table.String())
 	case "invite":
 		if nargs < 1 {
-			stdutil.PrintErr("invite accept <code> OR invite create [expire] [max uses] ['temp'] OR invite list OR invite revoke <code>", nil)
+			stdutil.PrintErr("invite\taccept <code>\n\tcreate [expire] [max uses] ['temp']\n\tlist\n\trevoke <code>", nil)
 			return
 		}
 		switch strings.ToLower(args[0]) {
@@ -643,7 +643,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 		playing = ""
 	case "react":
 		if nargs < 2 {
-			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react delall <message id> OR react big <message id> <text>", nil)
+			stdutil.PrintErr("react\tadd/del <message id> <emoji unicode/id>\n\tdelall <message id>\n\tbig <message id> <text>", nil)
 			return
 		}
 		if loc.channel == nil {
@@ -695,7 +695,7 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 				}
 			}
 		default:
-			stdutil.PrintErr("react add/del <message id> <emoji unicode/id> OR react delall <message id> OR react big <message id> <text>", nil)
+			stdutil.PrintErr("react\tadd/del <message id> <emoji unicode/id>\n\tdelall <message id>\n\tbig <message id> <text>", nil)
 		}
 	case "block":
 		if nargs < 1 {
