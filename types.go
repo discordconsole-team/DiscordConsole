@@ -54,10 +54,11 @@ var typeRelationships = map[int]string{
 	4: "Sent request",
 }
 var typeVerifications = map[discordgo.VerificationLevel]string{
-	discordgo.VerificationLevelNone:   "None",
-	discordgo.VerificationLevelLow:    "Low",
-	discordgo.VerificationLevelMedium: "Medium",
-	discordgo.VerificationLevelHigh:   "High",
+	discordgo.VerificationLevelNone:		"None",
+	discordgo.VerificationLevelLow:			"Low",
+	discordgo.VerificationLevelMedium:		"Medium",
+	discordgo.VerificationLevelHigh:		"High",
+	discordgo.VerificationLevelVeryHigh:	"Very High",
 }
 var typeContentFilter = map[discordgo.ExplicitContentFilterLevel]string{
 	discordgo.ExplicitContentFilterDisabled:			"Off",
