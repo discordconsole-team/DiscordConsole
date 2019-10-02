@@ -391,6 +391,10 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 			stdutil.PrintErr(tl("invalid.channel"), nil)
 			return
 		}
+		if isPrivate(loc.channel) {
+			stdutil.PrintErr(tl("invalid.dm"), nil)
+			return
+		}
 		since := ""
 		if nargs >= 1 {
 			since = args[0]
