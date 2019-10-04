@@ -32,6 +32,7 @@ func printHelp(search string) {
 	help = append(help, "run\tRun a LUA file with DiscordConsole's special functions")
 	help = append(help, "alias <command> <new command>\tAdd a new alias for a command.")
 	help = append(help, "lang <language>\tSame as starting with --lang")
+	help = append(help, "latency\tShows the last heartbeat's ping.")
 	help = append(help, "permcalc [preset]\tOpen the permission calculator, and optionally with pre-set values.")
 	help = append(help, "")
 	if userType != typeWebhook {
@@ -50,6 +51,9 @@ func printHelp(search string) {
 			"author_email, author_name, author_avatar, author_bot, embed; 'cache' may be used as message ID.")
 		help = append(help, "pin <message id>\tPin a message to the current channel.")
 		help = append(help, "unpin <message id>\tUnpin a message from the current channel.")
+		help = append(help, "")
+		help = append(help, "name <name>\tChange username completely.")
+		help = append(help, "avatar <link/file>\tChange avatar to a link or file.")
 		help = append(help, "")
 	}
 	help = append(help, "say <stuff>\tSend a message in your selected channel. `say toggle` starts chat-mode, and `toggle` ends it.")
@@ -111,10 +115,6 @@ func printHelp(search string) {
 		help = append(help, "stop\tStops playing any song.")
 		help = append(help, "move <user id> <vchannel id>\tMove a user to another voice channel.")
 		help = append(help, "")
-	}
-	help = append(help, "name <name>\tChange username completely.")
-	help = append(help, "avatar <link/file>\tChange avatar to a link or file.")
-	if userType != typeWebhook {
 		help = append(help, "status <value>\tSet the user status. Possible values are: online, idle, dnd and invisible.")
 		help = append(help, "")
 		help = append(help, "friend <add/accept/remove/list> (<user id>)\tManage your friends. Add, accept, remove and list them.")

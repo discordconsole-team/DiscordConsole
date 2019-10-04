@@ -1100,6 +1100,8 @@ func commandRaw(session *discordgo.Session, source commandSource, cmd string, ar
 			return
 		}
 		fmt.Println(tl("information.note"))
+	case "latency":
+		fmt.Println(session.HeartbeatLatency())
 	default:
 		stdutil.PrintErr(tl("invalid.command")+" '"+cmd+"'. "+tl("invalid.command2"), nil)
 	}
