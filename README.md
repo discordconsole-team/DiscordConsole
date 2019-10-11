@@ -3,17 +3,6 @@
 > DiscordConsole is software aiming to give you full control over
 > accounts, bots and webhooks!
 
-The rewrite branch has been indefinitely put on hold. The regular Go
-version is still maintained.
-
-### Table of Contents
-
-- [Install](#install)
-- [Usage](#usage)
-- [Credits](#credits)
-- [Contribute](#contribute)
-- [License](#license)
-
 ### Install
 
 To get started, simply [download the console from
@@ -47,7 +36,7 @@ Then, just press enter! You'll get the following screen:
 Try to type something like `help` and let the magic happen! For a
 detailed review of each command, type `help command`.
 
-DiscordConsole also supports the use of quotes ("") to use more than one word as an argument.
+DiscordConsole also supports the use of quotes `" "` to use more than one word as an argument.
 
 ### Credits
 
@@ -64,7 +53,5 @@ involved in the project? Send us some suggestions through issues or
 leave feedback on our [official Discord
 server](https://discord.gg/xvQV8bT).
 
-### License
-
-GNU G.P.L. © Mnpn - [Click here for more
+DiscordConsole is licensed under the GNU G.P.L. © Mnpn - [Click here for more
 information.](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE)
