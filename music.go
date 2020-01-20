@@ -1,6 +1,6 @@
 /*
 DiscordConsole is a software aiming to give you full control over accounts, bots and webhooks!
-Copyright (C) 2019 Mnpn
+Copyright (C) 2020 Mnpn
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
