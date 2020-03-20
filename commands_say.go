@@ -51,7 +51,7 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 
 		sendbuf := func(buffer string) (ok bool) {
 			if userType == typeWebhook {
-				err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
+				_, err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
 					Content: buffer,
 					TTS:     tts,
 				})
@@ -146,7 +146,7 @@ func commandsSay(session *discordgo.Session, source commandSource, cmd string, a
 		}
 
 		if userType == typeWebhook {
-			err = session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
+			_, err = session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
 				Embeds: []*discordgo.MessageEmbed{embed},
 			})
 			if err != nil {

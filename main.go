@@ -431,7 +431,7 @@ func pointer(session *discordgo.Session) string {
 
 func say(session *discordgo.Session, w io.Writer, channel, str string) (*discordgo.Message, bool) {
 	if userType == typeWebhook {
-		err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
+		_, err := session.WebhookExecute(userID, userToken, false, &discordgo.WebhookParams{
 			Content: str,
 		})
 		if err != nil {

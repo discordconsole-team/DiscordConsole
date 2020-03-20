@@ -23,11 +23,11 @@ type tokenizer struct {
 	quote bool
 }
 
-func (tokenizer *tokenizer) nextToken(r io.ByteScanner) (t token, err error) {
+func (tokenizer *tokenizer) nextToken(r *strings.Reader) (t token, err error) {
 	text := ""
 	for {
-		var c byte
-		c, err = r.ReadByte()
+		var c rune
+		c, _, err = r.ReadRune()
 		if err == io.EOF && len(text) > 0 {
 			t = token{
 				kind: tokenString,
@@ -44,7 +44,7 @@ func (tokenizer *tokenizer) nextToken(r io.ByteScanner) (t token, err error) {
 			tokenizer.quote = !tokenizer.quote
 		} else if c == '$' {
 			if len(text) > 0 {
-				r.UnreadByte()
+				r.UnreadRune()
 				t = token{
 					kind: tokenString,
 					text: text,
@@ -52,7 +52,7 @@ func (tokenizer *tokenizer) nextToken(r io.ByteScanner) (t token, err error) {
 				return
 			}
 
-			c, err = r.ReadByte()
+			c, _, err = r.ReadRune()
 			if err != nil {
 				return
 			}
@@ -62,7 +62,7 @@ func (tokenizer *tokenizer) nextToken(r io.ByteScanner) (t token, err error) {
 			if c == '{' {
 				text = ""
 				for c != '}' {
-					c, err = r.ReadByte()
+					c, _, err = r.ReadRune()
 					if err != nil {
 						return
 					}
@@ -78,7 +78,7 @@ func (tokenizer *tokenizer) nextToken(r io.ByteScanner) (t token, err error) {
 
 			text += string(c)
 		} else if c == '\\' {
-			c, err = r.ReadByte()
+			c, _, err = r.ReadRune()
 			if err != nil {
 				return
 			}
