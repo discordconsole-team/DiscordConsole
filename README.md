@@ -1,4 +1,4 @@
-# DiscordConsole [![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE) [![Support](https://img.shields.io/badge/Discord-Support%20guild-6C88EE.svg?style=flat-square)](https://discord.gg/xvQV8bT)
+# DiscordConsole [![License](https://img.shields.io/badge/license-GPL-blue.svg?style=flat-square)](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE)
 
 > DiscordConsole is software aiming to give you full control over
 > accounts, bots and webhooks!
@@ -6,9 +6,7 @@
 ### Install
 
 To get started, simply [download the console from
-releases](https://github.com/discordconsole-team/DiscordConsole/releases).
-
-Or compile it yourself: `go get
+releases](https://github.com/discordconsole-team/DiscordConsole/releases), r compile it yourself: `go get
 github.com/discordconsole-team/DiscordConsole`
 
 ### Usage
@@ -46,12 +44,6 @@ continued development by maintainer [Mnpn](https://github.com/Mnpn03)
 since mid-September of 2017. You can find a full list of contributors
 [here](https://github.com/discordconsole-team/DiscordConsole/graphs/contributors).
 
-### Contribute
-
-Feel free to submit a pull request! Not a developer, but want to be
-involved in the project? Send us some suggestions through issues or
-leave feedback on our [official Discord
-server](https://discord.gg/xvQV8bT).
 
 DiscordConsole is licensed under the GNU G.P.L. © Mnpn - [Click here for more
 information.](https://github.com/discordconsole-team/DiscordConsole/blob/master/LICENSE)
