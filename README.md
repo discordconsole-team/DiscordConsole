@@ -6,7 +6,7 @@
 ### Install
 
 To get started, simply [download the console from
-releases](https://github.com/discordconsole-team/DiscordConsole/releases), r compile it yourself: `go get
+releases](https://github.com/discordconsole-team/DiscordConsole/releases), or compile it yourself: `go get
 github.com/discordconsole-team/DiscordConsole`
 
 ### Usage
